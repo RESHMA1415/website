@@ -1,0 +1,6 @@
+# Keep line endings as they are in the repository (LF); hook scripts must stay LF to run
+* text=auto eol=lf
+*.docx binary
+*.png binary
+*.jpg binary
+*.webp binary

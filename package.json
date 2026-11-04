@@ -1,0 +1,14 @@
+{
+  "name": "shopme",
+  "private": true,
+  "description": "SHOPME clothing & fashion store: customer website, admin panel and backend",
+  "scripts": {
+    "setup": "npm install && npm install --prefix backend && npm install --prefix frontend && npm install --prefix admin",
+    "seed": "npm run seed --prefix backend",
+    "dev": "concurrently -n api,shop,admin -c blue,yellow,magenta \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\" \"npm run dev --prefix admin\"",
+    "build": "npm run build --prefix frontend && npm run build --prefix admin"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}

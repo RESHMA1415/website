@@ -1,0 +1,12 @@
+#!/bin/sh
+# SHOPME rule: work is never committed on the production branch.
+# Commit on 'development'; production only receives reviewed merges.
+branch=$(git symbolic-ref --short HEAD 2>/dev/null)
+if [ "$branch" = "production" ]; then
+  echo ""
+  echo "BLOCKED: do not commit on the 'production' branch."
+  echo "Switch to development first:  git switch development"
+  echo ""
+  exit 1
+fi
+exit 0

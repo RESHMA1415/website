@@ -1,0 +1,15 @@
+#!/bin/sh
+# SHOPME rule: nobody pushes straight to production.
+# Production is updated only by merging development after a code review
+# (a reviewed pull request on the online repository).
+while read local_ref local_sha remote_ref remote_sha; do
+  if [ "$remote_ref" = "refs/heads/production" ]; then
+    echo ""
+    echo "BLOCKED: pushing directly to the 'production' branch is not allowed."
+    echo "Push your work to 'development', then open a pull request"
+    echo "development -> production and merge it only after a code review."
+    echo ""
+    exit 1
+  fi
+done
+exit 0

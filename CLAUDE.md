@@ -1,0 +1,128 @@
+# CLAUDE.md
+
+Guidance for Claude Code when working in this repository.
+
+## Project
+
+**SHOPME** is a clothing & women's fashion e-commerce web app for India (INR only). It has a customer website, a separate admin panel, and a backend API.
+
+**`PRD.md` is the source of truth.** Read the relevant PRD section before building any feature. If code and PRD disagree, follow the PRD and flag the conflict. If the PRD is silent, ask; don't invent business rules.
+
+## The owner
+
+The owner is a **non-technical business owner**. When reporting to them:
+- Use plain language. Explain what changed in business terms ("customers can now…"), not code terms.
+- Ask before making decisions that change business behaviour (prices, fees, policies, what customers see).
+- Point them to what they can click and check themselves.
+
+## Tech stack
+
+| Part | Tech |
+|---|---|
+| Customer site | React.js + Bootstrap + custom CSS |
+| Admin panel | React.js (separate app) + Bootstrap + custom CSS |
+| Backend | Node.js + Express.js (REST API) |
+| Database | MongoDB (Mongoose) |
+| Auth | JWT; separate auth for customers and admin |
+| Payments | Razorpay (Checkout, Webhooks, Refunds) |
+| Messaging | Email (transactional provider) + WhatsApp (click-to-chat link + Meta Cloud API templates) |
+| Media | Cloud storage with resizing (e.g. Cloudinary) |
+
+Do not swap or add major libraries/frameworks without asking.
+
+## Repository layout
+
+```
+/frontend   customer website (React + Vite), port 5173
+/admin      admin panel (React + Vite, separate app), port 5174
+/backend    Express API, port 5000
+  src/config/        env, database connection, default Business Settings
+  src/models/        Mongoose models (PRD §15)
+  src/services/      business rules (pricing, settings, products)
+  src/routes/        API routes, mounted under /api
+  src/seed/          starter categories, banners, sample products
+  src/integrations/  Razorpay, email, WhatsApp, media (added per phase)
+PRD.md      product requirements (source of truth)
+CLAUDE.md   this file
+```
+
+Both React apps proxy `/api` to the backend in development.
+
+## Commands
+
+Run from the repo root:
+
+| Task | Command |
+|---|---|
+| Install everything | `npm run setup` |
+| Start all three apps | `npm run dev` |
+| Build both React apps | `npm run build` |
+| Seed an empty database (stop the dev server first) | `npm run seed` |
+
+Each app also has its own `npm run dev` / `npm run build` (use `--prefix backend|frontend|admin`).
+
+**Development database:** with `MONGODB_URI` empty in `backend/.env`, the backend starts a private local MongoDB (`mongodb-memory-server`) on port 27027, with data kept in `%LOCALAPPDATA%\shopme\db`. That folder is outside the project so OneDrive never syncs live database files. A fresh database is seeded automatically on startup. To reset it, stop the backend and delete that folder. Production must set `MONGODB_URI` (MongoDB Atlas).
+
+There are no automated tests yet. The pricing rules were checked against the PRD §6.2 worked examples.
+
+## Non-negotiable business rules
+
+Full details in PRD §6–§11. Quick reference:
+
+- **Server calculates all money.** Subtotal, delivery, COD fee, totals, refunds, and stock checks happen in the backend only. Never trust prices/totals sent from the browser.
+- **Pricing:** No GST. Discount % = floor((MRP − selling) ÷ MRP × 100).
+- **Delivery:** Free when items subtotal ≥ ₹500, else ₹50. **COD fee** ₹50. **COD max order** ₹5,000. All of these are **Business Settings values** and must never be hard-coded.
+- **No coupons** in v1.0.
+- **Stock is per variant** (size × colour, or shade × volume for beauty). Decrement only on successful payment or COD placement; restore on cancel/approved restock. Use atomic DB updates to prevent overselling; auto-refund if a paid order loses the stock race.
+- **Razorpay:** Create the Razorpay order with the server-computed amount; verify signature; also handle the webhook (idempotently) so an order is confirmed even if the browser closes. Never store card/UPI data.
+- **Orders** store a snapshot of product name, variant, SKU, MRP, price, and address at purchase time. Order number format: `SHM-YYMMDD-XXXX`.
+- **Status flow** moves forward only (PRD §8). Every change is time-stamped and triggers notifications (PRD §12).
+- **Cancel** only before Shipped. **Return/exchange** within 7 days of delivery, only for products marked returnable (beauty defaults to non-returnable).
+- **Reviews:** Only verified buyers with a Delivered order. One review per product per order. Photos (≤5) and video (≤1, ≤60 s). Pending until admin approves. Admin can reply. Ratings count approved reviews only.
+- **Admin:** single admin account, no staff roles in v1.0.
+- **India only:** 10-digit mobile, 6-digit pincode, ₹ formatting (en-IN).
+
+## Coding conventions
+
+- Keep frontend, admin, and backend independent; share nothing through relative imports across them.
+- Business rules live in backend service modules, not in route handlers or React components.
+- Configurable values come from the Settings collection or environment variables.
+- Secrets (DB URI, JWT secret, Razorpay keys/webhook secret, email & WhatsApp tokens, Cloudinary keys) go in `.env` files only. Commit `.env.example`, never `.env`.
+- Validate all API input on the server. Return friendly, non-technical error messages to the UI.
+- Brand colours: navy `#14213D`, orange `#FF7A00`, white background. Define them once as CSS variables/Bootstrap overrides. Mobile-first and responsive (PRD §16).
+- Paginate every list endpoint. Compress and lazy-load images.
+- Notification sending must never block or fail an order. Log and retry.
+- Match the existing style of surrounding code.
+
+## Git workflow (owner's rule, mandatory)
+
+- Two long-lived branches: **`development`** (all work) and **`production`** (live site).
+- **Commit before starting each phase** (a checkpoint of the finished state), then build the phase on `development`.
+- All commits and pushes go to **`development` only**.
+- **Never push or commit directly to `production`.** Production is updated only by merging `development` into it through a pull request **after a proper code review**. No exceptions, including small fixes.
+- Enforced locally by `.githooks/pre-push` (blocks pushes to `production`) and `.githooks/pre-commit` (blocks commits on `production`); `git config core.hooksPath .githooks` must be set in each clone. Never bypass them (`--no-verify`). Once the online repo exists, also protect `production` there (require a reviewed pull request, block direct pushes).
+- Git on this machine: `C:\Program Files\Git\cmd\git.exe` (may not be on PATH in older shells). Commit identity: `SHOPME <nspreshmapr@gmail.com>`.
+- `.env` files are never committed (see `.gitignore`); only `.env.example`.
+
+## Build order
+
+Follow PRD §21 phases. Don't build advanced features ahead of their phase unless asked.
+
+**Progress:**
+- ✅ Phase 1: Foundation & Design. All customer pages and admin screens laid out and linked; all models; settings, categories, banners and product read APIs; pricing service. Screens whose function comes later show a "Preview (Phase N)" notice (`PhaseNotice` component). Remove each notice when its feature is built.
+- ✅ Phase 2: Catalogue & Admin Basics. Admin login (JWT with `ADMIN_JWT_SECRET`, 5-try/15-min lock, 2 h sliding session via `X-Admin-Token` header, change password); all `/api/admin/*` routes behind `requireAdmin`. Categories, products with variants (optimistic save so live stock is never overwritten; every stock change logged in StockMovement), duplicate/bulk/hide-instead-of-delete, inventory (quick edit, history, CSV export/import), media library (sharp → WebP large/medium/thumb), banners, size charts. Store: filters, facets (`/products/filters`), search suggestions (`/products/suggest`), colour-specific gallery, zoom, video, size chart pop-up.
+- ⏭ Phase 3: Accounts, Cart & Wishlist (next).
+
+**Phase 2 notes:**
+- The single admin account is created on first start from `ADMIN_EMAIL` / `ADMIN_INITIAL_PASSWORD` in `backend/.env`.
+- Development uploads are stored in `%LOCALAPPDATA%\shopme\uploads` and served at `/uploads` (both Vite apps proxy it). `src/integrations/media.js` must get a Cloudinary driver before launch.
+- The 60-second video limit is not checked on the server yet (that needs a video tool).
+- Hidden categories leave the menu and their page closes; their products stay in search and Shop All.
+- The top-level `men` / `women` category slugs are locked (the store's /men and /women routes depend on them). In admin, an existing category's web address is read-only until "Change" is clicked, because the owner once typed descriptions into it and broke links. Homepage tiles look up categories by slug and hide themselves if the slug is missing.
+
+## When finishing a task
+
+- Check that the change works (run it, test the flow), not just that it compiles.
+- Tell the owner in plain language what they can now do and how to check it.
+- Note any PRD assumption (PRD §24) the work depended on.
+ 
