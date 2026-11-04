@@ -78,14 +78,21 @@ function CategoryEditor({ category, tree, onClose, onSaved }) {
         </div>
         <div className="col-md-6">
           <label className="form-label" htmlFor="c-parent">Inside</label>
-          <CategorySelect
-            id="c-parent"
-            tree={tree}
-            value={form.parent}
-            onChange={(v) => set('parent', v)}
-            allLabel="— Top level (main menu) —"
-            exclude={(c) => blocked.has(c._id) || c.depth >= 2}
-          />
+          {slugLocked ? (
+            <div className="form-control-plaintext small">
+              Top level (main menu)
+              <div className="form-text">Fixed. {category.name} is a main section of the store.</div>
+            </div>
+          ) : (
+            <CategorySelect
+              id="c-parent"
+              tree={tree}
+              value={form.parent}
+              onChange={(v) => set('parent', v)}
+              allLabel="— Top level (main menu) —"
+              exclude={(c) => blocked.has(c._id) || c.depth >= 2}
+            />
+          )}
         </div>
         <div className="col-md-6">
           <label className="form-label" htmlFor="c-type">Product type</label>
@@ -184,7 +191,9 @@ function FragmentRow({ c, onEdit, onAddChild, onDelete }) {
             <button type="button" className="btn btn-sm btn-light" title="Add a sub-category inside" onClick={() => onAddChild(c)}><i className="bi bi-plus-lg" /></button>
           )}{' '}
           <button type="button" className="btn btn-sm btn-light" title="Edit" onClick={() => onEdit(c)}><i className="bi bi-pencil" /></button>{' '}
-          <button type="button" className="btn btn-sm btn-light text-danger" title="Delete" onClick={() => onDelete(c)}><i className="bi bi-trash" /></button>
+          {!(c.depth === 0 && ['men', 'women'].includes(c.slug)) && (
+            <button type="button" className="btn btn-sm btn-light text-danger" title="Delete" onClick={() => onDelete(c)}><i className="bi bi-trash" /></button>
+          )}
         </td>
       </tr>
       <CategoryRows nodes={c.children} onEdit={onEdit} onAddChild={onAddChild} onDelete={onDelete} />

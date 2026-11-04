@@ -72,6 +72,12 @@ export async function saveCategory(id, body) {
 
   const name = requireText(body.name, 'category name', 60);
 
+  // Men and Women are the store's main sections (/men, /women): they stay top level
+  const isLockedTop = existing && !existing.parent && LOCKED_SLUGS.includes(existing.slug);
+  if (isLockedTop && body.parent) {
+    throw new HttpError(400, `“${existing.name}” is a main section of the store and must stay at the top level.`);
+  }
+
   let parent = null;
   if (body.parent) {
     parent = byId.get(requireObjectId(body.parent, 'Please choose a valid parent category.'));
@@ -96,7 +102,7 @@ export async function saveCategory(id, body) {
 
   const requestedSlug = slugify(body.slug || '');
   // The store's /men and /women pages depend on these two addresses, so they never change
-  const lockedSlug = existing && !existing.parent && LOCKED_SLUGS.includes(existing.slug) ? existing.slug : null;
+  const lockedSlug = isLockedTop ? existing.slug : null;
   const slug = lockedSlug || (requestedSlug && requestedSlug === existing?.slug
     ? requestedSlug
     : await uniqueSlug(requestedSlug || slugify(parent ? `${root?.slug || ''} ${name}` : name), existing?._id));
@@ -151,6 +157,9 @@ export async function deleteCategory(id) {
   const categoryId = requireObjectId(id, 'We couldn’t find that category.');
   const category = await Category.findById(categoryId).lean();
   if (!category) throw new HttpError(404, 'We couldn’t find that category.');
+  if (!category.parent && LOCKED_SLUGS.includes(category.slug)) {
+    throw new HttpError(409, `“${category.name}” is a main section of the store and can’t be deleted. You can hide it instead.`);
+  }
   if (await Category.exists({ parent: categoryId })) {
     throw new HttpError(409, 'This category has sub-categories. Move or delete them first.');
   }
