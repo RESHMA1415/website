@@ -158,8 +158,11 @@ export default function ProductForm() {
   const isEdit = Boolean(id);
   const navigate = useNavigate();
   const { notify } = useAuth();
-  const { data: categories } = useApi('/admin/categories');
-  const { data: sizeCharts } = useApi('/admin/size-charts');
+  // Pickers need every category; 200 top levels is the server's page cap
+  const { data: categoryPage } = useApi('/admin/categories?limit=200');
+  const categories = categoryPage?.items;
+  // The picker needs every chart; 200 is the server's page cap
+  const { data: sizeCharts } = useApi('/admin/size-charts?limit=200');
   const { data: saved, error: loadError, reload } = useApi(isEdit ? `/admin/products/${id}` : null);
   const { data: settings } = useApi('/settings');
 
@@ -267,7 +270,7 @@ export default function ProductForm() {
   if (isEdit && !saved) return <div className="text-muted">Loading product…</div>;
 
   const preview = form.images[0];
-  const sizeChartsForType = (sizeCharts || []).filter((c) => (form.productType === 'fashion' ? true : c.type !== 'footwear'));
+  const sizeChartsForType = (sizeCharts?.items || []).filter((c) => (form.productType === 'fashion' ? true : c.type !== 'footwear'));
 
   return (
     <>

@@ -30,7 +30,9 @@ export default function Products() {
 
   const query = new URLSearchParams({ page: String(page), q: search, status, stock, category, sort });
   const { data, loading, reload } = useApi(`/admin/products?${query}`);
-  const { data: categories } = useApi('/admin/categories');
+  // Pickers need every category; 200 top levels is the server's page cap
+  const { data: categoryPage } = useApi('/admin/categories?limit=200');
+  const categories = categoryPage?.items;
   const items = data?.items || [];
   const setFilter = (setter) => (value) => {
     setter(value);

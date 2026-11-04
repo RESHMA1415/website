@@ -3,6 +3,7 @@ import { Category, Product, StockMovement } from '../models/index.js';
 import { HttpError } from '../utils/asyncHandler.js';
 import { parseCsv, toCsv } from '../utils/csv.js';
 import { cleanText, escapeRegex, isObjectId, pageParams, requireObjectId, toWholeNumber } from '../utils/text.js';
+import { lowStockDefault } from './settingsService.js';
 
 // Inventory management (PRD §5.4, §6.5, §14.5). Stock is per variant and every
 // change is recorded in the stock history.
@@ -24,7 +25,7 @@ async function categoryIds(id) {
   return ids;
 }
 
-async function variantPipeline(query) {
+async function variantPipeline(query, fallbackLevel) {
   const productMatch = {};
   if (isObjectId(query.category)) {
     const ids = await categoryIds(query.category);
@@ -39,7 +40,7 @@ async function variantPipeline(query) {
   if (query.stock === 'out') variantMatch['variant.stock'] = 0;
   if (query.stock === 'low') {
     variantMatch['variant.stock'] = { $gt: 0 };
-    variantMatch.$expr = { $lte: ['$variant.stock', { $ifNull: ['$variant.lowStockLevel', 5] }] };
+    variantMatch.$expr = { $lte: ['$variant.stock', { $ifNull: ['$variant.lowStockLevel', fallbackLevel] }] };
   }
   return [
     { $match: productMatch },
@@ -49,9 +50,9 @@ async function variantPipeline(query) {
   ];
 }
 
-function shapeRow(row) {
+function shapeRow(row, fallbackLevel) {
   const v = row.variant;
-  const level = v.lowStockLevel ?? 5;
+  const level = v.lowStockLevel ?? fallbackLevel;
   return {
     productId: row._id,
     productName: row.name,
@@ -69,9 +70,10 @@ function shapeRow(row) {
 }
 
 export async function listInventory(query) {
+  const fallbackLevel = await lowStockDefault();
   const { page, limit, skip } = pageParams(query, { defaultLimit: 50, maxLimit: 200 });
   const [result] = await Product.aggregate([
-    ...(await variantPipeline(query)),
+    ...(await variantPipeline(query, fallbackLevel)),
     {
       $facet: {
         items: [{ $sort: { name: 1, _id: 1, 'variant.sku': 1 } }, { $skip: skip }, { $limit: limit }],
@@ -80,11 +82,12 @@ export async function listInventory(query) {
     },
   ]);
   const total = result.total[0]?.count || 0;
-  return { items: result.items.map(shapeRow), total, page, pages: Math.ceil(total / limit) };
+  return { items: result.items.map((r) => shapeRow(r, fallbackLevel)), total, page, pages: Math.ceil(total / limit) };
 }
 
 // Counts for the filter buttons and dashboard alerts
 export async function inventoryCounts() {
+  const fallbackLevel = await lowStockDefault();
   const [counts] = await Product.aggregate([
     { $unwind: '$variants' },
     {
@@ -94,7 +97,7 @@ export async function inventoryCounts() {
         out: { $sum: { $cond: [{ $eq: ['$variants.stock', 0] }, 1, 0] } },
         low: {
           $sum: {
-            $cond: [{ $and: [{ $gt: ['$variants.stock', 0] }, { $lte: ['$variants.stock', { $ifNull: ['$variants.lowStockLevel', 5] }] }] }, 1, 0],
+            $cond: [{ $and: [{ $gt: ['$variants.stock', 0] }, { $lte: ['$variants.stock', { $ifNull: ['$variants.lowStockLevel', fallbackLevel] }] }] }, 1, 0],
           },
         },
       },
@@ -167,15 +170,16 @@ export async function setVariantStock(productId, variantId, { stock, stockLoaded
   throw new HttpError(409, 'Stock for this option is changing right now. Please reload and try again.');
 }
 
-export async function stockHistory(productId, variantId) {
+export async function stockHistory(productId, variantId, query = {}) {
   const pid = requireObjectId(productId, 'We couldn’t find that product.');
   const vid = requireObjectId(variantId, 'We couldn’t find that option.');
-  const movements = await StockMovement.find({ product: pid, variantId: vid })
-    .sort({ createdAt: -1 })
-    .limit(200)
-    .populate('order', 'orderNumber')
-    .lean();
-  return movements.map((m) => ({
+  const { page, limit, skip } = pageParams(query, { defaultLimit: 50, maxLimit: 200 });
+  const filter = { product: pid, variantId: vid };
+  const [movements, total] = await Promise.all([
+    StockMovement.find(filter).sort({ createdAt: -1, _id: -1 }).skip(skip).limit(limit).populate('order', 'orderNumber').lean(),
+    StockMovement.countDocuments(filter),
+  ]);
+  const items = movements.map((m) => ({
     _id: m._id,
     at: m.createdAt,
     change: m.change,
@@ -184,6 +188,7 @@ export async function stockHistory(productId, variantId) {
     orderNumber: m.order?.orderNumber,
     note: m.note,
   }));
+  return { items, total, page, pages: Math.ceil(total / limit) };
 }
 
 // "Stock when downloaded" lets the upload apply only the owner's edits, so
@@ -192,10 +197,11 @@ const LOADED_HEADER = 'Stock when downloaded (don’t edit)';
 const CSV_HEADERS = ['SKU', 'Product', 'Option', 'Stock', 'Low-stock level', 'Price (₹)', 'Product status', LOADED_HEADER];
 
 export async function exportInventoryCsv(query) {
-  const rows = await Product.aggregate([...(await variantPipeline(query)), { $sort: { name: 1, 'variant.sku': 1 } }]);
+  const fallbackLevel = await lowStockDefault();
+  const rows = await Product.aggregate([...(await variantPipeline(query, fallbackLevel)), { $sort: { name: 1, 'variant.sku': 1 } }]);
   return toCsv(
     CSV_HEADERS,
-    rows.map(shapeRow).map((r) => [r.sku, r.productName, r.optionLabel, r.stock, r.lowStockLevel, r.price, r.productStatus, r.stock]),
+    rows.map((r) => shapeRow(r, fallbackLevel)).map((r) => [r.sku, r.productName, r.optionLabel, r.stock, r.lowStockLevel, r.price, r.productStatus, r.stock]),
   );
 }
 

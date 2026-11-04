@@ -3,7 +3,7 @@ import { STORE_URL, api, useApi } from '../api.js';
 import { useAuth } from '../auth.jsx';
 import CategorySelect from '../components/CategorySelect.jsx';
 import { ImageField } from '../components/MediaPicker.jsx';
-import { ErrorNote, Modal, PageTitle, StatusPill } from '../components/ui.jsx';
+import { ErrorNote, Modal, PageTitle, Pagination, StatusPill } from '../components/ui.jsx';
 
 const TYPES = { '': 'Same as parent', clothing: 'Clothing', fashion: 'Fashion', beauty: 'Beauty', accessories: 'Accessories' };
 
@@ -203,7 +203,9 @@ function FragmentRow({ c, onEdit, onAddChild, onDelete }) {
 
 export default function Categories() {
   const { notify } = useAuth();
-  const { data, loading, reload } = useApi('/admin/categories');
+  const [page, setPage] = useState(1);
+  const { data: categoryPage, loading, reload } = useApi(`/admin/categories?page=${page}`);
+  const data = categoryPage?.items;
   const [editing, setEditing] = useState(null);
 
   const remove = async (c) => {
@@ -234,6 +236,7 @@ export default function Categories() {
             </tbody>
           </table>
         </div>
+        {categoryPage && <Pagination page={categoryPage.page} pages={categoryPage.pages} total={categoryPage.total} onChange={setPage} label="main categories" />}
         <div className="small text-muted p-3 border-top">
           A category with products or sub-categories can’t be deleted. Move its products first, or switch it off (hidden) instead.
           Hidden categories disappear from the menu and their page closes; their products still show in search and “Shop All” unless you hide the products too.

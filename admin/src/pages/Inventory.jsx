@@ -64,13 +64,14 @@ function StockEditor({ row, onSaved }) {
 }
 
 function HistoryModal({ row, onClose }) {
-  const { data, loading } = useApi(`/admin/inventory/${row.productId}/${row.variantId}/history`);
+  const [page, setPage] = useState(1);
+  const { data, loading } = useApi(`/admin/inventory/${row.productId}/${row.variantId}/history?page=${page}`);
   return (
     <Modal title={`Stock history: ${row.productName} (${row.optionLabel})`} onClose={onClose} size="lg">
       <div className="small text-muted mb-2">SKU {row.sku} · current stock {row.stock}</div>
       <DataTable
         columns={['Date', 'Change', 'Stock after', 'Reason', 'Order / note']}
-        rows={data || []}
+        rows={data?.items || []}
         empty={loading ? 'Loading…' : 'No stock changes recorded yet.'}
         renderRow={(m) => (
           <tr key={m._id}>
@@ -82,6 +83,7 @@ function HistoryModal({ row, onClose }) {
           </tr>
         )}
       />
+      {data && <Pagination page={data.page} pages={data.pages} total={data.total} onChange={setPage} label="changes" />}
     </Modal>
   );
 }
@@ -170,7 +172,9 @@ export default function Inventory() {
   const query = new URLSearchParams({ page: String(page), q: search, stock, category });
   const { data, loading, reload } = useApi(`/admin/inventory?${query}`);
   const { data: counts, reload: reloadCounts } = useApi('/admin/inventory/counts');
-  const { data: categories } = useApi('/admin/categories');
+  // Pickers need every category; 200 top levels is the server's page cap
+  const { data: categoryPage } = useApi('/admin/categories?limit=200');
+  const categories = categoryPage?.items;
   const refresh = () => {
     reload();
     reloadCounts();

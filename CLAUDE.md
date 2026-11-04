@@ -118,6 +118,8 @@ Follow PRD §21 phases. Don't build advanced features ahead of their phase unles
 - Development uploads are stored in `%LOCALAPPDATA%\shopme\uploads` and served at `/uploads` (both Vite apps proxy it). `src/integrations/media.js` must get a Cloudinary driver before launch.
 - The 60-second video limit is not checked on the server yet (that needs a video tool).
 - Hidden categories leave the menu and their page closes; their products stay in search and Shop All.
+- Admin list endpoints return `{ items, total, page, pages }`. Pickers that need every row (category and size-chart selects) request `?limit=200`. Categories are paged by top-level category, each with its full sub-tree.
+- Stock edits (product form, Inventory quick edit, CSV with "Stock when downloaded") send the value the admin saw (`stockLoaded`). Only the difference is applied to live stock, written compare-and-set. `variants.sku` has a unique index; `Product.syncIndexes()` runs on start. A variant with no `lowStockLevel` uses Settings `orders.lowStockDefault`.
 - The top-level `men` / `women` category slugs are locked (the store's /men and /women routes depend on them). In admin, an existing category's web address is read-only until "Change" is clicked, because the owner once typed descriptions into it and broke links. Homepage tiles look up categories by slug and hide themselves if the slug is missing.
 
 ## When finishing a task

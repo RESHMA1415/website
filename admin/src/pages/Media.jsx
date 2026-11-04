@@ -114,9 +114,11 @@ function bannerState(b) {
 
 function Banners() {
   const { notify } = useAuth();
-  const { data: banners, reload } = useApi('/admin/banners');
+  const [page, setPage] = useState(1);
+  const { data: banners, reload } = useApi(`/admin/banners?page=${page}`);
   const [editing, setEditing] = useState(null);
-  const list = banners || [];
+  const list = banners?.items || [];
+  const firstNumber = banners ? (banners.page - 1) * banners.limit : 0;
 
   const move = async (index, dir) => {
     const ids = list.map((b) => b._id);
@@ -159,7 +161,7 @@ function Banners() {
               {b.desktopImageUrl ? <img src={b.desktopImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : 'No image'}
             </div>
             <div className="flex-grow-1 small" style={{ minWidth: 0 }}>
-              <div className="fw-semibold text-truncate">{i + 1}. {b.heading}</div>
+              <div className="fw-semibold text-truncate">{firstNumber + i + 1}. {b.heading}</div>
               <div className="text-muted text-truncate">{b.buttonText ? `“${b.buttonText}” → ${b.buttonLink}` : 'No button'}</div>
               {(b.activeFrom || b.activeTo) && (
                 <div className="text-muted">{b.activeFrom ? new Date(b.activeFrom).toLocaleDateString('en-IN') : 'Now'} – {b.activeTo ? new Date(b.activeTo).toLocaleDateString('en-IN') : 'no end date'}</div>
@@ -173,6 +175,7 @@ function Banners() {
           </div>
         );
       })}
+      {banners && <Pagination page={banners.page} pages={banners.pages} total={banners.total} onChange={setPage} label="banners" />}
       <div className="small text-muted p-3">The homepage shows up to 5 banners that are on, in this order, rotating every 5 seconds.</div>
       {editing && <BannerEditor banner={editing} onClose={() => setEditing(null)} onSaved={reload} />}
     </Panel>

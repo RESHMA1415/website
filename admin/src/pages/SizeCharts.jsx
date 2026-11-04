@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { api, useApi } from '../api.js';
 import { useAuth } from '../auth.jsx';
 import { ImageField } from '../components/MediaPicker.jsx';
-import { DataTable, ErrorNote, Modal, PageTitle } from '../components/ui.jsx';
+import { DataTable, ErrorNote, Modal, PageTitle, Pagination } from '../components/ui.jsx';
 
 const TYPES = { men_clothing: 'Men’s clothing', women_clothing: 'Women’s clothing', footwear: 'Footwear', other: 'Other' };
 const STARTERS = {
@@ -125,7 +125,8 @@ function ChartEditor({ chart, onClose, onSaved }) {
 
 export default function SizeCharts() {
   const { notify } = useAuth();
-  const { data, loading, reload } = useApi('/admin/size-charts');
+  const [page, setPage] = useState(1);
+  const { data, loading, reload } = useApi(`/admin/size-charts?page=${page}`);
   const [editing, setEditing] = useState(null);
 
   const remove = async (chart) => {
@@ -150,7 +151,7 @@ export default function SizeCharts() {
       <div className="panel">
         <DataTable
           columns={['Name', 'For', 'Sizes', 'Used by', '']}
-          rows={data || []}
+          rows={data?.items || []}
           empty={loading ? 'Loading…' : 'No size charts yet. Add one, then choose it on a product’s form.'}
           renderRow={(c) => (
             <tr key={c._id}>
@@ -165,6 +166,7 @@ export default function SizeCharts() {
             </tr>
           )}
         />
+        {data && <Pagination page={data.page} pages={data.pages} total={data.total} onChange={setPage} label="size charts" />}
       </div>
       {editing && <ChartEditor chart={editing} onClose={() => setEditing(null)} onSaved={reload} />}
     </>

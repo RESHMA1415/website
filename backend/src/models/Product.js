@@ -11,7 +11,8 @@ const variantSchema = new mongoose.Schema({
   },
   sku: { type: String, required: true },
   stock: { type: Number, required: true, min: 0, default: 0 },
-  lowStockLevel: { type: Number, min: 0, default: 5 },
+  // Unset means "use the Business Settings low-stock default"
+  lowStockLevel: { type: Number, min: 0 },
   price: { type: Number, min: 0 }, // overrides product selling price when set
   mrp: { type: Number, min: 0 },
 });

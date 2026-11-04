@@ -15,7 +15,7 @@ import {
 } from '../utils/text.js';
 import { PRODUCT_TYPES, placementFor } from './categoryService.js';
 import { discountPercent } from './pricingService.js';
-import { getSettings } from './settingsService.js';
+import { getSettings, lowStockDefault } from './settingsService.js';
 
 // Admin product management (PRD §5, §14.2)
 
@@ -33,9 +33,9 @@ const optionKeysFor = (type) => (type === 'beauty' ? OPTION_KEYS.beauty : OPTION
 
 // ---------- Reading ----------
 
-function summarise(product) {
+function summarise(product, fallbackLevel) {
   const totalStock = product.variants.reduce((sum, v) => sum + v.stock, 0);
-  const lowStockVariants = product.variants.filter((v) => v.stock > 0 && v.stock <= (v.lowStockLevel ?? 5)).length;
+  const lowStockVariants = product.variants.filter((v) => v.stock > 0 && v.stock <= (v.lowStockLevel ?? fallbackLevel)).length;
   const outOfStockVariants = product.variants.filter((v) => v.stock === 0).length;
   const first = product.images?.[0];
   return {
@@ -85,6 +85,7 @@ const ADMIN_SORTS = {
 
 export async function listProductsForAdmin(query) {
   const { page, limit, skip } = pageParams(query, { defaultLimit: 25 });
+  const fallbackLevel = await lowStockDefault();
   const match = {};
   if (['active', 'draft', 'hidden'].includes(query.status)) match.status = query.status;
   if (isObjectId(query.category)) {
@@ -112,7 +113,7 @@ export async function listProductsForAdmin(query) {
           $size: {
             $filter: {
               input: '$variants',
-              cond: { $and: [{ $gt: ['$$this.stock', 0] }, { $lte: ['$$this.stock', { $ifNull: ['$$this.lowStockLevel', 5] }] }] },
+              cond: { $and: [{ $gt: ['$$this.stock', 0] }, { $lte: ['$$this.stock', { $ifNull: ['$$this.lowStockLevel', fallbackLevel] }] }] },
             },
           },
         },
@@ -134,7 +135,7 @@ export async function listProductsForAdmin(query) {
     { path: 'subCategory', select: 'name' },
   ]);
   const total = result.total[0]?.count || 0;
-  return { items: items.map(summarise), total, page, pages: Math.ceil(total / limit) };
+  return { items: items.map((p) => summarise(p, fallbackLevel)), total, page, pages: Math.ceil(total / limit) };
 }
 
 export async function getProductForAdmin(id) {
@@ -397,7 +398,7 @@ export async function updateProduct(id, body) {
       const change = Number.isFinite(stockLoaded) ? v.stock - stockLoaded : v.stock - before.stock;
       const stock = Math.min(MAX_STOCK, Math.max(0, before.stock + change));
       movements.push({ variantId: before._id, sku: v.sku, change: stock - before.stock, stockAfter: stock, reason: 'correction', note: 'Edited on the product form' });
-      const lowStockLevel = applyLowStockToAll ? v.lowStockLevel : before.lowStockLevel ?? v.lowStockLevel;
+      const lowStockLevel = applyLowStockToAll ? v.lowStockLevel : before.lowStockLevel;
       return { ...v, _id: before._id, stock, lowStockLevel };
     });
 

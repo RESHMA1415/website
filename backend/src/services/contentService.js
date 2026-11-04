@@ -1,6 +1,6 @@
 import { Banner, Product, SizeChart } from '../models/index.js';
 import { HttpError } from '../utils/asyncHandler.js';
-import { cleanLink, cleanMediaUrl, cleanText, isObjectId, requireObjectId, requireText } from '../utils/text.js';
+import { cleanLink, cleanMediaUrl, cleanText, isObjectId, pageParams, requireObjectId, requireText } from '../utils/text.js';
 
 // Homepage banners (PRD §14.4) and size charts (PRD §5.3)
 
@@ -11,8 +11,13 @@ function toDate(value, label) {
   return date;
 }
 
-export async function listBannersForAdmin() {
-  return Banner.find().sort({ displayOrder: 1, createdAt: 1 }).lean();
+export async function listBannersForAdmin(query = {}) {
+  const { page, limit, skip } = pageParams(query, { defaultLimit: 50, maxLimit: 100 });
+  const [items, total] = await Promise.all([
+    Banner.find().sort({ displayOrder: 1, createdAt: 1 }).skip(skip).limit(limit).lean(),
+    Banner.countDocuments(),
+  ]);
+  return { items, total, page, limit, pages: Math.ceil(total / limit) };
 }
 
 export async function saveBanner(id, body) {
@@ -44,9 +49,15 @@ export async function saveBanner(id, body) {
 }
 
 export async function reorderBanners(ids) {
-  if (!Array.isArray(ids) || !ids.every(isObjectId)) throw new HttpError(400, 'Please try moving the banner again.');
-  await Banner.bulkWrite(ids.map((id, index) => ({ updateOne: { filter: { _id: id }, update: { displayOrder: index + 1 } } })));
-  return listBannersForAdmin();
+  if (!Array.isArray(ids) || !ids.length || !ids.every(isObjectId)) throw new HttpError(400, 'Please try moving the banner again.');
+  // The list may be one page, so reuse the positions those banners already
+  // hold (in order) instead of renumbering from 1 and clashing with other pages
+  const current = await Banner.find({ _id: { $in: ids } }, { displayOrder: 1 }).lean();
+  if (current.length !== ids.length) throw new HttpError(400, 'Please reload the page and try moving the banner again.');
+  const slots = current.map((b) => b.displayOrder || 0).sort((a, b) => a - b);
+  for (let i = 1; i < slots.length; i += 1) if (slots[i] <= slots[i - 1]) slots[i] = slots[i - 1] + 1;
+  await Banner.bulkWrite(ids.map((id, index) => ({ updateOne: { filter: { _id: id }, update: { displayOrder: slots[index] } } })));
+  return { ok: true };
 }
 
 export async function deleteBanner(id) {
@@ -56,14 +67,19 @@ export async function deleteBanner(id) {
 
 const CHART_TYPES = ['men_clothing', 'women_clothing', 'footwear', 'other'];
 
-export async function listSizeCharts() {
-  const charts = await SizeChart.find().sort({ name: 1 }).lean();
+export async function listSizeCharts(query = {}) {
+  const { page, limit, skip } = pageParams(query, { defaultLimit: 50, maxLimit: 200 });
+  const [charts, total] = await Promise.all([
+    SizeChart.find().sort({ name: 1, _id: 1 }).skip(skip).limit(limit).lean(),
+    SizeChart.countDocuments(),
+  ]);
   const usage = await Product.aggregate([
     { $match: { sizeChart: { $in: charts.map((c) => c._id) } } },
     { $group: { _id: '$sizeChart', count: { $sum: 1 } } },
   ]);
   const byId = new Map(usage.map((u) => [String(u._id), u.count]));
-  return charts.map((c) => ({ ...c, productCount: byId.get(String(c._id)) || 0 }));
+  const items = charts.map((c) => ({ ...c, productCount: byId.get(String(c._id)) || 0 }));
+  return { items, total, page, pages: Math.ceil(total / limit) };
 }
 
 export async function saveSizeChart(id, body) {

@@ -1,6 +1,6 @@
 import { Category, Product } from '../models/index.js';
 import { HttpError } from '../utils/asyncHandler.js';
-import { cleanMediaUrl, cleanText, requireObjectId, requireText, slugify, toBool, toWholeNumber } from '../utils/text.js';
+import { cleanMediaUrl, cleanText, pageParams, requireObjectId, requireText, slugify, toBool, toWholeNumber } from '../utils/text.js';
 
 export const PRODUCT_TYPES = ['clothing', 'fashion', 'beauty', 'accessories'];
 const GENDERS = ['men', 'women', 'unisex'];
@@ -32,8 +32,11 @@ function descendantIds(id, categories) {
   return ids;
 }
 
-// Every category (including hidden ones) as a tree, with product counts
-export async function listCategoriesForAdmin() {
+// Every category (including hidden ones) as a tree, with product counts.
+// Paged by top-level category; each one comes with its whole sub-tree
+// (at most 3 levels), because menus and pickers need complete branches.
+export async function listCategoriesForAdmin(query = {}) {
+  const { page, limit, skip } = pageParams(query, { defaultLimit: 100, maxLimit: 200 });
   const { categories } = await loadAll();
   const counts = await Product.aggregate([
     { $project: { ids: { $setUnion: [['$category'], { $cond: [{ $ifNull: ['$subCategory', false] }, ['$subCategory'], []] }] } } },
@@ -55,7 +58,9 @@ export async function listCategoriesForAdmin() {
       productCount: countById.get(String(c._id)) || 0,
       children: build(String(c._id), depth + 1),
     }));
-  return build('root', 0);
+  const tops = byParent.get('root') || [];
+  const items = build('root', 0).slice(skip, skip + limit);
+  return { items, total: tops.length, page, pages: Math.ceil(tops.length / limit) };
 }
 
 async function uniqueSlug(base, excludeId) {

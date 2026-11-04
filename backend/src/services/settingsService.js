@@ -38,3 +38,8 @@ export async function getPage(name) {
   const doc = await Setting.findOne({ key: 'business' }, { [`pages.${name}`]: 1 }).lean();
   return doc?.pages?.[name] || '';
 }
+
+// Low-stock alert level for options that don't have their own (Business Settings)
+export async function lowStockDefault() {
+  return (await getSettings()).orders.lowStockDefault;
+}

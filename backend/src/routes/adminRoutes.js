@@ -50,7 +50,7 @@ router.post(
 );
 
 // ----- Categories -----
-router.get('/categories', handle(() => listCategoriesForAdmin()));
+router.get('/categories', handle((req) => listCategoriesForAdmin(req.query)));
 router.post('/categories', handle((req) => saveCategory(null, req.body || {})));
 router.put('/categories/:id', handle((req) => saveCategory(req.params.id, req.body || {})));
 router.delete('/categories/:id', handle(async (req) => (await deleteCategory(req.params.id), { ok: true })));
@@ -84,7 +84,7 @@ router.post(
   handle((req) => importInventoryCsv(req.body, { reason: req.query.reason })),
 );
 router.patch('/inventory/:productId/:variantId', handle((req) => setVariantStock(req.params.productId, req.params.variantId, req.body || {})));
-router.get('/inventory/:productId/:variantId/history', handle((req) => stockHistory(req.params.productId, req.params.variantId)));
+router.get('/inventory/:productId/:variantId/history', handle((req) => stockHistory(req.params.productId, req.params.variantId, req.query)));
 
 // ----- Media library -----
 router.get('/media', handle((req) => listMedia(req.query)));
@@ -92,14 +92,14 @@ router.post('/media', upload.array('files', 20), handle((req) => uploadMedia(req
 router.delete('/media/:id', handle(async (req) => (await deleteMedia(req.params.id), { ok: true })));
 
 // ----- Homepage banners -----
-router.get('/banners', handle(() => listBannersForAdmin()));
+router.get('/banners', handle((req) => listBannersForAdmin(req.query)));
 router.post('/banners', handle((req) => saveBanner(null, req.body || {})));
 router.put('/banners/order', handle((req) => reorderBanners(req.body?.ids)));
 router.put('/banners/:id', handle((req) => saveBanner(req.params.id, req.body || {})));
 router.delete('/banners/:id', handle(async (req) => (await deleteBanner(req.params.id), { ok: true })));
 
 // ----- Size charts -----
-router.get('/size-charts', handle(() => listSizeCharts()));
+router.get('/size-charts', handle((req) => listSizeCharts(req.query)));
 router.post('/size-charts', handle((req) => saveSizeChart(null, req.body || {})));
 router.put('/size-charts/:id', handle((req) => saveSizeChart(req.params.id, req.body || {})));
 router.delete('/size-charts/:id', handle((req) => deleteSizeChart(req.params.id)));
