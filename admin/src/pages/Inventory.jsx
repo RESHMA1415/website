@@ -22,8 +22,9 @@ function StockEditor({ row, onSaved }) {
   const save = async () => {
     setSaving(true);
     try {
-      await api(`/admin/inventory/${row.productId}/${row.variantId}`, { method: 'PATCH', body: { stock: Number(stock), reason } });
-      notify(`${row.productName} (${row.optionLabel}): stock is now ${stock}`);
+      const saved = await api(`/admin/inventory/${row.productId}/${row.variantId}`, { method: 'PATCH', body: { stock: Number(stock), stockLoaded: row.stock, reason } });
+      // The server applies only this change on top of live stock, so the result can differ if something sold meanwhile
+      notify(`${row.productName} (${row.optionLabel}): stock is now ${saved.stock}`);
       onSaved();
     } catch (err) {
       notify(err.message, 'error');
@@ -139,7 +140,7 @@ function ImportModal({ onClose, onDone }) {
         <>
           <ol className="small ps-3">
             <li>Click <strong>Export</strong> to download your current stock as a spreadsheet.</li>
-            <li>Open it in Excel or Google Sheets and change only the <strong>Stock</strong> (and, if you like, <strong>Low-stock level</strong>) column. Don’t change the SKU.</li>
+            <li>Open it in Excel or Google Sheets and change only the <strong>Stock</strong> (and, if you like, <strong>Low-stock level</strong>) column. Don’t change the SKU or the “Stock when downloaded” column: it lets us keep any sales made after you downloaded the sheet.</li>
             <li>Save as <strong>CSV</strong> and upload it here.</li>
           </ol>
           <ErrorNote error={error} />

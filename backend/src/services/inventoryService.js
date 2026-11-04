@@ -107,35 +107,56 @@ function checkReason(reason) {
   return reason;
 }
 
-// Sets a variant's stock to an exact number. The update is atomic and the
-// old value comes back with it, so the logged change is always exact.
-export async function setVariantStock(productId, variantId, { stock, lowStockLevel, reason, note }) {
+// Changes a variant's stock and/or low-stock level.
+// When `stockLoaded` (the number the admin saw) is given, only the admin's
+// change (stock − stockLoaded) is applied on top of the live stock, so sales
+// made after the screen or sheet was loaded are never overwritten. Without it,
+// `stock` is set exactly. Each write only succeeds if stock is still what we
+// read (compare-and-set), so the logged change is always exact.
+export async function setVariantStock(productId, variantId, { stock, stockLoaded, lowStockLevel, reason, note }) {
   const pid = requireObjectId(productId, 'We couldn’t find that product.');
   const vid = requireObjectId(variantId, 'We couldn’t find that option.');
-  const update = {};
-  if (stock !== undefined) {
-    update['variants.$.stock'] = toWholeNumber(stock, 'stock', { max: MAX_STOCK });
-    checkReason(reason);
-  }
-  if (lowStockLevel !== undefined) update['variants.$.lowStockLevel'] = toWholeNumber(lowStockLevel, 'low-stock alert level', { max: 10_000 });
-  if (!Object.keys(update).length) throw new HttpError(400, 'Nothing to change.');
+  const wantedStock = stock === undefined ? undefined : toWholeNumber(stock, 'stock', { max: MAX_STOCK });
+  const loaded = stockLoaded === undefined || stockLoaded === null || stockLoaded === '' ? undefined : toWholeNumber(stockLoaded, 'stock', { max: MAX_STOCK });
+  if (wantedStock !== undefined) checkReason(reason);
+  const level = lowStockLevel === undefined ? undefined : toWholeNumber(lowStockLevel, 'low-stock alert level', { max: 10_000 });
+  if (wantedStock === undefined && level === undefined) throw new HttpError(400, 'Nothing to change.');
 
-  const before = await Product.findOneAndUpdate({ _id: pid, 'variants._id': vid }, { $set: update }, { new: false }).lean();
-  if (!before) throw new HttpError(404, 'We couldn’t find that option. It may have been removed.');
-  const old = before.variants.find((v) => String(v._id) === vid);
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const current = await Product.findOne({ _id: pid, 'variants._id': vid }, { 'variants.$': 1 }).lean();
+    const old = current?.variants?.[0];
+    if (!old) throw new HttpError(404, 'We couldn’t find that option. It may have been removed.');
 
-  if (stock !== undefined && update['variants.$.stock'] !== old.stock) {
-    await StockMovement.create({
-      product: pid,
-      variantId: vid,
-      sku: old.sku,
-      change: update['variants.$.stock'] - old.stock,
-      stockAfter: update['variants.$.stock'],
-      reason,
-      note: cleanText(note, 200) || undefined,
-    });
+    let nextStock = old.stock;
+    if (wantedStock !== undefined) {
+      nextStock = loaded === undefined ? wantedStock : old.stock + (wantedStock - loaded);
+      nextStock = Math.min(MAX_STOCK, Math.max(0, nextStock));
+    }
+    const update = {};
+    if (nextStock !== old.stock) update['variants.$.stock'] = nextStock;
+    if (level !== undefined && level !== old.lowStockLevel) update['variants.$.lowStockLevel'] = level;
+    if (!Object.keys(update).length) return { stock: old.stock, lowStockLevel: old.lowStockLevel, changed: false };
+
+    const saved = await Product.updateOne(
+      { _id: pid, variants: { $elemMatch: { _id: vid, stock: old.stock } } },
+      { $set: update },
+    );
+    if (!saved.modifiedCount) continue; // stock moved (e.g. an order) between read and write; try again
+
+    if (nextStock !== old.stock) {
+      await StockMovement.create({
+        product: pid,
+        variantId: vid,
+        sku: old.sku,
+        change: nextStock - old.stock,
+        stockAfter: nextStock,
+        reason,
+        note: cleanText(note, 200) || undefined,
+      });
+    }
+    return { stock: nextStock, lowStockLevel: level ?? old.lowStockLevel, changed: true };
   }
-  return { stock: update['variants.$.stock'] ?? old.stock, lowStockLevel: update['variants.$.lowStockLevel'] ?? old.lowStockLevel };
+  throw new HttpError(409, 'Stock for this option is changing right now. Please reload and try again.');
 }
 
 export async function stockHistory(productId, variantId) {
@@ -157,13 +178,16 @@ export async function stockHistory(productId, variantId) {
   }));
 }
 
-const CSV_HEADERS = ['SKU', 'Product', 'Option', 'Stock', 'Low-stock level', 'Price (₹)', 'Product status'];
+// "Stock when downloaded" lets the upload apply only the owner's edits, so
+// orders that sold stock after the download are not undone
+const LOADED_HEADER = 'Stock when downloaded (don’t edit)';
+const CSV_HEADERS = ['SKU', 'Product', 'Option', 'Stock', 'Low-stock level', 'Price (₹)', 'Product status', LOADED_HEADER];
 
 export async function exportInventoryCsv(query) {
   const rows = await Product.aggregate([...(await variantPipeline(query)), { $sort: { name: 1, 'variant.sku': 1 } }]);
   return toCsv(
     CSV_HEADERS,
-    rows.map(shapeRow).map((r) => [r.sku, r.productName, r.optionLabel, r.stock, r.lowStockLevel, r.price, r.productStatus]),
+    rows.map(shapeRow).map((r) => [r.sku, r.productName, r.optionLabel, r.stock, r.lowStockLevel, r.price, r.productStatus, r.stock]),
   );
 }
 
@@ -178,6 +202,7 @@ export async function importInventoryCsv(text, { reason }) {
   const skuCol = header.indexOf('sku');
   const stockCol = header.indexOf('stock');
   const levelCol = header.indexOf('low-stock level');
+  const loadedCol = header.findIndex((h) => h.startsWith('stock when downloaded'));
   if (skuCol < 0 || stockCol < 0) {
     throw new HttpError(400, 'The file needs “SKU” and “Stock” columns. Please start from the downloaded inventory sheet.');
   }
@@ -192,8 +217,10 @@ export async function importInventoryCsv(text, { reason }) {
       const stock = toWholeNumber(row[stockCol]?.trim(), `stock on row ${line}`, { max: MAX_STOCK });
       const levelText = levelCol >= 0 ? row[levelCol]?.trim() : '';
       const lowStockLevel = levelText ? toWholeNumber(levelText, `low-stock level on row ${line}`, { max: 10_000 }) : undefined;
+      const loadedText = loadedCol >= 0 ? row[loadedCol]?.trim() : '';
+      const stockLoaded = loadedText ? toWholeNumber(loadedText, `“Stock when downloaded” on row ${line}`, { max: MAX_STOCK }) : undefined;
       if (wanted.has(sku)) throw new HttpError(400, `SKU ${sku} appears more than once (row ${line}).`);
-      wanted.set(sku, { stock, lowStockLevel, line });
+      wanted.set(sku, { stock, stockLoaded, lowStockLevel, line });
     } catch (err) {
       errors.push(err.message);
     }
@@ -210,14 +237,15 @@ export async function importInventoryCsv(text, { reason }) {
       errors.push(`Row ${change.line}: no product option has the SKU ${sku}.`);
       continue;
     }
-    const before = await Product.findOne({ _id: target.productId }, { variants: { $elemMatch: { _id: target.variantId } } }).lean();
-    const old = before?.variants?.[0];
-    if (old && old.stock === change.stock && (change.lowStockLevel === undefined || change.lowStockLevel === old.lowStockLevel)) {
-      unchanged += 1;
-      continue;
+    const { line, ...values } = change;
+    try {
+      const result = await setVariantStock(target.productId, target.variantId, { ...values, reason, note: 'Bulk update (CSV)' });
+      if (result.changed) updated += 1;
+      else unchanged += 1;
+    } catch (err) {
+      if (!(err instanceof HttpError)) throw err;
+      errors.push(`Row ${line} (${sku}): ${err.message}`);
     }
-    await setVariantStock(target.productId, target.variantId, { ...change, reason, note: 'Bulk update (CSV)' });
-    updated += 1;
   }
   return { updated, unchanged, errors: errors.slice(0, 50), errorCount: errors.length };
 }
