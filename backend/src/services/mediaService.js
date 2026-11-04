@@ -7,7 +7,7 @@ import {
   storeImage,
   storeVideo,
 } from '../integrations/media.js';
-import { Banner, Category, Media, Product, Setting } from '../models/index.js';
+import { Banner, Category, Media, Product, Setting, SizeChart } from '../models/index.js';
 import { HttpError } from '../utils/asyncHandler.js';
 import { cleanText, escapeRegex, pageParams, requireObjectId } from '../utils/text.js';
 
@@ -54,18 +54,25 @@ export async function listMedia(query) {
   return { items, total, page, pages: Math.ceil(total / limit) };
 }
 
-// Where a file is used, so it is never deleted from under a live product
-async function usageOf(url) {
-  const [products, banners, categories, settings] = await Promise.all([
-    Product.find({ $or: [{ 'images.url': url }, { videoUrl: url }] }, { name: 1 }).limit(5).lean(),
-    Banner.find({ $or: [{ desktopImageUrl: url }, { mobileImageUrl: url }] }, { heading: 1 }).limit(5).lean(),
-    Category.find({ $or: [{ imageUrl: url }, { bannerUrl: url }] }, { name: 1 }).limit(5).lean(),
-    Setting.exists({ $or: [{ 'values.store.logoUrl': url }, { 'values.store.faviconUrl': url }, { 'values.seo.shareImageUrl': url }] }),
+// Where a file is used, so it is never deleted from under a live product.
+// Pages may point at any of a photo's sizes (large, medium or thumb).
+async function usageOf(media) {
+  const urls = { $in: [media.url, media.mediumUrl, media.thumbUrl].filter(Boolean) };
+  const [products, banners, categories, sizeCharts, settings] = await Promise.all([
+    Product.find(
+      { $or: [{ 'images.url': urls }, { 'images.mediumUrl': urls }, { 'images.thumbUrl': urls }, { videoUrl: urls }] },
+      { name: 1 },
+    ).limit(5).lean(),
+    Banner.find({ $or: [{ desktopImageUrl: urls }, { mobileImageUrl: urls }] }, { heading: 1 }).limit(5).lean(),
+    Category.find({ $or: [{ imageUrl: urls }, { bannerUrl: urls }] }, { name: 1 }).limit(5).lean(),
+    SizeChart.find({ imageUrl: urls }, { name: 1 }).limit(5).lean(),
+    Setting.exists({ $or: [{ 'values.store.logoUrl': urls }, { 'values.store.faviconUrl': urls }, { 'values.seo.shareImageUrl': urls }] }),
   ]);
   return [
     ...products.map((p) => `product “${p.name}”`),
     ...banners.map((b) => `banner “${b.heading}”`),
     ...categories.map((c) => `category “${c.name}”`),
+    ...sizeCharts.map((s) => `size chart “${s.name}”`),
     ...(settings ? ['Business Settings'] : []),
   ];
 }
@@ -73,7 +80,7 @@ async function usageOf(url) {
 export async function deleteMedia(id) {
   const media = await Media.findById(requireObjectId(id, 'We couldn’t find that file.'));
   if (!media) throw new HttpError(404, 'We couldn’t find that file.');
-  const usedBy = await usageOf(media.url);
+  const usedBy = await usageOf(media);
   if (usedBy.length) {
     throw new HttpError(409, `This file is still used by ${usedBy.join(', ')}. Remove it there first.`);
   }
