@@ -55,30 +55,41 @@ export async function loginAdmin(email, password) {
   const admin = await Admin.findOne({ email: email.trim().toLowerCase() }).select('+passwordHash');
   if (!admin) throw new HttpError(401, WRONG_DETAILS);
 
-  if (admin.lockedUntil && admin.lockedUntil > new Date()) {
-    const minutes = Math.ceil((admin.lockedUntil - Date.now()) / 60000);
-    throw new HttpError(423, `Too many wrong attempts. Please try again in ${minutes} minute${minutes === 1 ? '' : 's'}.`);
-  }
+  if (isLocked(admin)) throw lockedError(admin.lockedUntil);
 
   if (!(await bcrypt.compare(password, admin.passwordHash))) {
-    const attempts = admin.failedLoginCount + 1;
-    if (attempts >= MAX_ATTEMPTS) {
+    // Counted with an atomic $inc so parallel guesses can't all read the same count
+    const counted = await Admin.findOneAndUpdate({ _id: admin._id }, { $inc: { failedLoginCount: 1 } }, { new: true });
+    if (isLocked(counted)) throw lockedError(counted.lockedUntil);
+    if (counted.failedLoginCount >= MAX_ATTEMPTS) {
       await Admin.updateOne(
         { _id: admin._id },
         { failedLoginCount: 0, lockedUntil: new Date(Date.now() + LOCK_MINUTES * 60000) },
       );
       throw new HttpError(423, `Too many wrong attempts. Login is locked for ${LOCK_MINUTES} minutes.`);
     }
-    await Admin.updateOne({ _id: admin._id }, { failedLoginCount: attempts });
-    const left = MAX_ATTEMPTS - attempts;
+    const left = MAX_ATTEMPTS - counted.failedLoginCount;
     throw new HttpError(401, `${WRONG_DETAILS} ${left} attempt${left === 1 ? '' : 's'} left before login is locked.`);
   }
 
-  admin.failedLoginCount = 0;
-  admin.lockedUntil = undefined;
-  admin.lastLoginAt = new Date();
-  await admin.save();
-  return { token: signAdminToken(admin), admin: publicAdmin(admin) };
+  // Only succeeds if no parallel request locked the account while the password was checked
+  const now = new Date();
+  const loggedIn = await Admin.findOneAndUpdate(
+    { _id: admin._id, $or: [{ lockedUntil: null }, { lockedUntil: { $lte: now } }] },
+    { $set: { failedLoginCount: 0, lastLoginAt: now }, $unset: { lockedUntil: 1 } },
+    { new: true },
+  );
+  if (!loggedIn) throw lockedError((await Admin.findById(admin._id).lean())?.lockedUntil);
+  return { token: signAdminToken(loggedIn), admin: publicAdmin(loggedIn) };
+}
+
+function isLocked(admin) {
+  return Boolean(admin?.lockedUntil && admin.lockedUntil > new Date());
+}
+
+function lockedError(lockedUntil) {
+  const minutes = Math.max(1, Math.ceil((new Date(lockedUntil) - Date.now()) / 60000));
+  return new HttpError(423, `Too many wrong attempts. Please try again in ${minutes} minute${minutes === 1 ? '' : 's'}.`);
 }
 
 // Returns the admin for a valid token, or throws 401
