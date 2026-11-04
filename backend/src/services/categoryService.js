@@ -119,15 +119,24 @@ export async function saveCategory(id, body) {
     ? await Category.findByIdAndUpdate(existing._id, fields, { new: true, runValidators: true })
     : await Category.create(fields);
 
-  // Moving a category under a different top level (e.g. Men → Women) moves its products too
+  // Moving a category (e.g. Kids → under Women) moves its whole branch:
+  // sub-categories take the new top level's gender, and every product in the
+  // branch, including ones placed directly in the moved category, is re-pointed
   if (existing && String(existing.parent || '') !== String(fields.parent || '')) {
     const fresh = await loadAll();
     const ids = descendantIds(saved._id, fresh.categories);
     const newRoot = ancestorsOf(fresh.byId.get(String(saved._id)), fresh.byId)[0] || saved;
-    await Product.updateMany(
-      { subCategory: { $in: ids } },
-      { category: newRoot._id, gender: newRoot.gender },
-    );
+    const top = { category: newRoot._id, gender: newRoot.gender };
+    await Category.updateMany({ _id: { $in: ids } }, { gender: newRoot.gender });
+    if (parent) {
+      // Was a top level: its own products now sit in it as a sub-category
+      await Product.updateMany({ category: saved._id, subCategory: null }, { ...top, subCategory: saved._id });
+      await Product.updateMany({ subCategory: { $in: ids } }, top);
+    } else {
+      // Became a top level: its own products are placed directly in it
+      await Product.updateMany({ subCategory: saved._id }, { ...top, subCategory: null });
+      await Product.updateMany({ subCategory: { $in: ids.slice(1) } }, top);
+    }
   }
   // Gender follows the top-level category for every sub-category
   if (!parent) {
