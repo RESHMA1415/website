@@ -332,6 +332,10 @@ async function buildProductFields(body, existing) {
       },
     },
     variants,
+    // The form shows one level for the whole product. Only push it onto every
+    // existing option when the admin actually changed it; otherwise keep the
+    // per-option levels set in Inventory or by CSV import.
+    applyLowStockToAll: body.lowStockLevelLoaded === undefined || Number(body.lowStockLevelLoaded) !== lowStockLevel,
   };
 }
 
@@ -363,7 +367,7 @@ export async function updateProduct(id, body) {
   for (let attempt = 0; attempt < 3; attempt += 1) {
     const current = await Product.findById(productId).lean();
     if (!current) throw new HttpError(404, 'We couldn’t find that product.');
-    const { fields, variants } = await buildProductFields(body, current);
+    const { fields, variants, applyLowStockToAll } = await buildProductFields(body, current);
     await ensureUniqueSkus(variants, current._id);
 
     const currentById = new Map(current.variants.map((v) => [String(v._id), v]));
@@ -379,7 +383,8 @@ export async function updateProduct(id, body) {
       const change = Number.isFinite(stockLoaded) ? v.stock - stockLoaded : v.stock - before.stock;
       const stock = Math.min(MAX_STOCK, Math.max(0, before.stock + change));
       movements.push({ variantId: before._id, sku: v.sku, change: stock - before.stock, stockAfter: stock, reason: 'correction', note: 'Edited on the product form' });
-      return { ...v, _id: before._id, stock };
+      const lowStockLevel = applyLowStockToAll ? v.lowStockLevel : before.lowStockLevel ?? v.lowStockLevel;
+      return { ...v, _id: before._id, stock, lowStockLevel };
     });
 
     const updated = await Product.findOneAndUpdate(

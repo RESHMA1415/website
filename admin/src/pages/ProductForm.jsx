@@ -54,6 +54,8 @@ function fromProduct(p) {
       sizeChart: p.sizeChart || '',
       videoUrl: p.videoUrl || '',
       lowStockLevel: p.variants[0]?.lowStockLevel ?? 5,
+      // Tells the server whether the admin changed the level, so per-option levels set in Inventory survive
+      lowStockLevelLoaded: p.variants[0]?.lowStockLevel ?? 5,
       seo: { title: p.seo?.title || '', description: p.seo?.description || '' },
     },
     first: values(keys[0]).join(', '),
@@ -502,6 +504,7 @@ export default function ProductForm() {
                   <input id="f-low" type="number" min="0" className="form-control" value={form.lowStockLevel} onChange={(e) => set('lowStockLevel', e.target.value)} />
                   <span className="input-group-text">or fewer left</span>
                 </div>
+                {isEdit && <div className="form-text mt-n2 mb-3">Changing this applies it to every option. Levels set per option in Inventory are kept otherwise.</div>}
                 <button type="submit" className="btn btn-orange w-100" disabled={saving || Boolean(priceError)}>
                   {saving ? 'Saving…' : isEdit ? 'Save Changes' : 'Save Product'}
                 </button>
