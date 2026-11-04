@@ -10,6 +10,7 @@ import { cleanText, escapeRegex, isObjectId, pageParams, requireObjectId, toWhol
 export const MANUAL_REASONS = { new_stock: 'New stock', damaged: 'Damaged', correction: 'Correction' };
 const MAX_STOCK = 100_000;
 const MAX_IMPORT_ROWS = 10_000;
+const IMPORT_BATCH = 20; // sheet rows written at the same time
 
 const optionText = (o = {}) => [o.colour, o.size, o.shade, o.volume].filter(Boolean).join(' / ');
 
@@ -113,48 +114,55 @@ function checkReason(reason) {
 // made after the screen or sheet was loaded are never overwritten. Without it,
 // `stock` is set exactly. Each write only succeeds if stock is still what we
 // read (compare-and-set), so the logged change is always exact.
-export async function setVariantStock(productId, variantId, { stock, stockLoaded, lowStockLevel, reason, note }) {
-  const pid = requireObjectId(productId, 'We couldn’t find that product.');
-  const vid = requireObjectId(variantId, 'We couldn’t find that option.');
+function cleanStockChange({ stock, stockLoaded, lowStockLevel, reason }) {
   const wantedStock = stock === undefined ? undefined : toWholeNumber(stock, 'stock', { max: MAX_STOCK });
   const loaded = stockLoaded === undefined || stockLoaded === null || stockLoaded === '' ? undefined : toWholeNumber(stockLoaded, 'stock', { max: MAX_STOCK });
   if (wantedStock !== undefined) checkReason(reason);
   const level = lowStockLevel === undefined ? undefined : toWholeNumber(lowStockLevel, 'low-stock alert level', { max: 10_000 });
   if (wantedStock === undefined && level === undefined) throw new HttpError(400, 'Nothing to change.');
+  return { wantedStock, loaded, level };
+}
+
+// Works out the new values for one variant from its live state
+function planStockChange(old, { wantedStock, loaded, level }) {
+  let nextStock = old.stock;
+  if (wantedStock !== undefined) {
+    nextStock = loaded === undefined ? wantedStock : old.stock + (wantedStock - loaded);
+    nextStock = Math.min(MAX_STOCK, Math.max(0, nextStock));
+  }
+  const update = {};
+  if (nextStock !== old.stock) update['variants.$.stock'] = nextStock;
+  if (level !== undefined && level !== old.lowStockLevel) update['variants.$.lowStockLevel'] = level;
+  return { nextStock, level: level ?? old.lowStockLevel, update, changed: Object.keys(update).length > 0 };
+}
+
+// Compare-and-set write: only applies if the variant's stock is still `oldStock`
+async function writeStockChange(pid, vid, oldStock, update) {
+  const saved = await Product.updateOne({ _id: pid, variants: { $elemMatch: { _id: vid, stock: oldStock } } }, { $set: update });
+  return saved.modifiedCount > 0;
+}
+
+function movementDoc(pid, old, nextStock, reason, note) {
+  return { product: pid, variantId: old._id, sku: old.sku, change: nextStock - old.stock, stockAfter: nextStock, reason, note: cleanText(note, 200) || undefined };
+}
+
+export async function setVariantStock(productId, variantId, { stock, stockLoaded, lowStockLevel, reason, note }) {
+  const pid = requireObjectId(productId, 'We couldn’t find that product.');
+  const vid = requireObjectId(variantId, 'We couldn’t find that option.');
+  const wanted = cleanStockChange({ stock, stockLoaded, lowStockLevel, reason });
 
   for (let attempt = 0; attempt < 5; attempt += 1) {
     const current = await Product.findOne({ _id: pid, 'variants._id': vid }, { 'variants.$': 1 }).lean();
     const old = current?.variants?.[0];
     if (!old) throw new HttpError(404, 'We couldn’t find that option. It may have been removed.');
 
-    let nextStock = old.stock;
-    if (wantedStock !== undefined) {
-      nextStock = loaded === undefined ? wantedStock : old.stock + (wantedStock - loaded);
-      nextStock = Math.min(MAX_STOCK, Math.max(0, nextStock));
-    }
-    const update = {};
-    if (nextStock !== old.stock) update['variants.$.stock'] = nextStock;
-    if (level !== undefined && level !== old.lowStockLevel) update['variants.$.lowStockLevel'] = level;
-    if (!Object.keys(update).length) return { stock: old.stock, lowStockLevel: old.lowStockLevel, changed: false };
+    const plan = planStockChange(old, wanted);
+    if (!plan.changed) return { stock: old.stock, lowStockLevel: old.lowStockLevel, changed: false };
+    // Stock moved (e.g. an order) between read and write: read again and retry
+    if (!(await writeStockChange(pid, vid, old.stock, plan.update))) continue;
 
-    const saved = await Product.updateOne(
-      { _id: pid, variants: { $elemMatch: { _id: vid, stock: old.stock } } },
-      { $set: update },
-    );
-    if (!saved.modifiedCount) continue; // stock moved (e.g. an order) between read and write; try again
-
-    if (nextStock !== old.stock) {
-      await StockMovement.create({
-        product: pid,
-        variantId: vid,
-        sku: old.sku,
-        change: nextStock - old.stock,
-        stockAfter: nextStock,
-        reason,
-        note: cleanText(note, 200) || undefined,
-      });
-    }
-    return { stock: nextStock, lowStockLevel: level ?? old.lowStockLevel, changed: true };
+    if (plan.nextStock !== old.stock) await StockMovement.create(movementDoc(pid, old, plan.nextStock, reason, note));
+    return { stock: plan.nextStock, lowStockLevel: plan.level, changed: true };
   }
   throw new HttpError(409, 'Stock for this option is changing right now. Please reload and try again.');
 }
@@ -226,26 +234,52 @@ export async function importInventoryCsv(text, { reason }) {
     }
   });
 
-  const products = await Product.find({ 'variants.sku': { $in: [...wanted.keys()] } }, { 'variants._id': 1, 'variants.sku': 1 }).lean();
-  const located = new Map(products.flatMap((p) => p.variants.map((v) => [v.sku, { productId: String(p._id), variantId: String(v._id) }])));
+  // One read loads every option on the sheet with its live stock
+  const products = await Product.find(
+    { 'variants.sku': { $in: [...wanted.keys()] } },
+    { 'variants._id': 1, 'variants.sku': 1, 'variants.stock': 1, 'variants.lowStockLevel': 1 },
+  ).lean();
+  const located = new Map(products.flatMap((p) => p.variants.map((v) => [v.sku, { pid: p._id, variant: v }])));
 
+  const note = 'Bulk update (CSV)';
+  const movements = [];
   let updated = 0;
   let unchanged = 0;
-  for (const [sku, change] of wanted) {
+  const jobs = [];
+  for (const [sku, { line, ...values }] of wanted) {
     const target = located.get(sku);
     if (!target) {
-      errors.push(`Row ${change.line}: no product option has the SKU ${sku}.`);
+      errors.push(`Row ${line}: no product option has the SKU ${sku}.`);
       continue;
     }
-    const { line, ...values } = change;
+    jobs.push({ sku, line, values, ...target });
+  }
+
+  // Writes run a few at a time. Each is compare-and-set against the stock we
+  // read; if an order changed it meanwhile, that row is redone from live stock.
+  const runJob = async ({ sku, line, values, pid, variant }) => {
     try {
-      const result = await setVariantStock(target.productId, target.variantId, { ...values, reason, note: 'Bulk update (CSV)' });
+      const plan = planStockChange(variant, cleanStockChange({ ...values, reason }));
+      if (!plan.changed) {
+        unchanged += 1;
+        return;
+      }
+      if (await writeStockChange(pid, variant._id, variant.stock, plan.update)) {
+        if (plan.nextStock !== variant.stock) movements.push(movementDoc(pid, variant, plan.nextStock, reason, note));
+        updated += 1;
+        return;
+      }
+      const result = await setVariantStock(String(pid), String(variant._id), { ...values, reason, note });
       if (result.changed) updated += 1;
       else unchanged += 1;
     } catch (err) {
       if (!(err instanceof HttpError)) throw err;
       errors.push(`Row ${line} (${sku}): ${err.message}`);
     }
+  };
+  for (let i = 0; i < jobs.length; i += IMPORT_BATCH) {
+    await Promise.all(jobs.slice(i, i + IMPORT_BATCH).map(runJob));
   }
+  if (movements.length) await StockMovement.insertMany(movements);
   return { updated, unchanged, errors: errors.slice(0, 50), errorCount: errors.length };
 }
