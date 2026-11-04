@@ -1,4 +1,5 @@
 import { isProduction } from '../config/env.js';
+import { HttpError } from '../utils/asyncHandler.js';
 
 export function notFound(req, res) {
   res.status(404).json({ message: 'We couldn’t find what you were looking for.' });
@@ -6,7 +7,8 @@ export function notFound(req, res) {
 
 // Turns low-level errors into messages a shop owner or customer understands
 function friendly(err) {
-  if (err.status) return { status: err.status, message: err.message };
+  // Our own errors already carry a message written for people
+  if (err instanceof HttpError) return { status: err.status, message: err.message };
   if (err.name === 'MulterError') {
     const messages = {
       LIMIT_FILE_SIZE: 'That file is too large. Photos can be up to 5 MB and videos up to 50 MB.',
@@ -16,6 +18,10 @@ function friendly(err) {
   }
   if (err.type === 'entity.too.large') return { status: 413, message: 'That file is too large to upload.' };
   if (err.type === 'entity.parse.failed') return { status: 400, message: 'We couldn’t read that request. Please try again.' };
+  // Other library errors (body-parser etc.) carry a status but a technical message
+  if (err.status >= 400 && err.status < 500) {
+    return { status: err.status, message: 'We couldn’t process that request. Please check the details and try again.' };
+  }
   if (err.name === 'ValidationError') {
     const first = Object.values(err.errors || {})[0];
     return { status: 400, message: first?.message?.startsWith('Path') ? 'Please check the details and try again.' : first?.message || err.message };
