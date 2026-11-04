@@ -1,11 +1,14 @@
 import { createApp } from './app.js';
 import { connectDatabase, disconnectDatabase } from './config/db.js';
 import { env, isProduction } from './config/env.js';
+import { Product } from './models/index.js';
 import { seedIfEmpty } from './seed/seeder.js';
 import { ensureAdminAccount } from './services/adminAuthService.js';
 
 async function start() {
   await connectDatabase();
+  // Brings product indexes in line with the schema (e.g. the unique SKU index)
+  await Product.syncIndexes();
   if (!isProduction && (await seedIfEmpty())) console.log('Fresh database: starter data added');
   await ensureAdminAccount();
   const server = createApp().listen(env.port, () => {

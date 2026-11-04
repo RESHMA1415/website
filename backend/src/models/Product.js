@@ -100,7 +100,8 @@ const productSchema = new mongoose.Schema(
 
 productSchema.index({ status: 1, category: 1, subCategory: 1 });
 productSchema.index({ status: 1, createdAt: -1 });
-productSchema.index({ 'variants.sku': 1 });
+// Unique across products: stops two parallel saves from creating the same SKU
+productSchema.index({ 'variants.sku': 1 }, { unique: true });
 productSchema.index({ name: 'text', tags: 'text', brand: 'text', shortDescription: 'text' });
 
 export default mongoose.model('Product', productSchema);

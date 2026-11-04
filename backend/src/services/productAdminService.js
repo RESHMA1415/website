@@ -238,12 +238,14 @@ function cleanVariants(input, { productType, mrp, sellingPrice, lowStockLevel, n
     if (sku && !/^[A-Z0-9][A-Z0-9_-]*$/.test(sku)) {
       throw new HttpError(400, `The SKU “${sku}” can only use letters, numbers, - and _.`);
     }
-    if (!sku) sku = [skuBase(name), ...keys.map((k) => skuPart(options[k])).filter(Boolean)].join('-');
+    const autoSku = !sku;
+    if (autoSku) sku = [skuBase(name), ...keys.map((k) => skuPart(options[k])).filter(Boolean)].join('-');
 
     return {
       _id: isObjectId(raw._id) ? raw._id : undefined,
       options,
       sku,
+      autoSku,
       stock: toWholeNumber(raw.stock ?? 0, `stock for ${label}`, { max: MAX_STOCK }),
       stockLoaded: raw.stockLoaded === undefined ? undefined : Number(raw.stockLoaded),
       lowStockLevel,
@@ -253,7 +255,10 @@ function cleanVariants(input, { productType, mrp, sellingPrice, lowStockLevel, n
   });
 }
 
-// Auto-generated SKUs get a number when they clash; typed ones must be unique
+// Auto-generated SKUs get a number when they clash; typed ones must be
+// unique and are never changed behind the admin's back (labels and barcodes
+// depend on them). The unique index on variants.sku backs this up when two
+// saves race.
 async function ensureUniqueSkus(variants, productId) {
   const taken = new Set();
   const others = await Product.find(
@@ -261,12 +266,21 @@ async function ensureUniqueSkus(variants, productId) {
     { 'variants.sku': 1, name: 1 },
   ).lean();
   const usedElsewhere = new Map(others.flatMap((p) => p.variants.map((v) => [v.sku, p.name])));
-  for (const variant of variants) {
+  // Typed SKUs first, so an auto-generated one never takes a typed code
+  for (const variant of variants.filter((v) => !v.autoSku)) {
+    if (usedElsewhere.has(variant.sku)) {
+      throw new HttpError(409, `The SKU “${variant.sku}” is already used by “${usedElsewhere.get(variant.sku)}”. Please choose another, or leave it blank to create one automatically.`);
+    }
+    if (taken.has(variant.sku)) throw new HttpError(400, `The SKU “${variant.sku}” is used for two options. Each option needs its own SKU.`);
+    taken.add(variant.sku);
+  }
+  for (const variant of variants.filter((v) => v.autoSku)) {
     let { sku } = variant;
     for (let n = 2; usedElsewhere.has(sku) || taken.has(sku); n += 1) sku = `${variant.sku}-${n}`;
     taken.add(sku);
     variant.sku = sku;
   }
+  for (const variant of variants) delete variant.autoSku;
 }
 
 async function buildProductFields(body, existing) {
@@ -406,7 +420,8 @@ export async function duplicateProduct(id) {
   const name = `${source.name.replace(/\s*\(Copy( \d+)?\)$/, '')} (Copy)`.slice(0, 120);
   let slug = slugify(name);
   for (let n = 2; await Product.exists({ slug }); n += 1) slug = `${slugify(name)}-${n}`;
-  const variants = source.variants.map(({ _id: vid, ...v }) => ({ ...v, stock: 0 }));
+  // Copies need their own SKUs, numbered from the originals (e.g. …-M-2)
+  const variants = source.variants.map(({ _id: vid, ...v }) => ({ ...v, stock: 0, autoSku: true }));
   await ensureUniqueSkus(variants);
   const copy = await Product.create({ ...rest, name, slug, status: 'draft', isFeatured: false, variants });
   return copy.toObject();
