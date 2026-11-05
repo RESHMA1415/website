@@ -963,7 +963,7 @@ These were filled in by the product manager where the owner said *"as per your s
 | 18 | Refunds are **started within 2 business days** of a cancellation or of a return passing its quality check (then 5–7 business days to reach the customer); return requests are reviewed within 2 business days | ☐ |
 | 19 | A prepaid order that comes back undelivered (RTO) is **refunded in full** after contacting the customer | ☐ |
 | 20 | Accounts inactive for **3 years** may be closed and erased after 48 hours' notice; security logs kept for at least 1 year (DPDP Rules) | ☐ |
-| 21 | Legal policies name **[PROPRIETOR FULL NAME]** and **[GRIEVANCE OFFICER NAME]**: both must be filled in before launch | ☐ to be provided |
+| 21 | Legal name and Grievance Officer on the policies | ☑ SHOPME is a sole proprietorship of RESHMA PR, who is also the Grievance Officer |
 
 ---
 

@@ -9,7 +9,7 @@ This document is an electronic record under the Information Technology Act, 2000
 
 ## 1. About us
 
-The Platform is owned and operated by **SHOPME**, a sole proprietorship of **[PROPRIETOR FULL NAME]** ("SHOPME", "we", "us", "our").
+The Platform is owned and operated by **SHOPME**, a sole proprietorship of **RESHMA PR** ("SHOPME", "we", "us", "our").
 
 - **Business address:** Apsara Arcade, MKK Nair Road, Palarivattom, Ernakulam, Kerala – 682025, India
 - **Email:** shopmesupport2@gmail.com
@@ -122,7 +122,7 @@ We are not responsible for delays or failures caused by events beyond our reason
 
 As required by the **Consumer Protection (E-Commerce) Rules, 2020**, you can contact our Grievance Officer about any complaint:
 
-- **Name:** [GRIEVANCE OFFICER NAME]
+- **Name:** RESHMA PR (Proprietor)
 - **Address:** SHOPME, Apsara Arcade, MKK Nair Road, Palarivattom, Ernakulam, Kerala – 682025
 - **Email:** shopmesupport2@gmail.com
 - **Phone / WhatsApp:** +91 80891 11500 (open 24 hours)

@@ -3,7 +3,7 @@
 **Effective date:** 5 November 2026
 **Last updated:** 5 November 2026
 
-This policy explains how you can cancel an order, return or exchange a product, and get a refund when you shop with **SHOPME**, a sole proprietorship of **[PROPRIETOR FULL NAME]**, Apsara Arcade, MKK Nair Road, Palarivattom, Ernakulam, Kerala – 682025. It forms part of our [Terms & Conditions](/policies/terms) and follows the Consumer Protection Act, 2019 and the Consumer Protection (E-Commerce) Rules, 2020.
+This policy explains how you can cancel an order, return or exchange a product, and get a refund when you shop with **SHOPME**, a sole proprietorship of **RESHMA PR**, Apsara Arcade, MKK Nair Road, Palarivattom, Ernakulam, Kerala – 682025. It forms part of our [Terms & Conditions](/policies/terms) and follows the Consumer Protection Act, 2019 and the Consumer Protection (E-Commerce) Rules, 2020.
 
 ## At a glance
 
@@ -111,6 +111,6 @@ For any question about cancellations, returns or refunds:
 - **Phone / WhatsApp:** +91 80891 11500 (open 24 hours)
 - **Address:** SHOPME, Apsara Arcade, MKK Nair Road, Palarivattom, Ernakulam, Kerala – 682025
 
-**Grievance Officer:** [GRIEVANCE OFFICER NAME], reachable at the same email and phone. We acknowledge complaints **within 48 hours** and resolve them **within one month**. You may also contact the National Consumer Helpline (1915 or consumerhelpline.gov.in).
+**Grievance Officer:** RESHMA PR (Proprietor), reachable at the same email and phone. We acknowledge complaints **within 48 hours** and resolve them **within one month**. You may also contact the National Consumer Helpline (1915 or consumerhelpline.gov.in).
 
 We may update this policy from time to time. The version shown on this page when you placed your order applies to that order.

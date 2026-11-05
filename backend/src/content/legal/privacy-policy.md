@@ -9,7 +9,7 @@ By creating an account, placing an order or otherwise using the Platform, you ag
 
 ## 1. Who we are
 
-SHOPME is a sole proprietorship of **[PROPRIETOR FULL NAME]**. Under the DPDP Act, SHOPME is the **Data Fiduciary**: we decide why and how your personal data is processed.
+SHOPME is a sole proprietorship of **RESHMA PR**. Under the DPDP Act, SHOPME is the **Data Fiduciary**: we decide why and how your personal data is processed.
 
 - **Address:** Apsara Arcade, MKK Nair Road, Palarivattom, Ernakulam, Kerala – 682025, India
 - **Email:** shopmesupport2@gmail.com
@@ -119,7 +119,7 @@ The DPDP Act also asks you to:
 
 If you have a concern about your personal data or this policy, contact our Grievance Officer:
 
-- **Name:** [GRIEVANCE OFFICER NAME]
+- **Name:** RESHMA PR (Proprietor)
 - **Address:** SHOPME, Apsara Arcade, MKK Nair Road, Palarivattom, Ernakulam, Kerala – 682025
 - **Email:** shopmesupport2@gmail.com
 - **Phone / WhatsApp:** +91 80891 11500 (open 24 hours)

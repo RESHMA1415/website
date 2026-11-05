@@ -119,7 +119,7 @@ Follow PRD §21 phases. Don't build advanced features ahead of their phase unles
 - The Privacy Policy (DPDP Act 2023 / Rules 2025), Terms & Conditions and Refund & Cancellation Policy are Markdown files in `backend/src/content/legal/`. They seed Settings `pages.privacy`, `pages.terms` and `pages.refunds`.
 - The store renders them with `components/MarkdownText.jsx`, a small safe renderer (no HTML).
 - `returns` and `cancellation` are aliases of `refunds`, on both the API and the store routes.
-- `[PROPRIETOR FULL NAME]` and `[GRIEVANCE OFFICER NAME]` are blanks the owner must fill in before launch.
+- Proprietor and Grievance Officer: RESHMA PR (owner-provided).
 - If business rules change (charges, return window, refund timelines), update these files and the live Settings pages together.
 
 **Phase 4 notes:**
