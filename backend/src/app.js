@@ -7,6 +7,7 @@ import { UPLOADS_URL } from './integrations/media.js';
 import { REFRESH_HEADER } from './middleware/requireAdmin.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
 import apiRoutes from './routes/index.js';
+import { razorpayWebhook } from './routes/orderRoutes.js';
 
 export function createApp() {
   const app = express();
@@ -14,6 +15,8 @@ export function createApp() {
   // Product photos are shown on the store and admin sites (other origins in production)
   app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
   app.use(cors({ origin: env.clientUrls, credentials: true, exposedHeaders: [REFRESH_HEADER] }));
+  // Razorpay's webhook needs the raw bytes for its signature check
+  app.post('/api/payments/razorpay/webhook', express.raw({ type: () => true, limit: '1mb' }), razorpayWebhook);
   app.use(express.json({ limit: '1mb' }));
   app.use(morgan(isProduction ? 'combined' : 'dev'));
 

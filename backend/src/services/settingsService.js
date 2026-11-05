@@ -1,5 +1,6 @@
 import { Setting } from '../models/index.js';
 import { defaultSettings } from '../config/defaultSettings.js';
+import { razorpayConfigured, razorpayMode } from '../integrations/razorpay.js';
 
 function isPlainObject(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -24,11 +25,13 @@ export async function getSettings() {
 // Only what the customer website is allowed to see
 export async function getPublicSettings() {
   const { store, delivery, cod, orders, social, seo } = await getSettings();
+  const online = razorpayConfigured();
   return {
     store,
     delivery,
     cod: { enabled: cod.enabled, charge: cod.charge, maxOrderValue: cod.maxOrderValue },
     orders: { maxQtyPerItem: orders.maxQtyPerItem, returnWindowDays: orders.returnWindowDays },
+    payments: { onlineAvailable: online, mode: online ? razorpayMode() : null },
     social,
     seo,
   };

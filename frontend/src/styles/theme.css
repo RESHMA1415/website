@@ -586,3 +586,12 @@ a { text-decoration: none; }
   .page-header { padding: 1.25rem 0; margin-bottom: 1.25rem; }
   .product-card .name { font-size: 0.85rem; }
 }
+
+/* Checkout choices (address, payment) */
+.checkout-option { cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+.checkout-option.selected { border-color: var(--shop-orange) !important; background: #fff6ee; }
+.checkout-option.disabled { cursor: not-allowed; opacity: 0.6; }
+
+/* My Orders */
+.order-card { color: inherit; transition: box-shadow 0.2s; }
+.order-card:hover { color: inherit; box-shadow: var(--shop-shadow-hover); }

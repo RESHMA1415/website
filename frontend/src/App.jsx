@@ -37,7 +37,7 @@ export default function App() {
         <Route path="wishlist" element={<RequireLogin><Wishlist /></RequireLogin>} />
         <Route path="cart" element={<Cart />} />
         <Route path="checkout" element={<RequireLogin><Checkout /></RequireLogin>} />
-        <Route path="order-confirmation/:orderNumber" element={<OrderConfirmation />} />
+        <Route path="order-confirmation/:orderNumber" element={<RequireLogin><OrderConfirmation /></RequireLogin>} />
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
         <Route path="forgot-password" element={<ForgotPassword />} />
