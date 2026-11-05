@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import EmptyState from '../components/EmptyState.jsx';
 import Price from '../components/Price.jsx';
 import ProductGrid from '../components/ProductGrid.jsx';
 import ProductGallery from '../components/ProductGallery.jsx';
 import Stars from '../components/Stars.jsx';
+import { useShopper } from '../context/ShopperContext.jsx';
 import { useStore } from '../context/StoreContext.jsx';
 import { useApi } from '../hooks/useApi.js';
 import { formatINR, whatsappLink } from '../utils/format.js';
@@ -254,6 +255,9 @@ export default function ProductDetails() {
   const [selection, setSelection] = useState({});
   const [quantity, setQuantity] = useState(1);
   const [showSizeChart, setShowSizeChart] = useState(false);
+  const [adding, setAdding] = useState(false);
+  const shopper = useShopper();
+  const navigate = useNavigate();
 
   const subSlug = product?.subCategory?.slug;
   const { data: related } = useApi(subSlug ? `/products?category=${subSlug}&limit=5` : null);
@@ -314,13 +318,28 @@ export default function ProductDetails() {
   else if (selected.stock <= 3) stockMessage = <span className="text-orange fw-semibold">Only {selected.stock} left! Order soon.</span>;
   else stockMessage = <span className="text-success fw-semibold"><i className="bi bi-check-circle me-1" />In stock</span>;
 
-  const addToCart = (buyNow) => {
+  // The server checks stock and the per-item limit and answers with the cart
+  const addToCart = async (buyNow) => {
     if (!selected) {
       notify(`Please select a ${requiredKeys.map((k) => OPTION_LABELS[k].toLowerCase()).join(' and ')} first.`);
       return;
     }
-    notify(buyNow ? 'Checkout arrives in Phase 4.' : 'The shopping cart arrives in Phase 3.');
+    setAdding(true);
+    try {
+      await shopper.addToCart(product._id, selected._id, quantity);
+      if (buyNow) {
+        // Buy Now goes straight to checkout (PRD §13.5); guests log in first
+        navigate(shopper.user ? '/checkout' : `/login?next=${encodeURIComponent('/checkout')}`);
+      } else {
+        notify(`Added to your cart: ${product.name}${quantity > 1 ? ` × ${quantity}` : ''}`);
+      }
+    } catch (err) {
+      notify(err.message);
+    } finally {
+      setAdding(false);
+    }
   };
+  const saved = shopper.inWishlist(product._id);
 
   const crumbs = [
     product.category && { label: product.category.name, to: `/${product.category.slug}` },
@@ -384,16 +403,22 @@ export default function ProductDetails() {
                 +
               </button>
             </div>
-            <button type="button" className="btn btn-outline-navy" aria-label="Add to wishlist" onClick={() => notify('Wishlist arrives in Phase 3.')}>
-              <i className="bi bi-heart" />
+            <button
+              type="button"
+              className={`btn ${saved ? 'btn-orange' : 'btn-outline-navy'}`}
+              aria-label={saved ? 'Remove from wishlist' : 'Save to wishlist'}
+              aria-pressed={saved}
+              onClick={() => shopper.toggleWishlist(product._id)}
+            >
+              <i className={`bi ${saved ? 'bi-heart-fill' : 'bi-heart'}`} />
             </button>
           </div>
 
           <div className="d-grid d-sm-flex gap-2 mb-3">
-            <button type="button" className="btn btn-orange btn-lg flex-fill" disabled={!product.inStock} onClick={() => addToCart(false)}>
-              <i className="bi bi-bag-plus me-2" />Add to Cart
+            <button type="button" className="btn btn-orange btn-lg flex-fill" disabled={!product.inStock || adding} onClick={() => addToCart(false)}>
+              <i className="bi bi-bag-plus me-2" />{adding ? 'Adding…' : 'Add to Cart'}
             </button>
-            <button type="button" className="btn btn-navy btn-lg flex-fill" disabled={!product.inStock} onClick={() => addToCart(true)}>
+            <button type="button" className="btn btn-navy btn-lg flex-fill" disabled={!product.inStock || adding} onClick={() => addToCart(true)}>
               Buy Now
             </button>
           </div>

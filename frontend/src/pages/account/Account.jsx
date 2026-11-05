@@ -1,35 +1,81 @@
+import { useEffect, useState } from 'react';
 import { Navigate, useParams } from 'react-router-dom';
-import AddressForm from '../../components/AddressForm.jsx';
+import { api, isRemembered, setToken } from '../../api/client.js';
+import AddressForm, { EMPTY_ADDRESS } from '../../components/AddressForm.jsx';
 import EmptyState from '../../components/EmptyState.jsx';
+import { useShopper } from '../../context/ShopperContext.jsx';
 import { useStore } from '../../context/StoreContext.jsx';
+import { PASSWORD_HINT, PASSWORD_RULE } from '../auth/authHelpers.js';
 import AccountLayout from './AccountLayout.jsx';
+
+const toInputDate = (value) => (value ? new Date(value).toISOString().slice(0, 10) : '');
 
 function Profile() {
   const { notify } = useStore();
-  const save = (e) => {
+  const { user, setUser } = useShopper();
+  const [form, setForm] = useState(() => ({
+    name: user.name, email: user.email, mobile: user.mobile, gender: user.gender || '', dateOfBirth: toInputDate(user.dateOfBirth),
+  }));
+  const [pw, setPw] = useState({ currentPassword: '', newPassword: '', confirm: '' });
+  const [errors, setErrors] = useState({});
+  const [busy, setBusy] = useState('');
+  const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
+  const setP = (key) => (e) => setPw((f) => ({ ...f, [key]: e.target.value }));
+
+  const saveProfile = async (e) => {
     e.preventDefault();
-    notify('Saving your profile starts working in Phase 3.');
+    setBusy('profile');
+    setErrors({});
+    try {
+      setUser(await api('/account/profile', { method: 'PUT', body: form }));
+      notify('Your details have been saved.');
+    } catch (err) {
+      setErrors({ profile: err.message });
+    } finally {
+      setBusy('');
+    }
   };
+
+  const savePassword = async (e) => {
+    e.preventDefault();
+    if (!PASSWORD_RULE.test(pw.newPassword)) return setErrors({ password: `New password must be ${PASSWORD_HINT.toLowerCase()}` });
+    if (pw.newPassword !== pw.confirm) return setErrors({ password: 'The new passwords do not match.' });
+    setBusy('password');
+    setErrors({});
+    try {
+      const remember = isRemembered();
+      const session = await api('/account/password', { method: 'PUT', body: { ...pw, remember } });
+      setToken(session.token, remember); // other devices are signed out; this one stays in
+      setPw({ currentPassword: '', newPassword: '', confirm: '' });
+      notify('Password updated. You’ve been logged out on your other devices.');
+    } catch (err) {
+      setErrors({ password: err.message });
+    } finally {
+      setBusy('');
+    }
+    return undefined;
+  };
+
   return (
     <>
-      <form className="card-soft p-4 mb-4" onSubmit={save}>
+      <form className="card-soft p-4 mb-4" onSubmit={saveProfile}>
         <h2 className="h5 mb-3">Personal Details</h2>
         <div className="row g-3">
           <div className="col-md-6">
             <label className="form-label" htmlFor="p-name">Full name</label>
-            <input id="p-name" className="form-control" required />
+            <input id="p-name" className="form-control" required maxLength={80} value={form.name} onChange={set('name')} autoComplete="name" />
           </div>
           <div className="col-md-6">
             <label className="form-label" htmlFor="p-email">Email</label>
-            <input id="p-email" type="email" className="form-control" required />
+            <input id="p-email" type="email" className="form-control" required value={form.email} onChange={set('email')} autoComplete="email" />
           </div>
           <div className="col-md-6">
             <label className="form-label" htmlFor="p-mobile">Mobile number</label>
-            <input id="p-mobile" className="form-control" inputMode="numeric" pattern="[6-9][0-9]{9}" maxLength={10} required />
+            <input id="p-mobile" className="form-control" inputMode="numeric" pattern="[6-9][0-9]{9}" maxLength={10} required value={form.mobile} onChange={set('mobile')} title="10-digit Indian mobile number" autoComplete="tel-national" />
           </div>
           <div className="col-md-3">
             <label className="form-label" htmlFor="p-gender">Gender</label>
-            <select id="p-gender" className="form-select" defaultValue="">
+            <select id="p-gender" className="form-select" value={form.gender} onChange={set('gender')}>
               <option value="">Prefer not to say</option>
               <option value="female">Female</option>
               <option value="male">Male</option>
@@ -38,55 +84,156 @@ function Profile() {
           </div>
           <div className="col-md-3">
             <label className="form-label" htmlFor="p-dob">Date of birth</label>
-            <input id="p-dob" type="date" className="form-control" />
+            <input id="p-dob" type="date" className="form-control" value={form.dateOfBirth} onChange={set('dateOfBirth')} max={new Date().toISOString().slice(0, 10)} />
           </div>
         </div>
-        <button type="submit" className="btn btn-orange mt-4">Save Changes</button>
+        {errors.profile && <div className="alert alert-danger small py-2 mt-3 mb-0" role="alert">{errors.profile}</div>}
+        <button type="submit" className="btn btn-orange mt-4" disabled={busy === 'profile'}>{busy === 'profile' ? 'Saving…' : 'Save Changes'}</button>
       </form>
-      <form className="card-soft p-4" onSubmit={save}>
+      <form className="card-soft p-4" onSubmit={savePassword}>
         <h2 className="h5 mb-3">Change Password</h2>
         <div className="row g-3">
           <div className="col-md-4">
             <label className="form-label" htmlFor="p-current">Current password</label>
-            <input id="p-current" type="password" className="form-control" required autoComplete="current-password" />
+            <input id="p-current" type="password" className="form-control" required autoComplete="current-password" value={pw.currentPassword} onChange={setP('currentPassword')} />
           </div>
           <div className="col-md-4">
             <label className="form-label" htmlFor="p-new">New password</label>
-            <input id="p-new" type="password" className="form-control" required minLength={8} autoComplete="new-password" />
+            <input id="p-new" type="password" className="form-control" required minLength={8} autoComplete="new-password" value={pw.newPassword} onChange={setP('newPassword')} />
+            <div className="form-text">{PASSWORD_HINT}</div>
           </div>
           <div className="col-md-4">
             <label className="form-label" htmlFor="p-confirm">Confirm new password</label>
-            <input id="p-confirm" type="password" className="form-control" required autoComplete="new-password" />
+            <input id="p-confirm" type="password" className="form-control" required autoComplete="new-password" value={pw.confirm} onChange={setP('confirm')} />
           </div>
         </div>
-        <button type="submit" className="btn btn-navy mt-4">Update Password</button>
+        {errors.password && <div className="alert alert-danger small py-2 mt-3 mb-0" role="alert">{errors.password}</div>}
+        <button type="submit" className="btn btn-navy mt-4" disabled={busy === 'password'}>{busy === 'password' ? 'Updating…' : 'Update Password'}</button>
       </form>
     </>
   );
 }
 
+function AddressCard({ address, onEdit, onDelete, onDefault }) {
+  return (
+    <div className="card-soft p-3 h-100 d-flex flex-column">
+      <div className="d-flex justify-content-between align-items-start gap-2 mb-2">
+        <div className="fw-semibold text-navy">{address.fullName}</div>
+        <div className="d-flex gap-1">
+          <span className="badge rounded-pill text-bg-light text-uppercase">{address.type}</span>
+          {address.isDefault && <span className="badge rounded-pill bg-orange">Default</span>}
+        </div>
+      </div>
+      <div className="small text-muted flex-grow-1">
+        {address.house}, {address.street}
+        {address.landmark ? `, near ${address.landmark}` : ''}
+        <br />
+        {address.city}, {address.state} – {address.pincode}
+        <br />
+        Mobile: {address.mobile}
+        {address.alternateMobile ? ` / ${address.alternateMobile}` : ''}
+      </div>
+      <div className="d-flex flex-wrap gap-2 mt-3">
+        <button type="button" className="btn btn-sm btn-outline-navy" onClick={onEdit}><i className="bi bi-pencil me-1" />Edit</button>
+        <button type="button" className="btn btn-sm btn-outline-danger" onClick={onDelete}><i className="bi bi-trash me-1" />Delete</button>
+        {!address.isDefault && <button type="button" className="btn btn-sm btn-link" onClick={onDefault}>Make default</button>}
+      </div>
+    </div>
+  );
+}
+
 function Addresses() {
   const { notify } = useStore();
+  const [list, setList] = useState(null);
+  const [editing, setEditing] = useState(null); // null = closed, {} = new, address = edit
+  const [form, setForm] = useState(EMPTY_ADDRESS);
+  const [makeDefault, setMakeDefault] = useState(false);
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    api('/account/addresses').then(setList).catch((err) => { setList([]); notify(err.message); });
+  }, [notify]);
+
+  const open = (address) => {
+    setEditing(address);
+    setForm({ ...EMPTY_ADDRESS, ...(address || {}) });
+    setMakeDefault(Boolean(address?.isDefault));
+    setError('');
+  };
+
+  const save = async (e) => {
+    e.preventDefault();
+    setBusy(true);
+    setError('');
+    try {
+      const isNew = !editing._id;
+      const body = { ...form, isDefault: makeDefault };
+      setList(await api(isNew ? '/account/addresses' : `/account/addresses/${editing._id}`, { method: isNew ? 'POST' : 'PUT', body }));
+      notify(isNew ? 'Address saved.' : 'Address updated.');
+      setEditing(null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const act = async (request, message) => {
+    try {
+      setList(await request);
+      notify(message);
+    } catch (err) {
+      notify(err.message);
+    }
+  };
+
+  if (!list) return <div className="card-soft p-4 text-muted">Loading your addresses…</div>;
+
   return (
     <>
-      <div className="card-soft mb-4">
-        <EmptyState icon="bi-geo-alt" title="No saved addresses" text="Addresses you save here appear at checkout for one-tap delivery." />
-      </div>
-      <form
-        className="card-soft p-4"
-        onSubmit={(e) => {
-          e.preventDefault();
-          notify('Saving addresses starts working in Phase 3.');
-        }}
-      >
-        <h2 className="h5 mb-3">Add a New Address</h2>
-        <AddressForm idPrefix="account" />
-        <div className="form-check mt-3">
-          <input className="form-check-input" type="checkbox" id="default-address" />
-          <label className="form-check-label" htmlFor="default-address">Make this my default address</label>
+      {list.length === 0 && !editing && (
+        <div className="card-soft mb-4">
+          <EmptyState icon="bi-geo-alt" title="No saved addresses" text="Addresses you save here appear at checkout for one-tap delivery." />
         </div>
-        <button type="submit" className="btn btn-orange mt-3">Save Address</button>
-      </form>
+      )}
+      {list.length > 0 && (
+        <div className="row g-3 mb-4">
+          {list.map((a) => (
+            <div key={a._id} className="col-md-6">
+              <AddressCard
+                address={a}
+                onEdit={() => open(a)}
+                onDelete={() => window.confirm('Delete this address?') && act(api(`/account/addresses/${a._id}`, { method: 'DELETE' }), 'Address deleted.')}
+                onDefault={() => act(api(`/account/addresses/${a._id}/default`, { method: 'PUT' }), 'Default address updated.')}
+              />
+            </div>
+          ))}
+        </div>
+      )}
+      {editing ? (
+        <form className="card-soft p-4" onSubmit={save}>
+          <h2 className="h5 mb-3">{editing._id ? 'Edit Address' : 'Add a New Address'}</h2>
+          <AddressForm idPrefix="account" value={form} onChange={setForm} />
+          <div className="form-check mt-3">
+            <input className="form-check-input" type="checkbox" id="default-address" checked={makeDefault} onChange={(e) => setMakeDefault(e.target.checked)} disabled={Boolean(editing.isDefault) || list.length === 0} />
+            <label className="form-check-label" htmlFor="default-address">
+              {list.length === 0 ? 'This will be your default address' : 'Make this my default address'}
+            </label>
+          </div>
+          {error && <div className="alert alert-danger small py-2 mt-3 mb-0" role="alert">{error}</div>}
+          <div className="d-flex gap-2 mt-3">
+            <button type="submit" className="btn btn-orange" disabled={busy}>{busy ? 'Saving…' : 'Save Address'}</button>
+            <button type="button" className="btn btn-light" onClick={() => setEditing(null)}>Cancel</button>
+          </div>
+        </form>
+      ) : (
+        list.length < 10 && (
+          <button type="button" className="btn btn-orange" onClick={() => open({})}>
+            <i className="bi bi-plus-lg me-1" />Add a New Address
+          </button>
+        )
+      )}
     </>
   );
 }

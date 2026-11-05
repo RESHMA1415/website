@@ -111,7 +111,15 @@ Follow PRD §21 phases. Don't build advanced features ahead of their phase unles
 **Progress:**
 - ✅ Phase 1: Foundation & Design. All customer pages and admin screens laid out and linked; all models; settings, categories, banners and product read APIs; pricing service. Screens whose function comes later show a "Preview (Phase N)" notice (`PhaseNotice` component). Remove each notice when its feature is built.
 - ✅ Phase 2: Catalogue & Admin Basics. Admin login (JWT with `ADMIN_JWT_SECRET`, 5-try/15-min lock, 2 h sliding session via `X-Admin-Token` header, change password); all `/api/admin/*` routes behind `requireAdmin`. Categories, products with variants (optimistic save so live stock is never overwritten; every stock change logged in StockMovement), duplicate/bulk/hide-instead-of-delete, inventory (quick edit, history, CSV export/import), media library (sharp → WebP large/medium/thumb), banners, size charts. Store: filters, facets (`/products/filters`), search suggestions (`/products/suggest`), colour-specific gallery, zoom, video, size chart pop-up.
-- ⏭ Phase 3: Accounts, Cart & Wishlist (next).
+- ✅ Phase 3: Accounts, Cart & Wishlist. Customer register/login (email or mobile, 5-try/15-min lock, blocked users refused), forgot/reset password (30-min single-use link), My Account (profile, change password, up to 10 addresses with default). Server-priced cart for guests and customers, with warnings (sold out, only X left, price changed, unavailable), max per item from Settings, and the guest cart merged on login. Wishlist (login only) with price-drop note and Move to Cart.
+- ⏭ Phase 4: Checkout & Payments (next).
+
+**Phase 3 notes:**
+- Customer JWT uses `JWT_SECRET`, which must differ from `ADMIN_JWT_SECRET` (startup refuses otherwise). Sessions: 30 days with "Remember me" (localStorage), otherwise 1 day in sessionStorage. A password change or reset ends older logins (`passwordChangedAt`).
+- Guest carts are keyed by a random `X-Guest-Id` header (localStorage `shopme.guestId`). `mergeGuestCart` runs on login, register and reset. Cart routes use `optionalCustomer`; account and wishlist routes use `requireCustomer`.
+- `src/integrations/email.js` has only a log driver until Phase 7. In development the forgot-password response includes `devResetLink`, shown on screen; never in production or once SMTP is set.
+- Checkout and order pages are behind login but still Phase 4/5 previews. "Buy Now" adds to cart and opens /checkout.
+- Pincode → city/state auto-fill (PRD §13.8) is not built yet. It needs a pincode lookup service; ask the owner before adding one.
 
 **Phase 2 notes:**
 - The single admin account is created on first start from `ADMIN_EMAIL` / `ADMIN_INITIAL_PASSWORD` in `backend/.env`.

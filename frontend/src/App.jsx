@@ -4,9 +4,11 @@ import About from './pages/About.jsx';
 import Account from './pages/account/Account.jsx';
 import OrderDetail from './pages/account/OrderDetail.jsx';
 import Orders from './pages/account/Orders.jsx';
+import RequireLogin from './components/RequireLogin.jsx';
 import ForgotPassword from './pages/auth/ForgotPassword.jsx';
 import Login from './pages/auth/Login.jsx';
 import Register from './pages/auth/Register.jsx';
+import ResetPassword from './pages/auth/ResetPassword.jsx';
 import Cart from './pages/Cart.jsx';
 import Checkout from './pages/Checkout.jsx';
 import Contact from './pages/Contact.jsx';
@@ -32,17 +34,18 @@ export default function App() {
         <Route path="new-arrivals" element={<Shop newArrivals />} />
         <Route path="search" element={<Shop search />} />
         <Route path="product/:slug" element={<ProductDetails />} />
-        <Route path="wishlist" element={<Wishlist />} />
+        <Route path="wishlist" element={<RequireLogin><Wishlist /></RequireLogin>} />
         <Route path="cart" element={<Cart />} />
-        <Route path="checkout" element={<Checkout />} />
+        <Route path="checkout" element={<RequireLogin><Checkout /></RequireLogin>} />
         <Route path="order-confirmation/:orderNumber" element={<OrderConfirmation />} />
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
         <Route path="forgot-password" element={<ForgotPassword />} />
-        <Route path="account" element={<Account />} />
-        <Route path="account/:tab" element={<Account />} />
-        <Route path="account/orders" element={<Orders />} />
-        <Route path="account/orders/:orderNumber" element={<OrderDetail />} />
+        <Route path="reset-password" element={<ResetPassword />} />
+        <Route path="account" element={<RequireLogin><Account /></RequireLogin>} />
+        <Route path="account/:tab" element={<RequireLogin><Account /></RequireLogin>} />
+        <Route path="account/orders" element={<RequireLogin><Orders /></RequireLogin>} />
+        <Route path="account/orders/:orderNumber" element={<RequireLogin><OrderDetail /></RequireLogin>} />
         <Route path="track-order" element={<TrackOrder />} />
         <Route path="contact" element={<Contact />} />
         <Route path="policies/:page" element={<Policy />} />

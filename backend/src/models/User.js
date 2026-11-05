@@ -20,6 +20,8 @@ const userSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     mobile: { type: String, required: true, unique: true, match: /^[6-9]\d{9}$/ },
     passwordHash: { type: String, required: true, select: false },
+    // Logins issued before this time stop working (password change or reset)
+    passwordChangedAt: { type: Date, default: Date.now },
     gender: { type: String, enum: ['male', 'female', 'other', ''], default: '' },
     dateOfBirth: Date,
     addresses: [addressSchema],
@@ -35,8 +37,12 @@ const userSchema = new mongoose.Schema(
     lockedUntil: Date,
     passwordResetTokenHash: { type: String, select: false },
     passwordResetExpires: { type: Date, select: false },
+    passwordResetRequestedAt: { type: Date, select: false },
+    lastLoginAt: Date,
   },
   { timestamps: true },
 );
+
+userSchema.index({ passwordResetTokenHash: 1 }, { sparse: true });
 
 export default mongoose.model('User', userSchema);

@@ -959,6 +959,8 @@ These were filled in by the product manager where the owner said *"as per your s
 | 13 | Delivery estimate "4–7 business days" across India | ☐ |
 | 14 | Store domain name (e.g. shopme.in) | ☐ to be provided |
 | 15 | Business contact details, WhatsApp number, social links, logo | ☑ Phone +91 80891 11500, email shopmesupport2@gmail.com, open 24 hours, current logo approved. WhatsApp assumed to be the same number. Social links not created yet (hidden). **Store address still needed** (Razorpay requires it) |
+| 16 | Customer login stays for **30 days** with "Remember me"; otherwise it ends when the browser closes (at most 1 day) | ☐ |
+| 17 | A customer can save up to **10 addresses**; a cart holds up to 50 different items; a wishlist up to 200 products | ☐ |
 
 ---
 

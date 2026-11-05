@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { api } from '../../api/client.js';
+import { useShopper } from '../../context/ShopperContext.jsx';
 import { useStore } from '../../context/StoreContext.jsx';
 import { formatINR } from '../../utils/format.js';
 
@@ -114,14 +115,13 @@ function SearchBox({ onDone }) {
 }
 
 function HeaderIcons() {
-  // Counts come from the cart & wishlist in Phase 3
-  const cartCount = 0;
-  const wishlistCount = 0;
+  const { cart, wishlistCount, user } = useShopper();
+  const cartCount = cart.count;
   return (
     <div className="d-flex align-items-center gap-2 gap-md-3">
       <Link to="/account" className="header-icon d-none d-md-inline-flex" aria-label="My account">
         <i className="bi bi-person" />
-        <small>Account</small>
+        <small>{user ? user.name.split(' ')[0].slice(0, 12) : 'Account'}</small>
       </Link>
       <Link to="/wishlist" className="header-icon d-none d-sm-inline-flex" aria-label="Wishlist">
         <i className="bi bi-heart" />
@@ -161,6 +161,7 @@ function WomenMenu({ women }) {
 
 function MobileMenu({ categories, onClose }) {
   const [open, setOpen] = useState(null);
+  const { user, logout } = useShopper();
   const toggle = (slug) => setOpen((current) => (current === slug ? null : slug));
   return (
     <>
@@ -199,6 +200,11 @@ function MobileMenu({ categories, onClose }) {
         <Link to="/track-order">Track Order</Link>
         <Link to="/about">About Us</Link>
         <Link to="/contact">Contact Us</Link>
+        {user ? (
+          <button type="button" className="mobile-menu-button" onClick={() => { onClose(); logout(); }}>Log out</button>
+        ) : (
+          <Link to="/login">Log in / Register</Link>
+        )}
       </nav>
     </>
   );

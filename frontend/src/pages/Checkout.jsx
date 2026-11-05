@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import AddressForm from '../components/AddressForm.jsx';
 import PageHeader from '../components/PageHeader.jsx';
 import PhaseNotice from '../components/PhaseNotice.jsx';
+import { useShopper } from '../context/ShopperContext.jsx';
 import { useStore } from '../context/StoreContext.jsx';
 import { formatINR } from '../utils/format.js';
 import { OrderSummary } from './Cart.jsx';
@@ -20,6 +21,7 @@ function Step({ number, title, children }) {
 
 export default function Checkout() {
   const { settings } = useStore();
+  const { cart } = useShopper();
   const [method, setMethod] = useState('online');
 
   return (
@@ -75,7 +77,7 @@ export default function Checkout() {
             </Step>
           </div>
           <div className="col-lg-4">
-            <OrderSummary codCharge={method === 'cod' ? settings.cod.charge : 0}>
+            <OrderSummary summary={cart.summary} codCharge={method === 'cod' ? settings.cod.charge : 0} estimate={false}>
               <button type="button" className="btn btn-orange w-100 mt-3" disabled>
                 {method === 'cod' ? 'Place Order' : 'Pay Now'}
               </button>

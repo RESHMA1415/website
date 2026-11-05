@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import PageHeader from '../../components/PageHeader.jsx';
-import PhaseNotice from '../../components/PhaseNotice.jsx';
+import { useShopper } from '../../context/ShopperContext.jsx';
 
 const LINKS = [
   { to: '/account', label: 'Profile', icon: 'bi-person', end: true },
@@ -11,13 +11,13 @@ const LINKS = [
 ];
 
 export default function AccountLayout({ title, crumbs, children }) {
+  const { user, logout } = useShopper();
   return (
     <>
-      <PageHeader title={title} crumbs={[{ label: 'My Account', to: '/account' }, ...crumbs]} />
+      <PageHeader title={title} crumbs={[{ label: 'My Account', to: '/account' }, ...crumbs]}>
+        {user && <p className="text-muted mb-0 mt-1">Hello, {user.name.split(' ')[0]}!</p>}
+      </PageHeader>
       <div className="container">
-        <PhaseNotice phase={3}>
-          Customers will need to log in to see this area. Accounts start working in Phase 3.
-        </PhaseNotice>
         <div className="row g-4">
           <aside className="col-lg-3">
             <nav className="card-soft p-2 account-nav">
@@ -26,9 +26,9 @@ export default function AccountLayout({ title, crumbs, children }) {
                   <i className={`bi ${link.icon}`} /> {link.label}
                 </NavLink>
               ))}
-              <NavLink to="/login">
+              <button type="button" className="account-nav-button" onClick={logout}>
                 <i className="bi bi-box-arrow-right" /> Logout
-              </NavLink>
+              </button>
             </nav>
           </aside>
           <div className="col-lg-9">{children}</div>

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useStore } from '../context/StoreContext.jsx';
+import { useShopper } from '../context/ShopperContext.jsx';
 import Price from './Price.jsx';
 import ProductImage from './ProductImage.jsx';
 
@@ -8,7 +8,8 @@ export function isNewArrival(product, days = 30) {
 }
 
 export default function ProductCard({ product }) {
-  const { notify } = useStore();
+  const { inWishlist, toggleWishlist } = useShopper();
+  const saved = inWishlist(product._id);
   const url = `/product/${product.slug}`;
 
   return (
@@ -20,11 +21,12 @@ export default function ProductCard({ product }) {
         </div>
         <button
           type="button"
-          className="wishlist-btn"
-          aria-label="Add to wishlist"
-          onClick={() => notify('Wishlist arrives in Phase 3 (customer accounts).')}
+          className={`wishlist-btn ${saved ? 'active' : ''}`}
+          aria-label={saved ? `Remove ${product.name} from wishlist` : `Save ${product.name} to wishlist`}
+          aria-pressed={saved}
+          onClick={() => toggleWishlist(product._id)}
         >
-          <i className="bi bi-heart" />
+          <i className={`bi ${saved ? 'bi-heart-fill' : 'bi-heart'}`} />
         </button>
         <Link to={url} aria-label={product.name} className={product.images?.length > 1 ? 'has-hover-image' : ''}>
           <ProductImage product={product} />
