@@ -7,17 +7,16 @@ export const defaultSettings = {
     logoUrl: '',
     faviconUrl: '',
     // Provided by the owner (PRD §24 #15). WhatsApp uses the same number as the
-    // phone; the address is blank (and hidden on the site) until provided.
+    // phone. Address and map location provided by the owner.
     email: 'shopmesupport2@gmail.com',
     phone: '+91 80891 11500',
     whatsappNumber: '918089111500',
-    address: '',
+    address: 'Apsara Arcade, MKK Nair Road, Palarivattom, Ernakulam, Kerala – 682025',
     businessHours: 'Open 24 hours',
-    // Google Maps (owner's link). "Get Directions" opens mapLink; the
-    // interactive map shows mapQuery (place name, address or "lat,lng"),
-    // falling back to the address. No map is shown while both are blank.
-    // Owner's location: Apsara Arcade (exact pin coordinates provided by the owner)
-    mapLink: 'https://maps.app.goo.gl/dz2cUfyJwv3Cfv8aA',
+    // Google Maps (owner's link and exact pin). "Get Directions" opens mapLink;
+    // the interactive map shows mapQuery ("lat,lng"), falling back to the
+    // address. No map is shown while both are blank.
+    mapLink: 'https://www.google.com/maps/place/Apsara+Arcade,+MKK+Nair+Rd,+Palarivattom,+Ernakulam,+Keralam+682025/',
     mapQuery: '10.0017855,76.3048056',
   },
   delivery: {
