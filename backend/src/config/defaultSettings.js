@@ -13,11 +13,11 @@ export const defaultSettings = {
     whatsappNumber: '918089111500',
     address: 'Apsara Arcade, MKK Nair Road, Palarivattom, Ernakulam, Kerala – 682025',
     businessHours: 'Open 24 hours',
-    // Google Maps (owner's link and exact pin). "Get Directions" opens mapLink;
-    // the interactive map shows mapQuery ("lat,lng"), falling back to the
-    // address. No map is shown while both are blank.
-    mapLink: 'https://www.google.com/maps/place/Apsara+Arcade,+MKK+Nair+Rd,+Palarivattom,+Ernakulam,+Keralam+682025/',
-    mapQuery: '10.0017855,76.3048056',
+    // Google Maps (owner's link). "Get Directions" opens mapLink; the map looks
+    // up mapQuery (the place as Google lists it; the earlier pin coordinates
+    // were wrong), falling back to the address. Hidden while both are blank.
+    mapLink: 'https://share.google/N0e6Ov2FS8KIklk2L',
+    mapQuery: 'Apsara Arcade, MKK Nair Rd, Palarivattom, Ernakulam, Kerala 682025',
   },
   delivery: {
     freeDeliveryThreshold: 500,
