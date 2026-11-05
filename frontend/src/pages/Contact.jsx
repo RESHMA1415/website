@@ -1,4 +1,5 @@
 import PageHeader from '../components/PageHeader.jsx';
+import StoreMap, { DirectionsButton } from '../components/StoreMap.jsx';
 import { useStore } from '../context/StoreContext.jsx';
 import { generalWhatsappMessage, whatsappLink } from '../utils/format.js';
 
@@ -39,16 +40,8 @@ export default function Contact() {
                   <i className="bi bi-whatsapp me-2" />Chat on WhatsApp
                 </a>
               )}
-              {store.address && (
-                <iframe
-                  title="Store location map"
-                  className="rounded-3 mt-4 w-100 border-0"
-                  style={{ height: 200 }}
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  src={`https://maps.google.com/maps?q=${encodeURIComponent(store.address)}&output=embed`}
-                />
-              )}
+              <StoreMap store={store} height={220} className="mt-4" />
+              <DirectionsButton store={store} className="btn btn-outline-navy w-100 mt-3" />
             </div>
           </div>
           <div className="col-lg-7">

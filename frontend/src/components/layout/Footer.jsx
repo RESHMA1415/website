@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useStore } from '../../context/StoreContext.jsx';
+import StoreMap from '../StoreMap.jsx';
 
 const SOCIAL_ICONS = {
   instagram: 'bi-instagram',
@@ -75,6 +76,12 @@ export default function Footer() {
               {store.email && <li><i className="bi bi-envelope me-2" />{store.email}</li>}
               {store.address && <li><i className="bi bi-geo-alt me-2" />{store.address}</li>}
             </ul>
+            <StoreMap store={store} height={130} className="mb-2" />
+            {store.mapLink && (
+              <a className="footer-directions" href={store.mapLink} target="_blank" rel="noopener noreferrer">
+                <i className="bi bi-sign-turn-right me-1" />Get Directions
+              </a>
+            )}
           </div>
         </div>
         <hr className="border-secondary my-4" />

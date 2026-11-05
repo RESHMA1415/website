@@ -13,6 +13,12 @@ export const defaultSettings = {
     whatsappNumber: '918089111500',
     address: '',
     businessHours: 'Open 24 hours',
+    // Google Maps (owner's link). "Get Directions" opens mapLink; the
+    // interactive map shows mapQuery (place name, address or "lat,lng"),
+    // falling back to the address. No map is shown while both are blank.
+    // Owner's location: Apsara Arcade (exact pin coordinates provided by the owner)
+    mapLink: 'https://maps.app.goo.gl/dz2cUfyJwv3Cfv8aA',
+    mapQuery: '10.0017855,76.3048056',
   },
   delivery: {
     freeDeliveryThreshold: 500,
