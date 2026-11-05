@@ -4,7 +4,9 @@ import { asyncHandler, HttpError } from '../utils/asyncHandler.js';
 
 const router = Router();
 
-const PAGES = ['about', 'privacy', 'terms', 'shipping', 'returns', 'cancellation', 'faq'];
+// 'returns' and 'cancellation' are older names for the combined Refund & Cancellation Policy
+const PAGES = ['about', 'privacy', 'terms', 'shipping', 'refunds', 'faq'];
+const ALIASES = { returns: 'refunds', cancellation: 'refunds' };
 
 router.get(
   '/settings',
@@ -16,8 +18,9 @@ router.get(
 router.get(
   '/pages/:name',
   asyncHandler(async (req, res) => {
-    if (!PAGES.includes(req.params.name)) throw new HttpError(404, 'Page not found.');
-    res.json({ name: req.params.name, content: await getPage(req.params.name) });
+    const name = ALIASES[req.params.name] || req.params.name;
+    if (!PAGES.includes(name)) throw new HttpError(404, 'Page not found.');
+    res.json({ name, content: await getPage(name) });
   }),
 );
 

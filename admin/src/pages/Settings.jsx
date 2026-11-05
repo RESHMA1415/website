@@ -118,7 +118,7 @@ export default function Settings() {
           <Panel title="Page Content">
             <p className="small text-muted mb-2">Edit About Us, policies and FAQ text shown on your store.</p>
             <div className="d-flex flex-wrap gap-2">
-              {['About Us', 'Privacy Policy', 'Terms & Conditions', 'Shipping Policy', 'Return Policy', 'Cancellation Policy', 'FAQ'].map((p) => (
+              {['About Us', 'Privacy Policy', 'Terms & Conditions', 'Shipping Policy', 'Refund & Cancellation Policy', 'FAQ'].map((p) => (
                 <button key={p} type="button" className="btn btn-sm btn-light" disabled>{p}</button>
               ))}
             </div>

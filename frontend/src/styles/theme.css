@@ -595,3 +595,15 @@ a { text-decoration: none; }
 /* My Orders */
 .order-card { color: inherit; transition: box-shadow 0.2s; }
 .order-card:hover { color: inherit; box-shadow: var(--shop-shadow-hover); }
+
+/* Policy pages (Privacy, Terms, Refund & Cancellation…) */
+.policy-content { line-height: 1.75; color: #2b3445; }
+.policy-content .policy-h2 { font-size: 1.2rem; margin: 2rem 0 0.75rem; color: var(--shop-navy); }
+.policy-content .policy-h2:first-child { margin-top: 0; }
+.policy-content .policy-h3 { font-size: 1.02rem; margin: 1.4rem 0 0.5rem; color: var(--shop-navy); }
+.policy-content ul, .policy-content ol { padding-left: 1.25rem; }
+.policy-content li { margin-bottom: 0.35rem; }
+.policy-content li > ul, .policy-content li > p { margin-top: 0.35rem; }
+.policy-table { font-size: 0.9rem; }
+.policy-table th { white-space: nowrap; }
+@media (max-width: 575px) { .policy-table th { white-space: normal; } }

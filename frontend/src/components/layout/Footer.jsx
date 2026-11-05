@@ -63,8 +63,7 @@ export default function Footer() {
             <h6>Policies</h6>
             <ul>
               <li><Link to="/policies/shipping">Shipping Policy</Link></li>
-              <li><Link to="/policies/returns">Return & Refund</Link></li>
-              <li><Link to="/policies/cancellation">Cancellation</Link></li>
+              <li><Link to="/policies/refunds">Refund & Cancellation</Link></li>
               <li><Link to="/policies/privacy">Privacy Policy</Link></li>
               <li><Link to="/policies/terms">Terms & Conditions</Link></li>
             </ul>

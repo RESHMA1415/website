@@ -115,6 +115,13 @@ Follow PRD §21 phases. Don't build advanced features ahead of their phase unles
 - ✅ Phase 4: Checkout & Payments. Single-page checkout (saved or new address, payment method, review and Terms) with server-computed totals for online and COD. Orders `SHM-YYMMDD-XXXX` (India date, daily Counter) store item, price and address snapshots. COD orders confirm immediately. Online orders go through Razorpay: pending order + Razorpay order for the server total, signature check, payment fetch/capture, webhook backup, retry after failure. Stock is reduced only on COD placement or confirmed payment, with an atomic per-variant `$gte` check and auto-refund when the item sold out meanwhile. Unpaid orders are closed after 30 min (sweeper every 5 min in server.js). Thank-you page, My Orders list and order detail (read-only).
 - ⏭ Phase 5: Orders & Fulfilment (next).
 
+**Legal pages:**
+- The Privacy Policy (DPDP Act 2023 / Rules 2025), Terms & Conditions and Refund & Cancellation Policy are Markdown files in `backend/src/content/legal/`. They seed Settings `pages.privacy`, `pages.terms` and `pages.refunds`.
+- The store renders them with `components/MarkdownText.jsx`, a small safe renderer (no HTML).
+- `returns` and `cancellation` are aliases of `refunds`, on both the API and the store routes.
+- `[PROPRIETOR FULL NAME]` and `[GRIEVANCE OFFICER NAME]` are blanks the owner must fill in before launch.
+- If business rules change (charges, return window, refund timelines), update these files and the live Settings pages together.
+
 **Phase 4 notes:**
 - Razorpay lives in `src/integrations/razorpay.js` (plain fetch, keys from `.env`). With no keys, `payments.onlineAvailable` is false and checkout offers COD only. The webhook is `POST /api/payments/razorpay/webhook`, mounted in app.js before `express.json` (raw body for the HMAC). Event ids are recorded in `Payment.processedEventIds`.
 - Every payment attempt is its own Payment doc. `finalizePayment` claims a payment atomically (pending/failed → paid), so browser and webhook confirm once. A second payment on the same order, or a payment after expiry, is refunded automatically. A failed auto-refund leaves the payment `refund_initiated` for the admin (Phase 5/8).

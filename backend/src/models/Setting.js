@@ -11,8 +11,8 @@ const settingSchema = new mongoose.Schema(
       privacy: { type: String, default: '' },
       terms: { type: String, default: '' },
       shipping: { type: String, default: '' },
-      returns: { type: String, default: '' },
-      cancellation: { type: String, default: '' },
+      // Refund & Cancellation Policy (replaces the separate returns and cancellation pages)
+      refunds: { type: String, default: '' },
       faq: { type: String, default: '' },
     },
     // Razorpay secrets live in .env, never here

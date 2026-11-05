@@ -1,6 +1,8 @@
 // Starter data for a fresh database. Sample products are placeholders the
 // owner replaces with real stock in Phase 2.
 
+import { LEGAL_PAGES } from '../content/legal/index.js';
+
 export const categoryTree = [
   {
     name: 'Men',
@@ -252,12 +254,9 @@ export const sampleProducts = [
 export const defaultPages = {
   about:
     'SHOPME brings you modern, affordable fashion for men and women, from everyday clothing to beauty and accessories. (Replace this with your brand story in Business Settings.)',
-  privacy: 'Your Privacy Policy will appear here. Please have it reviewed by a legal advisor before launch.',
-  terms: 'Your Terms & Conditions will appear here.',
+  // Privacy Policy, Terms & Conditions and Refund & Cancellation Policy (src/content/legal)
+  ...LEGAL_PAGES,
   shipping:
     'We deliver anywhere in India. Orders are usually delivered in 4–7 business days. Delivery is free on orders of ₹500 and above; a ₹50 delivery charge applies below ₹500.',
-  returns:
-    'You can return or exchange eligible items within 7 days of delivery. Beauty products are non-returnable unless damaged or incorrect. Refunds for online payments go back to the original payment method; COD refunds are paid to your UPI ID or bank account.',
-  cancellation: 'You can cancel your order any time before it is shipped from the My Orders page.',
   faq: 'Frequently asked questions will appear here.',
 };

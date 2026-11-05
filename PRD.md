@@ -806,8 +806,7 @@ Required for customer trust **and for Razorpay account approval**:
 - **Privacy Policy** (what customer data is collected and why)
 - **Terms & Conditions**
 - **Shipping Policy** (delivery areas: all India; timelines; free delivery above ₹500; charges)
-- **Return, Exchange & Refund Policy** (7-day window, non-returnable items, refund timelines, COD refund method)
-- **Cancellation Policy** (before shipping)
+- **Refund & Cancellation Policy** (cancellation before shipping, 7-day return/exchange window, non-returnable items, refund amounts, methods and timelines, COD refund method). Combines the earlier separate Return and Cancellation pages; old links redirect
 - **Contact Us** with business address and phone
 - **FAQ**
 
@@ -961,6 +960,10 @@ These were filled in by the product manager where the owner said *"as per your s
 | 15 | Business contact details, WhatsApp number, social links, logo | ☑ Phone +91 80891 11500, email shopmesupport2@gmail.com, open 24 hours, current logo approved. WhatsApp assumed to be the same number. Social links not created yet (hidden). Store address: Apsara Arcade, MKK Nair Road, Palarivattom, Ernakulam, Kerala – 682025 (map pin 10.0017855, 76.3048056) |
 | 16 | Customer login stays for **30 days** with "Remember me"; otherwise it ends when the browser closes (at most 1 day) | ☐ |
 | 17 | A customer can save up to **10 addresses**; a cart holds up to 50 different items; a wishlist up to 200 products | ☐ |
+| 18 | Refunds are **started within 2 business days** of a cancellation or of a return passing its quality check (then 5–7 business days to reach the customer); return requests are reviewed within 2 business days | ☐ |
+| 19 | A prepaid order that comes back undelivered (RTO) is **refunded in full** after contacting the customer | ☐ |
+| 20 | Accounts inactive for **3 years** may be closed and erased after 48 hours' notice; security logs kept for at least 1 year (DPDP Rules) | ☐ |
+| 21 | Legal policies name **[PROPRIETOR FULL NAME]** and **[GRIEVANCE OFFICER NAME]**: both must be filled in before launch | ☐ to be provided |
 
 ---
 

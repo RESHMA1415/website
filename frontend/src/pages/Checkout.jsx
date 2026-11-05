@@ -254,7 +254,7 @@ export default function Checkout() {
                 <input className="form-check-input" type="checkbox" id="agree" checked={agree} onChange={(e) => setAgree(e.target.checked)} />
                 <label className="form-check-label small" htmlFor="agree">
                   I agree to the <Link to="/policies/terms" target="_blank">Terms & Conditions</Link> and{' '}
-                  <Link to="/policies/returns" target="_blank">Return Policy</Link>
+                  <Link to="/policies/refunds" target="_blank">Refund & Cancellation Policy</Link>
                 </label>
               </div>
             </Step>
