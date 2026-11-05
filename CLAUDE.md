@@ -42,6 +42,8 @@ Do not swap or add major libraries/frameworks without asking.
   src/routes/        API routes, mounted under /api
   src/seed/          starter categories, banners, sample products
   src/integrations/  Razorpay, email, WhatsApp, media (added per phase)
+tools/project-hub/  Project Hub artifact: hub-data.json (board data), template.html, build.mjs (npm run hub)
+.claude/skills/     project skills (project-hub)
 PRD.md      product requirements (source of truth)
 CLAUDE.md   this file
 ```
@@ -147,9 +149,18 @@ Follow PRD §21 phases. Don't build advanced features ahead of their phase unles
 - Stock edits (product form, Inventory quick edit, CSV with "Stock when downloaded") send the value the admin saw (`stockLoaded`). Only the difference is applied to live stock, written compare-and-set. `variants.sku` has a unique index; `Product.syncIndexes()` runs on start. A variant with no `lowStockLevel` uses Settings `orders.lowStockDefault`.
 - The top-level `men` / `women` category slugs are locked (the store's /men and /women routes depend on them). In admin, an existing category's web address is read-only until "Change" is clicked, because the owner once typed descriptions into it and broke links. Homepage tiles look up categories by slug and hide themselves if the slug is missing.
 
+## Project Hub (owner's rule, mandatory)
+
+The owner tracks the project in the **SHOPME Project Hub** artifact (https://claude.ai/artifact/J8KvrshBbuSUQTPeudf5vY): overview, a status board by phase (Planned / Not started / In development / Ready for test / Completed), screens, decisions and Git state.
+
+- Keep it current with the **`project-hub` skill** (`.claude/skills/project-hub/SKILL.md`). Run it **on your own, without being asked**, after every task that ends with a commit on `development`: features, fixes, owner requests, phase checkpoints and phase completions. Also run it when the owner asks about progress or status.
+- The hub follows **committed** work on `development` only. The skill first commits finished, uncommitted work on development, then updates `tools/project-hub/hub-data.json`, rebuilds with `npm run hub`, republishes to the same URL, and commits the hub as `Update Project Hub: …`.
+- Never create a second hub artifact, and never publish or commit to `production` from the skill.
+
 ## When finishing a task
 
 - Check that the change works (run it, test the flow), not just that it compiles.
 - Tell the owner in plain language what they can now do and how to check it.
 - Note any PRD assumption (PRD §24) the work depended on.
+- Commit on `development`, then run the `project-hub` skill so the hub matches the new commit.
  

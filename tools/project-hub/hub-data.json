@@ -1,0 +1,960 @@
+{
+  "statusDate": "2026-11-05",
+  "artifactUrl": "https://claude.ai/artifact/J8KvrshBbuSUQTPeudf5vY",
+  "phases": [
+    {
+      "id": 1,
+      "name": "Foundation & Design",
+      "check": "Click through every page on phone and laptop; approve the look and feel."
+    },
+    {
+      "id": 2,
+      "name": "Catalogue & Admin Basics",
+      "check": "Add your first 20 products yourself."
+    },
+    {
+      "id": 3,
+      "name": "Accounts, Cart & Wishlist",
+      "check": "Create a test account and add items."
+    },
+    {
+      "id": 4,
+      "name": "Checkout & Payments",
+      "check": "Place test orders (online and Cash on Delivery)."
+    },
+    {
+      "id": 5,
+      "name": "Orders & Fulfilment",
+      "check": "Run a full order from placing to refund."
+    },
+    {
+      "id": 6,
+      "name": "Reviews",
+      "check": "Write, approve and reply to a review."
+    },
+    {
+      "id": 7,
+      "name": "Notifications",
+      "check": "Receive all messages for a test order."
+    },
+    {
+      "id": 8,
+      "name": "Dashboard & Reports",
+      "check": "Check the numbers match your test orders."
+    },
+    {
+      "id": 9,
+      "name": "Testing & Launch",
+      "check": "Final sign-off with the launch checklist (PRD §22)."
+    },
+    {
+      "id": "x",
+      "name": "Your extra requests",
+      "check": "Changes you asked for between phases."
+    }
+  ],
+  "cards": [
+    {
+      "phase": 1,
+      "area": "Setup",
+      "status": "done",
+      "title": "Store, admin panel and server set up",
+      "detail": "Three separate apps that start together with one command."
+    },
+    {
+      "phase": 1,
+      "area": "Design",
+      "status": "done",
+      "title": "Brand colours and phone-first layouts",
+      "detail": "Navy and orange, header, footer, menus; every page works on phones."
+    },
+    {
+      "phase": 1,
+      "area": "Store",
+      "status": "done",
+      "title": "All customer pages laid out",
+      "detail": "Home, shop, product, cart, checkout, account, policies and more."
+    },
+    {
+      "phase": 1,
+      "area": "Admin",
+      "status": "done",
+      "title": "All admin screens laid out",
+      "detail": "Every module from the PRD has its screen."
+    },
+    {
+      "phase": 1,
+      "area": "Server",
+      "status": "done",
+      "title": "Database structure",
+      "detail": "Records for products, orders, customers, payments, reviews and more."
+    },
+    {
+      "phase": 1,
+      "area": "Server",
+      "status": "done",
+      "title": "Price and delivery rules",
+      "detail": "Discount %, free delivery from ₹500, COD fee; checked against the PRD examples."
+    },
+    {
+      "phase": 2,
+      "area": "Admin",
+      "status": "done",
+      "title": "Secure admin login",
+      "detail": "Locks for 15 minutes after 5 wrong passwords; 2-hour session; change password."
+    },
+    {
+      "phase": 2,
+      "area": "Admin",
+      "status": "done",
+      "title": "Categories",
+      "detail": "Up to 3 levels; Men and Women are locked so menus never break."
+    },
+    {
+      "phase": 2,
+      "area": "Admin",
+      "status": "done",
+      "title": "Products with sizes and colours",
+      "detail": "Photos per colour, video, copy, bulk actions, hide instead of delete."
+    },
+    {
+      "phase": 2,
+      "area": "Admin",
+      "status": "done",
+      "title": "Inventory",
+      "detail": "Quick stock edits, full history, spreadsheet download and upload. Sales are never undone."
+    },
+    {
+      "phase": 2,
+      "area": "Admin",
+      "status": "done",
+      "title": "Image library and homepage banners",
+      "detail": "Photos shrunk automatically; banners with start and end dates."
+    },
+    {
+      "phase": 2,
+      "area": "Admin",
+      "status": "done",
+      "title": "Size charts",
+      "detail": "Table or photo, attached to products."
+    },
+    {
+      "phase": 2,
+      "area": "Store",
+      "status": "done",
+      "title": "Shop filters and search",
+      "detail": "Price, size, colour, brand, rating, discount; suggestions while typing."
+    },
+    {
+      "phase": 2,
+      "area": "Store",
+      "status": "done",
+      "title": "Product page",
+      "detail": "Colour-matched photos, zoom, swipe, video, size chart pop-up."
+    },
+    {
+      "phase": 2,
+      "area": "Server",
+      "status": "done",
+      "title": "10 code-review fixes",
+      "detail": "Login lock, stock safety, unique product codes, faster spreadsheet uploads and more."
+    },
+    {
+      "phase": 2,
+      "area": "Your task",
+      "status": "test",
+      "title": "Add your first 20 products",
+      "detail": "The store still shows 8 sample products.",
+      "waitingOn": "Your turn: add real products in the admin panel."
+    },
+    {
+      "phase": 3,
+      "area": "Store",
+      "status": "done",
+      "title": "Register and log in",
+      "detail": "Email or mobile; \"Remember me\"; 5-try lock; blocked customers refused."
+    },
+    {
+      "phase": 3,
+      "area": "Store",
+      "status": "done",
+      "title": "Forgot password",
+      "detail": "30-minute, single-use reset link.",
+      "waitingOn": "Real emails start in Phase 7."
+    },
+    {
+      "phase": 3,
+      "area": "Store",
+      "status": "done",
+      "title": "My Account: profile and addresses",
+      "detail": "Edit details, change password, up to 10 addresses with a default."
+    },
+    {
+      "phase": 3,
+      "area": "Store",
+      "status": "done",
+      "title": "Shopping cart",
+      "detail": "Works for guests; server prices; free-delivery bar; sold-out and price-change warnings."
+    },
+    {
+      "phase": 3,
+      "area": "Store",
+      "status": "done",
+      "title": "Guest cart joins the account",
+      "detail": "Items carry over when a guest logs in."
+    },
+    {
+      "phase": 3,
+      "area": "Store",
+      "status": "done",
+      "title": "Wishlist",
+      "detail": "Hearts, price-drop note, Move to Cart."
+    },
+    {
+      "phase": 4,
+      "area": "Store",
+      "status": "done",
+      "title": "Checkout page",
+      "detail": "Saved or new address, payment choice, review, Terms box."
+    },
+    {
+      "phase": 4,
+      "area": "Store",
+      "status": "done",
+      "title": "Cash on Delivery orders",
+      "detail": "₹50 fee shown up front; hidden above ₹5,000."
+    },
+    {
+      "phase": 4,
+      "area": "Server",
+      "status": "done",
+      "title": "Order numbers and snapshots",
+      "detail": "SHM-YYMMDD-XXXX; prices and address frozen at purchase."
+    },
+    {
+      "phase": 4,
+      "area": "Server",
+      "status": "done",
+      "title": "Stock protection",
+      "detail": "Stock drops only when an order is confirmed; the last item can never sell twice."
+    },
+    {
+      "phase": 4,
+      "area": "Payments",
+      "status": "test",
+      "title": "Online payments with Razorpay",
+      "detail": "Built and tested with a pretend Razorpay: signatures, retries, automatic refunds.",
+      "waitingOn": "Waiting for your Razorpay test keys."
+    },
+    {
+      "phase": 4,
+      "area": "Payments",
+      "status": "test",
+      "title": "Razorpay backup confirmation",
+      "detail": "Confirms orders even if the customer closes the browser.",
+      "waitingOn": "Needs the website online (Phase 9) to receive it."
+    },
+    {
+      "phase": 4,
+      "area": "Store",
+      "status": "done",
+      "title": "Thank-you page and My Orders",
+      "detail": "Order number, items, totals, address; order list and detail."
+    },
+    {
+      "phase": 4,
+      "area": "Server",
+      "status": "done",
+      "title": "Unpaid orders close after 30 minutes",
+      "detail": "Retry Payment works until then."
+    },
+    {
+      "phase": 4,
+      "area": "Your task",
+      "status": "test",
+      "title": "Place test orders",
+      "detail": "Try a Cash on Delivery order now; online once keys are added.",
+      "waitingOn": "Your turn: place a test order, then ask me to clear it."
+    },
+    {
+      "phase": 5,
+      "area": "Admin",
+      "status": "notstarted",
+      "title": "Orders screen",
+      "detail": "List, filter and open orders; see items, address and payment."
+    },
+    {
+      "phase": 5,
+      "area": "Admin",
+      "status": "notstarted",
+      "title": "Order status updates",
+      "detail": "Packed → Shipped (courier + tracking) → Out for Delivery → Delivered; forward only."
+    },
+    {
+      "phase": 5,
+      "area": "Admin",
+      "status": "notstarted",
+      "title": "Packing slip and receipt",
+      "detail": "Printable slip with address, items and COD amount to collect."
+    },
+    {
+      "phase": 5,
+      "area": "Store",
+      "status": "notstarted",
+      "title": "Customer cancellation",
+      "detail": "Cancel before shipping with a reason; stock restored; refund if paid online."
+    },
+    {
+      "phase": 5,
+      "area": "Store",
+      "status": "notstarted",
+      "title": "Returns and exchanges",
+      "detail": "Request within 7 days with photos; admin approves, picks up, checks, restocks."
+    },
+    {
+      "phase": 5,
+      "area": "Payments",
+      "status": "notstarted",
+      "title": "Refunds",
+      "detail": "One-click Razorpay refunds; COD refunds paid by hand with a reference."
+    },
+    {
+      "phase": 5,
+      "area": "Store",
+      "status": "notstarted",
+      "title": "Order tracking page",
+      "detail": "Look up an order and see its timeline."
+    },
+    {
+      "phase": 5,
+      "area": "Store",
+      "status": "notstarted",
+      "title": "Download receipt",
+      "detail": "From the order page."
+    },
+    {
+      "phase": 5,
+      "area": "Server",
+      "status": "notstarted",
+      "title": "Undelivered (RTO) handling",
+      "detail": "Stock restored when a parcel comes back."
+    },
+    {
+      "phase": 6,
+      "area": "Store",
+      "status": "planned",
+      "title": "Write a review",
+      "detail": "Stars, text, up to 5 photos and 1 video; verified buyers only."
+    },
+    {
+      "phase": 6,
+      "area": "Admin",
+      "status": "planned",
+      "title": "Review moderation and replies",
+      "detail": "Approve, reject with reason, reply publicly."
+    },
+    {
+      "phase": 6,
+      "area": "Store",
+      "status": "planned",
+      "title": "Ratings on product pages",
+      "detail": "Average and 5★–1★ breakdown from approved reviews."
+    },
+    {
+      "phase": 6,
+      "area": "Store",
+      "status": "planned",
+      "title": "My Reviews",
+      "detail": "See review status and edit."
+    },
+    {
+      "phase": 7,
+      "area": "Messages",
+      "status": "planned",
+      "title": "Connect an email service",
+      "detail": "Welcome, password reset and order emails start sending.",
+      "waitingOn": "Needs an email service account (PRD §20)."
+    },
+    {
+      "phase": 7,
+      "area": "Messages",
+      "status": "planned",
+      "title": "WhatsApp automatic messages",
+      "detail": "Order confirmed, shipped, delivered and refund updates.",
+      "waitingOn": "Needs Meta WhatsApp Business approval."
+    },
+    {
+      "phase": 7,
+      "area": "Admin",
+      "status": "planned",
+      "title": "Contact messages inbox",
+      "detail": "Contact form saved to the admin panel with a reply status."
+    },
+    {
+      "phase": 7,
+      "area": "Messages",
+      "status": "planned",
+      "title": "Newsletter sign-ups",
+      "detail": "Saved with consent; unsubscribe any time."
+    },
+    {
+      "phase": 7,
+      "area": "Messages",
+      "status": "planned",
+      "title": "Admin alerts",
+      "detail": "New orders, returns and a daily low-stock summary."
+    },
+    {
+      "phase": 8,
+      "area": "Admin",
+      "status": "planned",
+      "title": "Dashboard numbers",
+      "detail": "Sales, orders, pending work and stock alerts at a glance."
+    },
+    {
+      "phase": 8,
+      "area": "Admin",
+      "status": "planned",
+      "title": "Sales reports",
+      "detail": "By day, product and category; download."
+    },
+    {
+      "phase": 8,
+      "area": "Admin",
+      "status": "planned",
+      "title": "Payments screen",
+      "detail": "Every payment and refund, including any that need a hand refund."
+    },
+    {
+      "phase": 8,
+      "area": "Admin",
+      "status": "planned",
+      "title": "Customers screen",
+      "detail": "List, details, block or unblock, export."
+    },
+    {
+      "phase": 8,
+      "area": "Admin",
+      "status": "planned",
+      "title": "Business Settings editing",
+      "detail": "Change fees, limits, contact details and policy pages yourself."
+    },
+    {
+      "phase": 9,
+      "area": "Launch",
+      "status": "planned",
+      "title": "Full testing, speed and security checks",
+      "detail": "Everything on the PRD §22 launch checklist."
+    },
+    {
+      "phase": 9,
+      "area": "Launch",
+      "status": "planned",
+      "title": "Online hosting and database",
+      "detail": "MongoDB Atlas, hosting, daily backups."
+    },
+    {
+      "phase": 9,
+      "area": "Launch",
+      "status": "planned",
+      "title": "Photos moved to Cloudinary",
+      "detail": "Product and banner photos served online."
+    },
+    {
+      "phase": 9,
+      "area": "Launch",
+      "status": "planned",
+      "title": "Your web address and HTTPS",
+      "detail": "The site at your own domain with the secure padlock.",
+      "waitingOn": "Needs your domain name."
+    },
+    {
+      "phase": 9,
+      "area": "Payments",
+      "status": "planned",
+      "title": "Switch Razorpay to live",
+      "detail": "Real payments after Razorpay approves your account."
+    },
+    {
+      "phase": 9,
+      "area": "Launch",
+      "status": "planned",
+      "title": "GitHub repo and production protection",
+      "detail": "Online copy of the code; production only changes through reviewed merges.",
+      "waitingOn": "Needs your GitHub repository link."
+    },
+    {
+      "phase": 9,
+      "area": "Legal",
+      "status": "planned",
+      "title": "Lawyer review of the policies",
+      "detail": "Privacy, Terms and Refund & Cancellation checked by a legal or CA advisor."
+    },
+    {
+      "phase": 9,
+      "area": "Store",
+      "status": "planned",
+      "title": "Pincode → city/state auto-fill",
+      "detail": "Fills city and state from the pincode at checkout.",
+      "waitingOn": "Needs your OK to use a free pincode lookup service."
+    },
+    {
+      "phase": "x",
+      "area": "Design",
+      "status": "done",
+      "title": "Homepage banner and category photos",
+      "detail": "Fashion banner and photo covers for Men, Women, Fashion, Beauty, Accessories."
+    },
+    {
+      "phase": "x",
+      "area": "Store",
+      "status": "done",
+      "title": "WhatsApp greeting message",
+      "detail": "\"Hi SHOPME, I would like to know more about your products.\""
+    },
+    {
+      "phase": "x",
+      "area": "Store",
+      "status": "done",
+      "title": "Footer clean-up",
+      "detail": "Payment logos removed; long email wraps on phones."
+    },
+    {
+      "phase": "x",
+      "area": "Admin",
+      "status": "done",
+      "title": "Category link repair",
+      "detail": "Women and Clothing links restored; web addresses protected from accidental edits."
+    },
+    {
+      "phase": "x",
+      "area": "Store",
+      "status": "done",
+      "title": "Store location map and address",
+      "detail": "Google map of Apsara Arcade with Get Directions, in the footer and Contact page."
+    },
+    {
+      "phase": "x",
+      "area": "Legal",
+      "status": "done",
+      "title": "Privacy Policy (DPDP Act)",
+      "detail": "Aligned with the DPDP Act 2023 and Rules 2025."
+    },
+    {
+      "phase": "x",
+      "area": "Legal",
+      "status": "done",
+      "title": "Terms & Conditions",
+      "detail": "Consumer Protection Act and E-Commerce Rules; Ernakulam jurisdiction."
+    },
+    {
+      "phase": "x",
+      "area": "Legal",
+      "status": "done",
+      "title": "Refund & Cancellation Policy",
+      "detail": "Payment-gateway format: cancellation, returns, refund amounts and timelines."
+    },
+    {
+      "phase": "x",
+      "area": "Legal",
+      "status": "done",
+      "title": "Consent checkboxes",
+      "detail": "Required box with policy links on register, checkout, contact and newsletter; consent recorded."
+    },
+    {
+      "phase": "x",
+      "area": "Legal",
+      "status": "done",
+      "title": "Delete my account",
+      "detail": "Customers erase their data from My Account; order records kept as the law requires."
+    },
+    {
+      "phase": "x",
+      "area": "Setup",
+      "status": "done",
+      "title": "Git with development and production",
+      "detail": "Checkpoints before every phase; production blocked from direct changes."
+    }
+  ],
+  "screens": [
+    {
+      "app": "store",
+      "name": "Home",
+      "path": "/",
+      "status": "done",
+      "note": "Banner, category photos, new arrivals, featured picks."
+    },
+    {
+      "app": "store",
+      "name": "Shop, Men, Women and category pages",
+      "path": "/shop, /men, /women, /category/…",
+      "status": "done",
+      "note": "Filters, sorting, phone filter sheet."
+    },
+    {
+      "app": "store",
+      "name": "Search results",
+      "path": "/search",
+      "status": "done",
+      "note": "Suggestions while typing; popular items if nothing matches."
+    },
+    {
+      "app": "store",
+      "name": "New Arrivals",
+      "path": "/new-arrivals",
+      "status": "done",
+      "note": ""
+    },
+    {
+      "app": "store",
+      "name": "Product details",
+      "path": "/product/…",
+      "status": "done",
+      "note": "Reviews section arrives in Phase 6."
+    },
+    {
+      "app": "store",
+      "name": "Cart",
+      "path": "/cart",
+      "status": "done",
+      "note": ""
+    },
+    {
+      "app": "store",
+      "name": "Wishlist",
+      "path": "/wishlist",
+      "status": "done",
+      "note": ""
+    },
+    {
+      "app": "store",
+      "name": "Checkout",
+      "path": "/checkout",
+      "status": "test",
+      "note": "Cash on Delivery works; online payment waits for Razorpay keys."
+    },
+    {
+      "app": "store",
+      "name": "Order confirmation (thank you)",
+      "path": "/order-confirmation/…",
+      "status": "done",
+      "note": ""
+    },
+    {
+      "app": "store",
+      "name": "Login, Register, Forgot and Reset password",
+      "path": "/login, /register, …",
+      "status": "done",
+      "note": "Consent box on Register."
+    },
+    {
+      "app": "store",
+      "name": "My Account: profile, password, privacy",
+      "path": "/account",
+      "status": "done",
+      "note": "Includes Delete my account."
+    },
+    {
+      "app": "store",
+      "name": "Saved addresses",
+      "path": "/account/addresses",
+      "status": "done",
+      "note": ""
+    },
+    {
+      "app": "store",
+      "name": "My Orders",
+      "path": "/account/orders",
+      "status": "done",
+      "note": ""
+    },
+    {
+      "app": "store",
+      "name": "Order detail",
+      "path": "/account/orders/…",
+      "status": "notstarted",
+      "note": "Shows the order; cancel, return and receipt buttons come in Phase 5."
+    },
+    {
+      "app": "store",
+      "name": "My Reviews",
+      "path": "/account/reviews",
+      "status": "planned",
+      "note": "Phase 6."
+    },
+    {
+      "app": "store",
+      "name": "Track Order",
+      "path": "/track-order",
+      "status": "notstarted",
+      "note": "Layout only; real lookups in Phase 5."
+    },
+    {
+      "app": "store",
+      "name": "Contact Us",
+      "path": "/contact",
+      "status": "done",
+      "note": "Map and details done; saving messages comes in Phase 7."
+    },
+    {
+      "app": "store",
+      "name": "About Us",
+      "path": "/about",
+      "status": "done",
+      "note": "Brand story text is editable in Phase 8."
+    },
+    {
+      "app": "store",
+      "name": "Policy pages",
+      "path": "/policies/…",
+      "status": "done",
+      "note": "Privacy, Terms, Refund & Cancellation, Shipping, FAQ (FAQ text still a placeholder)."
+    },
+    {
+      "app": "store",
+      "name": "Page not found",
+      "path": "any wrong link",
+      "status": "done",
+      "note": ""
+    },
+    {
+      "app": "admin",
+      "name": "Admin login",
+      "path": "/login",
+      "status": "done",
+      "note": ""
+    },
+    {
+      "app": "admin",
+      "name": "Dashboard",
+      "path": "/",
+      "status": "planned",
+      "note": "Stock alerts work now; sales numbers in Phase 8."
+    },
+    {
+      "app": "admin",
+      "name": "Products and product form",
+      "path": "/products",
+      "status": "done",
+      "note": ""
+    },
+    {
+      "app": "admin",
+      "name": "Categories",
+      "path": "/categories",
+      "status": "done",
+      "note": ""
+    },
+    {
+      "app": "admin",
+      "name": "Inventory",
+      "path": "/inventory",
+      "status": "done",
+      "note": ""
+    },
+    {
+      "app": "admin",
+      "name": "Images & Banners",
+      "path": "/media",
+      "status": "done",
+      "note": ""
+    },
+    {
+      "app": "admin",
+      "name": "Size Charts",
+      "path": "/size-charts",
+      "status": "done",
+      "note": ""
+    },
+    {
+      "app": "admin",
+      "name": "My Account (change password)",
+      "path": "/account",
+      "status": "done",
+      "note": ""
+    },
+    {
+      "app": "admin",
+      "name": "Orders",
+      "path": "/orders",
+      "status": "notstarted",
+      "note": "Phase 5."
+    },
+    {
+      "app": "admin",
+      "name": "Returns",
+      "path": "/returns",
+      "status": "notstarted",
+      "note": "Phase 5."
+    },
+    {
+      "app": "admin",
+      "name": "Reviews",
+      "path": "/reviews",
+      "status": "planned",
+      "note": "Phase 6."
+    },
+    {
+      "app": "admin",
+      "name": "Contact Messages",
+      "path": "/messages",
+      "status": "planned",
+      "note": "Phase 7."
+    },
+    {
+      "app": "admin",
+      "name": "Payments",
+      "path": "/payments",
+      "status": "planned",
+      "note": "Phase 8."
+    },
+    {
+      "app": "admin",
+      "name": "Customers",
+      "path": "/customers",
+      "status": "planned",
+      "note": "Phase 8."
+    },
+    {
+      "app": "admin",
+      "name": "Reports",
+      "path": "/reports",
+      "status": "planned",
+      "note": "Phase 8."
+    },
+    {
+      "app": "admin",
+      "name": "Business Settings",
+      "path": "/settings",
+      "status": "planned",
+      "note": "Phase 8."
+    }
+  ],
+  "decisions": [
+    {
+      "id": 1,
+      "text": "Delivery charge below ₹500 is ₹50",
+      "state": "confirm"
+    },
+    {
+      "id": 2,
+      "text": "Cash on Delivery extra charge is ₹50",
+      "state": "confirm"
+    },
+    {
+      "id": 3,
+      "text": "Maximum Cash on Delivery order is ₹5,000",
+      "state": "confirm"
+    },
+    {
+      "id": 4,
+      "text": "Beauty products are non-returnable unless damaged or wrong",
+      "state": "confirm"
+    },
+    {
+      "id": 5,
+      "text": "Delivery and COD charges not refunded on normal returns (refunded if our mistake)",
+      "state": "confirm"
+    },
+    {
+      "id": 6,
+      "text": "Exchanges only for same-or-lower-priced sizes/colours of the same product",
+      "state": "confirm"
+    },
+    {
+      "id": 7,
+      "text": "Shipping booked by hand with any courier; tracking typed into admin",
+      "state": "confirm"
+    },
+    {
+      "id": 8,
+      "text": "Cancellation allowed only before the order is shipped",
+      "state": "confirm"
+    },
+    {
+      "id": 9,
+      "text": "Maximum 5 units per size/colour per order",
+      "state": "confirm"
+    },
+    {
+      "id": 10,
+      "text": "Customers must log in to check out (no guest checkout)",
+      "state": "confirm"
+    },
+    {
+      "id": 11,
+      "text": "No coupons in version 1.0",
+      "state": "confirm"
+    },
+    {
+      "id": 12,
+      "text": "Review edits allowed within 30 days and checked again",
+      "state": "confirm"
+    },
+    {
+      "id": 13,
+      "text": "Delivery estimate \"4–7 business days\" across India",
+      "state": "confirm"
+    },
+    {
+      "id": 14,
+      "text": "Your web address (domain), e.g. shopme.in",
+      "state": "needed"
+    },
+    {
+      "id": 15,
+      "text": "Business contact details, WhatsApp, address, logo",
+      "state": "done"
+    },
+    {
+      "id": 16,
+      "text": "\"Remember me\" keeps customers logged in 30 days; otherwise until the browser closes",
+      "state": "confirm"
+    },
+    {
+      "id": 17,
+      "text": "Up to 10 saved addresses; 50 items in a cart; 200 in a wishlist",
+      "state": "confirm"
+    },
+    {
+      "id": 18,
+      "text": "Refunds started within 2 business days; return requests reviewed within 2 business days",
+      "state": "confirm"
+    },
+    {
+      "id": 19,
+      "text": "Prepaid orders that come back undelivered are refunded in full",
+      "state": "confirm"
+    },
+    {
+      "id": 20,
+      "text": "Accounts unused for 3 years may be deleted after 48 hours’ notice",
+      "state": "confirm"
+    },
+    {
+      "id": 21,
+      "text": "Proprietor and Grievance Officer named on the policies (RESHMA PR)",
+      "state": "done"
+    },
+    {
+      "id": "—",
+      "text": "Is return pickup free for the customer?",
+      "state": "needed"
+    },
+    {
+      "id": "—",
+      "text": "Razorpay test keys (to switch on online payments)",
+      "state": "needed"
+    },
+    {
+      "id": "—",
+      "text": "Use a free pincode lookup to fill city and state automatically?",
+      "state": "needed"
+    },
+    {
+      "id": "—",
+      "text": "GitHub repository link (to protect production online)",
+      "state": "needed"
+    }
+  ]
+}

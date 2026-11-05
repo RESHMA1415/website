@@ -1,0 +1,586 @@
+<title>SHOPME Project Hub</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+  /* Layout: brand band header, tab bar, then one view at a time (overview, board columns, phases, screens, decisions) */
+  :root {
+    --navy: #14213D;
+    --orange: #FF7A00;
+    --bg: #F6F7FB;
+    --surface: #FFFFFF;
+    --surface-2: #EEF1F7;
+    --fg: #1B2436;
+    --muted: #5E6880;
+    --line: #DCE1EC;
+    --band: #14213D;
+    --band-fg: #FFFFFF;
+    --accent: #E86E00;
+    --accent-soft: #FFF1E3;
+    --ok: #16794A;
+    --ok-soft: #E3F4EA;
+    --test: #8A5A00;
+    --test-soft: #FFF4D6;
+    --dev: #C2410C;
+    --dev-soft: #FFEADB;
+    --todo: #3E4C6D;
+    --todo-soft: #E7EBF4;
+    --plan: #6B7280;
+    --plan-soft: #EFF0F3;
+    --font-display: 'Poppins', 'Segoe UI', system-ui, sans-serif;
+    --font-body: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --radius: 12px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0D1424; --surface: #151F35; --surface-2: #1C2842; --fg: #E7EBF5; --muted: #9AA6C2; --line: #2A3858;
+      --band: #0A1020; --band-fg: #FFFFFF; --accent: #FF8A1F; --accent-soft: #3A2412;
+      --ok: #5FD39A; --ok-soft: #13301F; --test: #F2C14E; --test-soft: #352A0F; --dev: #FF9A5C; --dev-soft: #3A2014;
+      --todo: #A9B8DD; --todo-soft: #1E2A47; --plan: #A0A7B5; --plan-soft: #222A3B; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0D1424; --surface: #151F35; --surface-2: #1C2842; --fg: #E7EBF5; --muted: #9AA6C2; --line: #2A3858;
+    --band: #0A1020; --band-fg: #FFFFFF; --accent: #FF8A1F; --accent-soft: #3A2412;
+    --ok: #5FD39A; --ok-soft: #13301F; --test: #F2C14E; --test-soft: #352A0F; --dev: #FF9A5C; --dev-soft: #3A2014;
+    --todo: #A9B8DD; --todo-soft: #1E2A47; --plan: #A0A7B5; --plan-soft: #222A3B; color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.55; }
+  h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; line-height: 1.25; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+  /* Header band */
+  .band { background: var(--band); color: var(--band-fg); }
+  .band .wrap { padding-block: 28px 22px; display: grid; gap: 18px; }
+  .brand { font-family: var(--font-display); font-weight: 700; font-size: 26px; letter-spacing: 0.5px; }
+  .brand span { color: var(--orange); }
+  .band-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px; }
+  .band-sub { color: rgba(255,255,255,0.75); font-size: 14px; max-width: 62ch; }
+  .band-meta { font-size: 12px; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.08em; }
+  .progress { display: grid; gap: 8px; }
+  .progress-row { display: flex; justify-content: space-between; font-size: 13px; color: rgba(255,255,255,0.8); gap: 12px; flex-wrap: wrap; }
+  .progress-bar { display: flex; height: 10px; border-radius: 999px; overflow: hidden; background: rgba(255,255,255,0.12); }
+  .progress-bar span { display: block; height: 100%; }
+
+  /* Tabs */
+  .tabs { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line); }
+  body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--band); }
+  .tabs .wrap { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+  .tab { appearance: none; border: 0; background: none; font: 600 14px var(--font-body); color: var(--muted); padding: 14px 14px 12px; border-bottom: 3px solid transparent; cursor: pointer; white-space: nowrap; text-decoration: none; }
+  .tab:hover { color: var(--fg); }
+  .tab[aria-current="page"] { color: var(--fg); border-bottom-color: var(--orange); }
+  .tab:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  main .wrap { padding-block: 24px 48px; }
+  .view { display: grid; gap: 24px; }
+  .section-title { font-size: 18px; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .section-title small { font: 400 13px var(--font-body); color: var(--muted); }
+  .eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); font-weight: 600; }
+
+  /* Overview */
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 16px; }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; min-width: 0; }
+  .panel h3 { font-size: 15px; margin-bottom: 10px; }
+  dl.facts { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0; font-size: 14px; }
+  dl.facts dt { color: var(--muted); }
+  dl.facts dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+  .stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; }
+  .stat b { display: block; font: 700 26px var(--font-display); font-variant-numeric: tabular-nums; }
+  .stat span { font-size: 13px; color: var(--muted); }
+  ul.clean { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 14px; }
+  .rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 10px; }
+  .rule { background: var(--surface-2); border-radius: 10px; padding: 12px 14px; font-size: 13.5px; }
+  .rule b { display: block; font: 600 16px var(--font-display); color: var(--fg); }
+  .phase-strip { display: grid; gap: 8px; }
+  .phase-line { display: grid; grid-template-columns: 34px 1fr auto; gap: 12px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; cursor: pointer; text-align: left; font: inherit; color: inherit; }
+  .phase-line:hover { border-color: var(--accent); }
+  .phase-num { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font: 700 14px var(--font-display); background: var(--surface-2); color: var(--fg); }
+  .phase-num.done { background: var(--ok-soft); color: var(--ok); }
+  .phase-num.next { background: var(--accent-soft); color: var(--accent); }
+  .phase-line .t { font-weight: 600; }
+  .phase-line .d { font-size: 13px; color: var(--muted); }
+  .mini-bar { width: 110px; height: 6px; border-radius: 99px; background: var(--surface-2); overflow: hidden; display: flex; }
+  .mini-bar span { height: 100%; display: block; }
+
+  /* Pills */
+  .pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+  .pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+  .s-planned { color: var(--plan); background: var(--plan-soft); }
+  .s-notstarted { color: var(--todo); background: var(--todo-soft); }
+  .s-dev { color: var(--dev); background: var(--dev-soft); }
+  .s-test { color: var(--test); background: var(--test-soft); }
+  .s-done { color: var(--ok); background: var(--ok-soft); }
+
+  /* Filters */
+  .filters { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { appearance: none; border: 1px solid var(--line); background: var(--surface); color: var(--fg); font: 500 13px var(--font-body); padding: 6px 12px; border-radius: 999px; cursor: pointer; }
+  .chip:hover { border-color: var(--accent); }
+  .chip[aria-pressed="true"] { background: var(--navy); border-color: var(--navy); color: #fff; }
+  :root[data-theme="dark"] .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #111; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #111; } }
+  .search { flex: 1 1 220px; min-width: 0; max-width: 340px; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); font: inherit; font-size: 14px; }
+  select.search { max-width: 200px; flex: 0 1 200px; }
+
+  /* Board */
+  .board-scroll { overflow-x: auto; padding-bottom: 6px; }
+  .board { display: grid; grid-template-columns: repeat(5, minmax(230px, 1fr)); gap: 12px; min-width: 1180px; }
+  .col { background: var(--surface-2); border-radius: var(--radius); padding: 10px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+  .col-head { display: flex; justify-content: space-between; align-items: center; padding: 4px 4px 6px; }
+  .col-head b { font: 600 14px var(--font-display); }
+  .count { font-size: 12px; font-weight: 600; color: var(--muted); background: var(--surface); border-radius: 999px; padding: 1px 8px; font-variant-numeric: tabular-nums; }
+  .col-note { font-size: 12px; color: var(--muted); padding: 0 4px 4px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px; display: grid; gap: 6px; min-width: 0; }
+  .card h4 { margin: 0; font: 600 14px var(--font-body); line-height: 1.35; }
+  .card p { margin: 0; font-size: 13px; color: var(--muted); }
+  .card .meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .tag { font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 6px; background: var(--surface-2); color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  .tag.phase { background: var(--todo-soft); color: var(--todo); }
+  .tag.extra { background: var(--accent-soft); color: var(--accent); }
+  .waiting { font-size: 12.5px; color: var(--test); background: var(--test-soft); border-radius: 8px; padding: 6px 8px; }
+  .waiting b { font-weight: 600; }
+  .empty { font-size: 13px; color: var(--muted); border: 1px dashed var(--line); border-radius: 10px; padding: 14px; text-align: center; background: var(--surface); }
+
+  /* By phase */
+  .phase-block { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+  .phase-block header { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+  .phase-block header .t { display: flex; align-items: center; gap: 12px; }
+  .phase-block h3 { font-size: 16px; }
+  .phase-block .check { font-size: 13px; color: var(--muted); padding: 10px 18px 0; }
+  .phase-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 10px; padding: 14px 18px 18px; }
+
+  /* Tables */
+  .table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 560px; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); background: var(--surface-2); font-weight: 600; }
+  tr:last-child td { border-bottom: 0; }
+  td .sub { display: block; font-size: 12.5px; color: var(--muted); }
+  .num { font-variant-numeric: tabular-nums; color: var(--muted); }
+
+  .note { font-size: 13px; color: var(--muted); }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px; }
+  @media (prefers-reduced-motion: no-preference) { .card, .chip, .phase-line { transition: border-color 0.15s, background 0.15s; } }
+</style>
+
+<header class="band">
+  <div class="wrap">
+    <div class="band-top">
+      <div>
+        <div class="brand">SHOP<span>ME</span> <span style="color:rgba(255,255,255,0.55);font-weight:500;font-size:16px">Project Hub</span></div>
+        <div class="band-sub">Clothing and women's fashion e-commerce for India: customer website, admin panel and server. Everything planned, built and waiting, in one place.</div>
+      </div>
+      <div class="band-meta" id="band-meta"></div>
+    </div>
+    <div class="progress" aria-label="Overall progress">
+      <div class="progress-row"><span id="progress-label"></span><span id="progress-phases"></span></div>
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs" aria-label="Views">
+  <div class="wrap" id="tabs">
+    <a class="tab" href="#overview" data-view="overview">Overview</a>
+    <a class="tab" href="#board" data-view="board">Board</a>
+    <a class="tab" href="#phases" data-view="phases">By phase</a>
+    <a class="tab" href="#screens" data-view="screens">Screens</a>
+    <a class="tab" href="#decisions" data-view="decisions">Decisions</a>
+    <a class="tab" href="#code" data-view="code">Code</a>
+  </div>
+</nav>
+
+<main>
+  <div class="wrap">
+    <!-- OVERVIEW -->
+    <section class="view" id="view-overview" aria-labelledby="h-overview">
+      <h2 class="section-title" id="h-overview">Overview <small>The business, the rules the site follows, and where the build stands</small></h2>
+      <div class="stats" id="stats"></div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <h3>The business</h3>
+          <dl class="facts">
+            <dt>Store</dt><dd>SHOPME, sole proprietorship of RESHMA PR</dd>
+            <dt>Sells</dt><dd>Men's clothing; women's clothing, fashion, beauty and accessories</dd>
+            <dt>Market</dt><dd>All of India · prices in ₹ only · no GST (not registered)</dd>
+            <dt>Address</dt><dd>Apsara Arcade, MKK Nair Road, Palarivattom, Ernakulam, Kerala – 682025</dd>
+            <dt>Phone / WhatsApp</dt><dd>+91 80891 11500 (open 24 hours)</dd>
+            <dt>Email</dt><dd>shopmesupport2@gmail.com</dd>
+            <dt>Grievance Officer</dt><dd>RESHMA PR (Proprietor)</dd>
+            <dt>Brand</dt><dd>Navy #14213D, orange #FF7A00, white background · mobile-first</dd>
+          </dl>
+        </div>
+        <div class="panel">
+          <h3>Who uses it</h3>
+          <dl class="facts">
+            <dt>Guests</dt><dd>Browse, search, filter, add to cart, WhatsApp enquiry</dd>
+            <dt>Customers</dt><dd>Everything above plus wishlist, checkout, orders, returns, reviews, addresses, delete account</dd>
+            <dt>Admin</dt><dd>One owner account; separate private panel and login; no staff roles in v1.0</dd>
+          </dl>
+          <h3 style="margin-top:16px">Built with</h3>
+          <dl class="facts">
+            <dt>Customer site</dt><dd>React + Bootstrap</dd>
+            <dt>Admin panel</dt><dd>React + Bootstrap (separate app)</dd>
+            <dt>Server</dt><dd>Node.js + Express, MongoDB database</dd>
+            <dt>Payments</dt><dd>Razorpay (UPI, cards, net banking, wallets) + Cash on Delivery</dd>
+            <dt>Messages</dt><dd>Email + WhatsApp (connected in Phase 7)</dd>
+            <dt>Photos</dt><dd>Stored on this computer for now; Cloudinary before launch</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Business rules the website enforces</h3>
+        <div class="rules">
+          <div class="rule"><b>Free delivery from ₹500</b>₹50 delivery below that</div>
+          <div class="rule"><b>Cash on Delivery +₹50</b>Allowed on orders up to ₹5,000</div>
+          <div class="rule"><b>Max 5 per item</b>Never more than what's in stock</div>
+          <div class="rule"><b>Cancel before shipping</b>Free; online payments refunded in full</div>
+          <div class="rule"><b>7-day returns</b>Beauty non-returnable unless damaged or wrong</div>
+          <div class="rule"><b>Refunds in 5–7 business days</b>Online → original method · COD → UPI/bank</div>
+          <div class="rule"><b>Order number</b>SHM-YYMMDD-XXXX, e.g. SHM-261105-0001</div>
+          <div class="rule"><b>Server does the maths</b>Prices, totals and stock never trusted from the browser</div>
+          <div class="rule"><b>Unpaid orders close</b>After 30 minutes if online payment isn't finished</div>
+          <div class="rule"><b>No coupons</b>Not part of version 1.0</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <h3>The nine build phases</h3>
+          <div class="phase-strip" id="phase-strip"></div>
+        </div>
+        <div class="panel">
+          <h3>How work is saved (your Git rule)</h3>
+          <ul class="clean">
+            <li>Two branches: <b>development</b> for all work, <b>production</b> for the live site.</li>
+            <li>A checkpoint is saved before every phase starts.</li>
+            <li>Nothing is ever sent straight to production. It only changes by merging development after a code review. This is enforced on this computer.</li>
+            <li>Passwords and keys stay in a private settings file that is never saved to Git.</li>
+          </ul>
+          <h3 style="margin-top:16px">Where to look today</h3>
+          <dl class="facts">
+            <dt>Store</dt><dd>localhost:5173 (on this computer only)</dd>
+            <dt>Admin panel</dt><dd>localhost:5174 · login shopmesupport2@gmail.com</dd>
+            <dt>Legal pages</dt><dd>Privacy Policy, Terms &amp; Conditions, Refund &amp; Cancellation Policy (footer of every page)</dd>
+          </dl>
+          <p class="note" style="margin:10px 0 0">The site goes online at your own web address in Phase 9.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- BOARD -->
+    <section class="view" id="view-board" aria-labelledby="h-board" hidden>
+      <h2 class="section-title" id="h-board">Board <small>Every piece of work as a card, by status</small></h2>
+      <div class="filters">
+        <div class="chips" id="phase-chips" role="group" aria-label="Filter by phase"></div>
+      </div>
+      <div class="filters">
+        <label class="eyebrow" for="area-filter">Area</label>
+        <select class="search" id="area-filter">
+          <option value="all">All areas</option>
+        </select>
+        <input class="search" id="search" type="search" placeholder="Search cards, e.g. refund, wishlist" aria-label="Search cards">
+        <span class="note" id="board-count"></span>
+      </div>
+      <div class="board-scroll">
+        <div class="board" id="board"></div>
+      </div>
+      <p class="note">Scroll sideways on a phone to see all five columns. "Ready for test" means it's built and checked by me, and now needs you (or something from you) before it can be called done.</p>
+    </section>
+
+    <!-- BY PHASE -->
+    <section class="view" id="view-phases" aria-labelledby="h-phases" hidden>
+      <h2 class="section-title" id="h-phases">By phase <small>Each phase with its cards and what you check at the end</small></h2>
+      <div class="legend" id="legend"></div>
+      <div id="phase-list" class="view"></div>
+    </section>
+
+    <!-- SCREENS -->
+    <section class="view" id="view-screens" aria-labelledby="h-screens" hidden>
+      <h2 class="section-title" id="h-screens">Screens <small>Every page on the customer website and in the admin panel</small></h2>
+      <div class="chips" id="screen-chips" role="group" aria-label="Which app"></div>
+      <div class="table-wrap"><table id="screens-table"></table></div>
+    </section>
+
+    <!-- CODE -->
+    <section class="view" id="view-code" aria-labelledby="h-code" hidden>
+      <h2 class="section-title" id="h-code">Code <small>What's saved on development, what's live on production, and the latest changes</small></h2>
+      <div class="stats" id="code-stats"></div>
+      <div class="grid-2">
+        <div class="panel">
+          <h3>Branches</h3>
+          <dl class="facts" id="code-branches"></dl>
+          <p class="note" style="margin:12px 0 0">Production only changes by merging development after a code review. It is never changed directly.</p>
+        </div>
+        <div class="panel">
+          <h3>Phase checkpoints</h3>
+          <div class="table-wrap" style="border:0"><table id="code-checkpoints"></table></div>
+        </div>
+      </div>
+      <div>
+        <h3 class="section-title" style="font-size:16px;margin-bottom:10px">Waiting to go to production <small>On development, not yet merged</small></h3>
+        <div class="table-wrap"><table id="code-pending"></table></div>
+      </div>
+      <div>
+        <h3 class="section-title" style="font-size:16px;margin-bottom:10px">Latest changes on development</h3>
+        <div class="table-wrap"><table id="code-recent"></table></div>
+      </div>
+    </section>
+
+    <!-- DECISIONS -->
+    <section class="view" id="view-decisions" aria-labelledby="h-decisions" hidden>
+      <h2 class="section-title" id="h-decisions">Decisions <small>Choices made on your behalf (PRD §24) and things only you can provide</small></h2>
+      <div class="table-wrap"><table id="decisions-table"></table></div>
+      <p class="note">Every amount here can be changed later in Business Settings. Reply in chat with the number(s) you want to confirm or change.</p>
+    </section>
+  </div>
+</main>
+
+<script>
+(function () {
+  const STATUSES = [
+    { id: 'planned', label: 'Planned', cls: 's-planned', note: 'Scheduled for a later phase' },
+    { id: 'notstarted', label: 'Not started', cls: 's-notstarted', note: 'Next up (Phase 5)' },
+    { id: 'dev', label: 'In development', cls: 's-dev', note: 'Being built right now' },
+    { id: 'test', label: 'Ready for test', cls: 's-test', note: 'Built; waiting on you' },
+    { id: 'done', label: 'Completed', cls: 's-done', note: 'Built and checked' },
+  ];
+  const STATUS = Object.fromEntries(STATUSES.map((s) => [s.id, s]));
+
+  // Filled in by tools/project-hub/build.mjs from hub-data.json + live Git state
+  const HUB = /*HUB_DATA*/ null;
+  const PHASES = HUB.phases;
+  const CARDS = HUB.cards.map((c) => ({ p: c.phase, a: c.area, s: c.status, t: c.title, d: c.detail, w: c.waitingOn }));
+  const SCREENS = HUB.screens.map((s) => ({ app: s.app, name: s.name, path: s.path, s: s.status, note: s.note }));
+  const DECISIONS = HUB.decisions.map((d) => ({ n: d.id, t: d.text, state: d.state }));
+  const GIT = HUB.git;
+
+  const DECISION_STATE = {
+    confirm: { label: 'Please confirm', cls: 's-test' },
+    needed: { label: 'Needed from you', cls: 's-dev' },
+    done: { label: 'Settled', cls: 's-done' },
+  };
+
+  const $ = (sel) => document.querySelector(sel);
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const formatDate = (value) => {
+    const d = new Date(value);
+    return Number.isNaN(d.getTime()) ? String(value || '') : d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  };
+  const phaseName = (p) => (p === 'x' ? 'Extra' : `Phase ${p}`);
+  const pill = (status) => `<span class="pill ${STATUS[status].cls}">${STATUS[status].label}</span>`;
+  const store = {
+    get(key, fallback) { try { return localStorage.getItem(key) ?? fallback; } catch { return fallback; } },
+    set(key, value) { try { localStorage.setItem(key, value); } catch { /* storage unavailable */ } },
+  };
+
+  // ---------- Header progress ----------
+  function countBy(list) {
+    const counts = Object.fromEntries(STATUSES.map((s) => [s.id, 0]));
+    list.forEach((c) => { counts[c.s] += 1; });
+    return counts;
+  }
+  const BAR = { done: 'var(--ok)', test: '#F2C14E', dev: 'var(--orange)', notstarted: 'rgba(255,255,255,0.45)', planned: 'rgba(255,255,255,0.18)' };
+  function renderHeader() {
+    const counts = countBy(CARDS);
+    const total = CARDS.length;
+    $('#progress-label').textContent = `${counts.done} of ${total} cards completed · ${counts.test} ready for test`;
+    const phasesDone = PHASES.filter((p) => p.id !== 'x' && phaseState(p.id) === 'done').length;
+    const built = GIT.phasesBuilt.length;
+    $('#progress-phases').textContent = `Phases ${built ? `1–${Math.max(...GIT.phasesBuilt)}` : 'none'} built · ${phasesDone} of 9 fully signed off`;
+    $('#band-meta').textContent = `Updated ${formatDate(HUB.generatedAt)} · ${GIT.branch} @ ${GIT.head.hash}`;
+    $('#progress-bar').innerHTML = ['done', 'test', 'dev', 'notstarted', 'planned']
+      .map((s) => `<span style="width:${(counts[s] / total) * 100}%;background:${BAR[s]}" title="${STATUS[s].label}: ${counts[s]}"></span>`).join('');
+  }
+
+  function phaseState(id) {
+    const cards = CARDS.filter((c) => c.p === id);
+    if (cards.every((c) => c.s === 'done')) return 'done';
+    if (cards.some((c) => c.s === 'test')) return 'test';
+    if (cards.some((c) => c.s === 'dev')) return 'dev';
+    if (cards.every((c) => c.s === 'notstarted')) return 'notstarted';
+    if (cards.every((c) => c.s === 'planned')) return 'planned';
+    return 'dev';
+  }
+
+  // ---------- Overview ----------
+  function renderOverview() {
+    const counts = countBy(CARDS);
+    const stats = [
+      [`${CARDS.length}`, 'Pieces of work tracked'],
+      [`${counts.done}`, 'Completed'],
+      [`${counts.test}`, 'Ready for test (waiting on you)'],
+      [`${counts.notstarted}`, 'Next phase, not started'],
+      [`${counts.planned}`, 'Planned for later phases'],
+      [`${SCREENS.length}`, 'Screens across both apps'],
+    ];
+    $('#stats').innerHTML = stats.map(([n, l]) => `<div class="stat"><b>${n}</b><span>${l}</span></div>`).join('');
+
+    $('#phase-strip').innerHTML = PHASES.filter((p) => p.id !== 'x').map((p) => {
+      const cards = CARDS.filter((c) => c.p === p.id);
+      const c = countBy(cards);
+      const state = phaseState(p.id);
+      const numCls = state === 'done' ? 'done' : p.id === 5 ? 'next' : '';
+      const bar = ['done', 'test', 'dev', 'notstarted', 'planned']
+        .map((s) => `<span style="width:${(c[s] / cards.length) * 100}%;background:${s === 'done' ? 'var(--ok)' : s === 'test' ? 'var(--test)' : s === 'dev' ? 'var(--orange)' : s === 'notstarted' ? 'var(--todo)' : 'transparent'}"></span>`).join('');
+      return `<button type="button" class="phase-line" data-phase="${p.id}">
+        <span class="phase-num ${numCls}">${p.id}</span>
+        <span><span class="t">${esc(p.name)}</span><span class="d" style="display:block">${c.done}/${cards.length} done${p.id === 5 ? ' · next up' : ''}</span></span>
+        <span class="mini-bar" aria-hidden="true">${bar}</span>
+      </button>`;
+    }).join('');
+    document.querySelectorAll('.phase-line').forEach((el) => el.addEventListener('click', () => {
+      state.phase = el.dataset.phase === 'x' ? 'x' : Number(el.dataset.phase);
+      store.set('hub.phase', String(state.phase));
+      location.hash = 'board';
+    }));
+  }
+
+  // ---------- Board ----------
+  const state = {
+    phase: (() => { const v = store.get('hub.phase', 'all'); return v === 'all' || v === 'x' ? v : Number(v); })(),
+    area: 'all',
+    q: '',
+  };
+  function cardHtml(c, showPhase = true) {
+    return `<article class="card">
+      <div class="meta">${showPhase ? `<span class="tag ${c.p === 'x' ? 'extra' : 'phase'}">${phaseName(c.p)}</span>` : ''}<span class="tag">${esc(c.a)}</span>${showPhase ? '' : pill(c.s)}</div>
+      <h4>${esc(c.t)}</h4>
+      <p>${esc(c.d)}</p>
+      ${c.w ? `<div class="waiting"><b>Waiting on:</b> ${esc(c.w)}</div>` : ''}
+    </article>`;
+  }
+  function renderBoardFilters() {
+    const opts = [{ id: 'all', label: 'All phases' }, ...PHASES.map((p) => ({ id: p.id, label: p.id === 'x' ? 'Extras' : `P${p.id} · ${p.name}` }))];
+    $('#phase-chips').innerHTML = opts.map((o) => `<button type="button" class="chip" data-phase="${o.id}" aria-pressed="${String(state.phase) === String(o.id)}">${esc(o.label)}</button>`).join('');
+    document.querySelectorAll('#phase-chips .chip').forEach((el) => el.addEventListener('click', () => {
+      const v = el.dataset.phase;
+      state.phase = v === 'all' || v === 'x' ? v : Number(v);
+      store.set('hub.phase', v);
+      renderBoardFilters();
+      renderBoard();
+    }));
+  }
+  function renderBoard() {
+    const q = state.q.trim().toLowerCase();
+    const list = CARDS.filter((c) => (state.phase === 'all' || c.p === state.phase)
+      && (state.area === 'all' || c.a === state.area)
+      && (!q || `${c.t} ${c.d} ${c.a} ${c.w || ''}`.toLowerCase().includes(q)));
+    $('#board-count').textContent = `${list.length} card${list.length === 1 ? '' : 's'}`;
+    $('#board').innerHTML = STATUSES.map((s) => {
+      const cards = list.filter((c) => c.s === s.id);
+      const empty = s.id === 'dev'
+        ? 'Nothing is being built right now. Phase 5 starts when you say go.'
+        : 'No cards here for this filter.';
+      return `<section class="col" aria-label="${s.label}">
+        <div class="col-head"><b><span class="pill ${s.cls}">${s.label}</span></b><span class="count">${cards.length}</span></div>
+        <div class="col-note">${s.note}</div>
+        ${cards.length ? cards.map((c) => cardHtml(c)).join('') : `<div class="empty">${empty}</div>`}
+      </section>`;
+    }).join('');
+  }
+  function setupBoard() {
+    const areas = [...new Set(CARDS.map((c) => c.a))].sort();
+    $('#area-filter').insertAdjacentHTML('beforeend', areas.map((a) => `<option value="${esc(a)}">${esc(a)}</option>`).join(''));
+    $('#area-filter').addEventListener('change', (e) => { state.area = e.target.value; renderBoard(); });
+    $('#search').addEventListener('input', (e) => { state.q = e.target.value; renderBoard(); });
+    renderBoardFilters();
+    renderBoard();
+  }
+
+  // ---------- By phase ----------
+  function renderPhases() {
+    $('#legend').innerHTML = STATUSES.map((s) => pill(s.id)).join('');
+    $('#phase-list').innerHTML = PHASES.map((p) => {
+      const cards = CARDS.filter((c) => c.p === p.id);
+      const c = countBy(cards);
+      const st = phaseState(p.id);
+      const label = p.id === 'x' ? 'Extras' : `Phase ${p.id}`;
+      const summary = STATUSES.filter((s) => c[s.id]).map((s) => `${c[s.id]} ${s.label.toLowerCase()}`).join(' · ');
+      return `<article class="phase-block">
+        <header>
+          <div class="t"><span class="phase-num ${st === 'done' ? 'done' : p.id === 5 ? 'next' : ''}">${p.id === 'x' ? '+' : p.id}</span>
+            <div><div class="eyebrow">${label}</div><h3>${esc(p.name)}</h3></div></div>
+          <div class="meta" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="note">${summary}</span>${pill(st)}</div>
+        </header>
+        <div class="check"><b>Your check:</b> ${esc(p.check)}</div>
+        <div class="phase-cards">${cards.map((card) => cardHtml(card, false)).join('')}</div>
+      </article>`;
+    }).join('');
+  }
+
+  // ---------- Screens ----------
+  let screenApp = 'all';
+  function renderScreens() {
+    const opts = [['all', 'All screens'], ['store', 'Customer website'], ['admin', 'Admin panel']];
+    $('#screen-chips').innerHTML = opts.map(([id, l]) => `<button type="button" class="chip" data-app="${id}" aria-pressed="${screenApp === id}">${l}</button>`).join('');
+    document.querySelectorAll('#screen-chips .chip').forEach((el) => el.addEventListener('click', () => { screenApp = el.dataset.app; renderScreens(); }));
+    const rows = SCREENS.filter((s) => screenApp === 'all' || s.app === screenApp);
+    $('#screens-table').innerHTML = `<thead><tr><th>Screen</th><th>App</th><th>Status</th><th>Notes</th></tr></thead><tbody>${rows.map((s) => `
+      <tr><td><b>${esc(s.name)}</b><span class="sub">${esc(s.path)}</span></td>
+      <td>${s.app === 'store' ? 'Website' : 'Admin'}</td><td>${pill(s.s)}</td><td>${esc(s.note) || '<span class="sub">—</span>'}</td></tr>`).join('')}</tbody>`;
+  }
+
+  // ---------- Decisions ----------
+  function renderDecisions() {
+    const order = { needed: 0, confirm: 1, done: 2 };
+    const rows = [...DECISIONS].sort((a, b) => order[a.state] - order[b.state]);
+    $('#decisions-table').innerHTML = `<thead><tr><th>#</th><th>Decision</th><th>Status</th></tr></thead><tbody>${rows.map((d) => `
+      <tr><td class="num">${d.n}</td><td>${esc(d.t)}</td><td><span class="pill ${DECISION_STATE[d.state].cls}">${DECISION_STATE[d.state].label}</span></td></tr>`).join('')}</tbody>`;
+  }
+
+  // ---------- Code (Git state captured at build time) ----------
+  function commitRows(list, empty) {
+    if (!list.length) return `<tbody><tr><td class="note">${empty}</td></tr></tbody>`;
+    return `<thead><tr><th>Date</th><th>Change</th><th>Commit</th></tr></thead><tbody>${list.map((c) => `
+      <tr><td class="num" style="white-space:nowrap">${esc(formatDate(c.date))}</td><td>${esc(c.subject)}</td><td class="num">${esc(c.hash)}</td></tr>`).join('')}</tbody>`;
+  }
+  function renderCode() {
+    const stats = [
+      [`${GIT.totalCommits}`, 'Saved changes (commits) on development'],
+      [`${GIT.pendingForProduction.count}`, 'Waiting to go to production'],
+      [GIT.uncommitted.length ? `${GIT.uncommitted.length}` : '0', 'Files changed but not yet saved'],
+      [`${GIT.checkpoints.length}`, 'Phase checkpoints'],
+    ];
+    $('#code-stats').innerHTML = stats.map(([n, l]) => `<div class="stat"><b>${n}</b><span>${l}</span></div>`).join('');
+    const prod = GIT.production;
+    $('#code-branches').innerHTML = `
+      <dt>Working on</dt><dd>${esc(GIT.branch)}</dd>
+      <dt>Development</dt><dd>${esc(GIT.head.hash)} · ${esc(formatDate(GIT.head.date))} · ${esc(GIT.head.subject)}</dd>
+      <dt>Production</dt><dd>${prod ? `${esc(prod.hash)} · ${esc(formatDate(prod.date))} · ${esc(prod.subject)}` : 'Not created'}</dd>
+      <dt>Online copy</dt><dd>${GIT.remote ? esc(GIT.remote) : 'Not connected yet (waiting for your GitHub repository link)'}</dd>
+      <dt>Unsaved files</dt><dd>${GIT.uncommitted.length ? esc(GIT.uncommitted.slice(0, 8).join(', ')) + (GIT.uncommitted.length > 8 ? ` and ${GIT.uncommitted.length - 8} more` : '') : 'None; everything is saved'}</dd>`;
+    $('#code-checkpoints').innerHTML = commitRows(GIT.checkpoints, 'No checkpoints yet.');
+    $('#code-pending').innerHTML = commitRows(GIT.pendingForProduction.commits, 'Nothing waiting: production matches development.');
+    $('#code-recent').innerHTML = commitRows(GIT.recent, 'No commits yet.');
+  }
+
+  // ---------- Views (hash) ----------
+  const VIEWS = ['overview', 'board', 'phases', 'screens', 'decisions', 'code'];
+  function show() {
+    const view = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'overview';
+    VIEWS.forEach((v) => { document.getElementById(`view-${v}`).hidden = v !== view; });
+    document.querySelectorAll('#tabs .tab').forEach((t) => {
+      if (t.dataset.view === view) t.setAttribute('aria-current', 'page');
+      else t.removeAttribute('aria-current');
+    });
+    if (view === 'board') { renderBoardFilters(); renderBoard(); }
+  }
+
+  renderHeader();
+  renderOverview();
+  setupBoard();
+  renderPhases();
+  renderScreens();
+  renderDecisions();
+  renderCode();
+  window.addEventListener('hashchange', show);
+  show();
+})();
+</script>
