@@ -12,3 +12,6 @@ Thumbs.db
 
 # Office temporary lock files (e.g. while a .docx is open)
 ~$*
+
+# Test recordings and reports (kept in the project folder for the owner, not in Git)
+/SHOPME-E2E-*
