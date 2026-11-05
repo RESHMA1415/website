@@ -574,6 +574,13 @@
       "status": "done",
       "title": "Git with development and production",
       "detail": "Checkpoints before every phase; production blocked from direct changes."
+    },
+    {
+      "phase": "x",
+      "area": "Setup",
+      "status": "done",
+      "title": "Project Hub with automatic updates",
+      "detail": "This page. Refreshed from the development branch after every saved change, with a Code tab for development vs production."
     }
   ],
   "screens": [

@@ -18,7 +18,8 @@ const GIT_BIN = process.platform === 'win32' && fs.existsSync(WINDOWS_GIT) ? WIN
 
 function git(...args) {
   try {
-    return execFileSync(GIT_BIN, args, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+    // trimEnd only: `git status --porcelain` lines start with a meaningful space
+    return execFileSync(GIT_BIN, args, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trimEnd();
   } catch {
     return '';
   }
