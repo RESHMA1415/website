@@ -581,6 +581,29 @@
       "status": "done",
       "title": "Project Hub with automatic updates",
       "detail": "This page. Refreshed from the development branch after every saved change, with a Code tab for development vs production."
+    },
+    {
+      "phase": "x",
+      "area": "Setup",
+      "status": "done",
+      "title": "Full end-to-end test with screen recording",
+      "detail": "8 flows clicked and typed in a real browser: 28 of 28 checks passed, no errors. Video and report in the project folder."
+    },
+    {
+      "phase": 9,
+      "area": "Launch",
+      "status": "planned",
+      "title": "Security upgrade of Vite and React Router",
+      "detail": "4 advisories (1 high) in two building blocks; fixing needs major version upgrades.",
+      "waitingOn": "Your OK to upgrade."
+    },
+    {
+      "phase": "x",
+      "area": "Your task",
+      "status": "test",
+      "title": "Tidy the catalogue",
+      "detail": "Rename the watch’s web address, hide the 6 sample products, write the FAQ page.",
+      "waitingOn": "Your turn (see the test report)."
     }
   ],
   "screens": [
@@ -961,6 +984,11 @@
     {
       "id": "—",
       "text": "GitHub repository link (to protect production online)",
+      "state": "needed"
+    },
+    {
+      "id": "—",
+      "text": "OK to upgrade Vite and React Router to new major versions (security advisories)",
       "state": "needed"
     }
   ]
