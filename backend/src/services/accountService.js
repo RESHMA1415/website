@@ -1,8 +1,11 @@
-import { User } from '../models/index.js';
+import bcrypt from 'bcryptjs';
+import { sendEmail } from '../integrations/email.js';
+import { Cart, DeletionLog, Order, User } from '../models/index.js';
 import { HttpError } from '../utils/asyncHandler.js';
 import { INDIAN_STATES, PINCODE_PATTERN } from '../utils/india.js';
 import { cleanText, requireObjectId, requireText } from '../utils/text.js';
 import { cleanEmail, cleanMobile, publicUser } from './customerAuthService.js';
+import { getSettings } from './settingsService.js';
 
 // My Account: profile and saved addresses (PRD §13.10, §13.8 address fields)
 const MAX_ADDRESSES = 10;
@@ -132,4 +135,43 @@ export async function deleteAddress(userId, addressId) {
   ensureOneDefault(user);
   await user.save();
   return listOf(user);
+}
+
+// ---------- Delete my account (DPDP Act right to erasure) ----------
+// Orders still on their way (or with an open return) must finish first, so we
+// can deliver or refund them. Order and payment records are kept afterwards
+// because tax and consumer laws require it (Privacy Policy §6).
+const ORDERS_IN_PROGRESS = ['confirmed', 'processing', 'shipped', 'out_for_delivery', 'return_requested', 'return_approved'];
+
+export async function deleteAccount(userId, { password, confirmText, reason }) {
+  const user = await User.findById(userId).select('+passwordHash');
+  if (!user) throw new HttpError(401, 'Please log in again.');
+  if (String(confirmText || '').trim().toUpperCase() !== 'DELETE') {
+    throw new HttpError(400, 'Please type DELETE to confirm.');
+  }
+  if (!(await bcrypt.compare(String(password || ''), user.passwordHash))) {
+    throw new HttpError(400, 'Your password is incorrect.');
+  }
+  const inProgress = await Order.countDocuments({ user: user._id, status: { $in: ORDERS_IN_PROGRESS } });
+  if (inProgress) {
+    throw new HttpError(409, `You have ${inProgress} order${inProgress === 1 ? '' : 's'} still in progress. You can delete your account once ${inProgress === 1 ? 'it is' : 'they are'} delivered or closed, or contact us for help.`);
+  }
+
+  const [{ store }, ordersKept] = await Promise.all([getSettings(), Order.countDocuments({ user: user._id })]);
+  // Confirmation goes out before the email address is erased (never blocks deletion)
+  await sendEmail({
+    event: 'account_deleted',
+    to: user.email,
+    subject: `Your ${store.name} account has been deleted`,
+    text: `Hi ${user.name},\n\nAs you asked, we have deleted your ${store.name} account and the personal data in it (profile, saved addresses, wishlist and cart).\n\n${ordersKept ? `Records of your ${ordersKept} past order(s) are kept only for as long as tax and consumer laws require, as explained in our Privacy Policy.\n\n` : ''}If you didn't ask for this, please contact us right away at ${store.email} or ${store.phone}.`,
+  }).catch(() => {});
+
+  await Promise.all([
+    Cart.deleteMany({ user: user._id }),
+    // Unpaid online orders never placed are not legal records: remove them
+    Order.deleteMany({ user: user._id, status: 'pending_payment' }),
+  ]);
+  await User.deleteOne({ _id: user._id });
+  await DeletionLog.create({ user: user._id, requestedBy: 'customer', reason: cleanText(reason, 300) || undefined, ordersKept });
+  return { deleted: true, ordersKept };
 }

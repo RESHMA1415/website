@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import ConsentCheckbox from '../components/ConsentCheckbox.jsx';
 import ProductGrid from '../components/ProductGrid.jsx';
 import { useStore } from '../context/StoreContext.jsx';
 import { useApi } from '../hooks/useApi.js';
@@ -101,17 +102,20 @@ function Newsletter() {
           <h2 className="text-white section-title">Get style updates & early access</h2>
           <p className="opacity-75 mb-4">New arrivals and offers straight to your inbox or WhatsApp.</p>
           <form
-            className="d-flex flex-column flex-sm-row gap-2 mx-auto"
+            className="mx-auto"
             style={{ maxWidth: 480 }}
             onSubmit={(e) => {
               e.preventDefault();
               notify('Sign-ups are saved once notifications go live in Phase 7.');
             }}
           >
-            <input type="text" className="form-control" placeholder="Email or WhatsApp number" aria-label="Email or WhatsApp number" required />
-            <button type="submit" className="btn btn-orange text-nowrap">
-              Subscribe
-            </button>
+            <div className="d-flex flex-column flex-sm-row gap-2">
+              <input type="text" className="form-control" placeholder="Email or WhatsApp number" aria-label="Email or WhatsApp number" required />
+              <button type="submit" className="btn btn-orange text-nowrap">
+                Subscribe
+              </button>
+            </div>
+            <ConsentCheckbox id="nl-consent" purpose="updates" className="consent-on-dark text-start mt-3 mb-0" />
           </form>
         </div>
       </div>

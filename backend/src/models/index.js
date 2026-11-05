@@ -4,6 +4,7 @@ export { default as Cart } from './Cart.js';
 export { default as Category } from './Category.js';
 export { default as ContactMessage } from './ContactMessage.js';
 export { default as Counter } from './Counter.js';
+export { default as DeletionLog } from './DeletionLog.js';
 export { default as Media } from './Media.js';
 export { default as NotificationLog } from './NotificationLog.js';
 export { default as Order } from './Order.js';

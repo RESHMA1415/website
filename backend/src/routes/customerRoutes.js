@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { GUEST_HEADER, cartOwner, optionalCustomer, requireCustomer } from '../middleware/requireCustomer.js';
 import {
   addAddress,
+  deleteAccount,
   deleteAddress,
   getProfile,
   listAddresses,
@@ -46,6 +47,8 @@ router.post('/account/addresses', requireCustomer, handle((req) => addAddress(re
 router.put('/account/addresses/:id', requireCustomer, handle((req) => updateAddress(req.customer._id, req.params.id, req.body || {})));
 router.put('/account/addresses/:id/default', requireCustomer, handle((req) => setDefaultAddress(req.customer._id, req.params.id)));
 router.delete('/account/addresses/:id', requireCustomer, handle((req) => deleteAddress(req.customer._id, req.params.id)));
+// Delete my account (DPDP Act right to erasure)
+router.post('/account/delete', requireCustomer, handle((req) => deleteAccount(req.customer._id, req.body || {})));
 
 // ----- Cart (guests too) -----
 router.get('/cart', optionalCustomer, handle(async (req) => {

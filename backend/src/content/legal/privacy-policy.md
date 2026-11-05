@@ -101,7 +101,7 @@ Under the DPDP Act, you have the right to:
 
 1. **Access:** ask for a summary of the personal data we hold about you and how we process it, and of the processors we have shared it with.
 2. **Correction and updating:** correct, complete or update your data. Most details can be changed yourself in **My Account**.
-3. **Erasure:** ask us to delete your personal data, except data the law requires us to keep.
+3. **Erasure:** delete your personal data, except data the law requires us to keep. You can do this yourself at any time from **My Account → Delete my account**, or ask us.
 4. **Withdraw consent:** at any time, as easily as you gave it. Withdrawing consent doesn't affect processing that happened before. We may then be unable to provide some services, such as order updates.
 5. **Grievance redressal:** complain to our Grievance Officer (Section 11) about how your data is handled.
 6. **Nominate:** name another person to exercise these rights for you if you die or become unable to.

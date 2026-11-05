@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../../api/client.js';
+import ConsentCheckbox from '../../components/ConsentCheckbox.jsx';
 import { useShopper } from '../../context/ShopperContext.jsx';
 import { useStore } from '../../context/StoreContext.jsx';
 import AuthCard from './AuthCard.jsx';
@@ -74,12 +75,7 @@ export default function Register() {
           <label className="form-label" htmlFor="reg-confirm">Confirm password *</label>
           <input id="reg-confirm" type="password" className="form-control" required autoComplete="new-password" value={form.confirmPassword} onChange={set('confirmPassword')} />
         </div>
-        <div className="form-check mb-3">
-          <input className="form-check-input" type="checkbox" id="reg-terms" required checked={form.agreeTerms} onChange={set('agreeTerms')} />
-          <label className="form-check-label small" htmlFor="reg-terms">
-            I agree to the <Link to="/policies/terms">Terms & Conditions</Link> and <Link to="/policies/privacy">Privacy Policy</Link>
-          </label>
-        </div>
+        <ConsentCheckbox id="reg-terms" checked={form.agreeTerms} onChange={(value) => setForm((f) => ({ ...f, agreeTerms: value }))} />
         {error && <div className="alert alert-danger small py-2" role="alert">{error}</div>}
         <button type="submit" className="btn btn-orange w-100" disabled={busy}>{busy ? 'Creating your account…' : 'Create Account'}</button>
       </form>

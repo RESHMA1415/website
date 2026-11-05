@@ -84,7 +84,15 @@ export default function Footer() {
           </div>
         </div>
         <hr className="border-secondary my-4" />
-        <div className="small">© {new Date().getFullYear()} {store.name}. All rights reserved.</div>
+        <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 small">
+          <div>© {new Date().getFullYear()} {store.name}. All rights reserved.</div>
+          {/* The three legal policies, always reachable from every page */}
+          <nav className="footer-legal" aria-label="Legal">
+            <Link to="/policies/privacy">Privacy Policy</Link>
+            <Link to="/policies/terms">Terms & Conditions</Link>
+            <Link to="/policies/refunds">Refund & Cancellation Policy</Link>
+          </nav>
+        </div>
       </div>
     </footer>
   );

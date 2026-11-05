@@ -121,6 +121,9 @@ Follow PRD §21 phases. Don't build advanced features ahead of their phase unles
 - `returns` and `cancellation` are aliases of `refunds`, on both the API and the store routes.
 - Proprietor and Grievance Officer: RESHMA PR (owner-provided).
 - If business rules change (charges, return window, refund timelines), update these files and the live Settings pages together.
+- **Consent (DPDP):** every form that collects personal data uses `components/ConsentCheckbox.jsx`: a required, unticked box whose policy links open in a new tab. This covers register, checkout, contact and newsletter. Registration is refused server-side without `agreeTerms`. `User.consent` stores the acceptance time and `LEGAL_VERSION` (in `content/legal/index.js`); bump that constant whenever a policy changes.
+- **Delete my account** (My Account → Profile → Your Data & Privacy): `POST /api/account/delete` requires the password and typed "DELETE". It is refused while orders are in progress (confirmed to out-for-delivery, or open returns). It erases the user, addresses, wishlist, cart and unpaid pending orders, and keeps other orders (legal records). It emails a confirmation first and writes a `DeletionLog` with no personal data.
+- The footer's bottom line always links the three policies.
 
 **Phase 4 notes:**
 - Razorpay lives in `src/integrations/razorpay.js` (plain fetch, keys from `.env`). With no keys, `payments.onlineAvailable` is false and checkout offers COD only. The webhook is `POST /api/payments/razorpay/webhook`, mounted in app.js before `express.json` (raw body for the HMAC). Event ids are recorded in `Payment.processedEventIds`.

@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Navigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useParams } from 'react-router-dom';
 import { api, isRemembered, setToken } from '../../api/client.js';
 import AddressForm, { EMPTY_ADDRESS } from '../../components/AddressForm.jsx';
 import EmptyState from '../../components/EmptyState.jsx';
 import { useShopper } from '../../context/ShopperContext.jsx';
 import { useStore } from '../../context/StoreContext.jsx';
+import { formatDate } from '../../utils/format.js';
 import { PASSWORD_HINT, PASSWORD_RULE } from '../auth/authHelpers.js';
 import AccountLayout from './AccountLayout.jsx';
 
@@ -110,7 +111,80 @@ function Profile() {
         {errors.password && <div className="alert alert-danger small py-2 mt-3 mb-0" role="alert">{errors.password}</div>}
         <button type="submit" className="btn btn-navy mt-4" disabled={busy === 'password'}>{busy === 'password' ? 'Updating…' : 'Update Password'}</button>
       </form>
+      <PrivacyAndData />
     </>
+  );
+}
+
+// Your data & privacy: consent record and "Delete my account" (DPDP Act right to erasure)
+function PrivacyAndData() {
+  const { user, logout } = useShopper();
+  const { settings } = useStore();
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({ password: '', confirmText: '', reason: '' });
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
+
+  const remove = async (e) => {
+    e.preventDefault();
+    if (!window.confirm('Delete your SHOPME account permanently? This cannot be undone.')) return;
+    setBusy(true);
+    setError('');
+    try {
+      await api('/account/delete', { method: 'POST', body: form });
+      logout('Your account and personal data have been deleted. We’re sorry to see you go.');
+    } catch (err) {
+      setError(err.message);
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="card-soft p-4 mt-4">
+      <h2 className="h5 mb-2">Your Data & Privacy</h2>
+      <p className="small text-muted mb-3">
+        {user.consentAt
+          ? <>You agreed to our <Link to="/policies/terms" target="_blank" rel="noopener">Terms & Conditions</Link> and <Link to="/policies/privacy" target="_blank" rel="noopener">Privacy Policy</Link> on {formatDate(user.consentAt)}.</>
+          : <>Read how we handle your data in our <Link to="/policies/privacy" target="_blank" rel="noopener">Privacy Policy</Link>.</>}
+        {' '}You can correct your details above at any time. For a copy of your data or any privacy question, email <a href={`mailto:${settings.store.email}`}>{settings.store.email}</a>.
+      </p>
+      {!open ? (
+        <button type="button" className="btn btn-outline-danger" onClick={() => setOpen(true)}>
+          <i className="bi bi-trash me-1" />Delete my account
+        </button>
+      ) : (
+        <form onSubmit={remove} className="border border-danger-subtle rounded-3 p-3">
+          <h3 className="h6 text-danger">Delete my account and personal data</h3>
+          <ul className="small mb-3">
+            <li><strong>Deleted:</strong> your profile, saved addresses, wishlist and cart. You’ll be logged out and can’t log in again with this account.</li>
+            <li><strong>Kept:</strong> records of past orders and payments, only as long as tax and consumer laws require (see our <Link to="/policies/privacy" target="_blank" rel="noopener">Privacy Policy</Link>).</li>
+            <li>If an order is still on its way or a return is open, please wait until it’s finished.</li>
+          </ul>
+          <div className="row g-3">
+            <div className="col-md-6">
+              <label className="form-label small" htmlFor="del-password">Your password</label>
+              <input id="del-password" type="password" className="form-control" required autoComplete="current-password" value={form.password} onChange={set('password')} />
+            </div>
+            <div className="col-md-6">
+              <label className="form-label small" htmlFor="del-confirm">Type <strong>DELETE</strong> to confirm</label>
+              <input id="del-confirm" className="form-control" required value={form.confirmText} onChange={set('confirmText')} autoComplete="off" />
+            </div>
+            <div className="col-12">
+              <label className="form-label small" htmlFor="del-reason">Why are you leaving? (optional)</label>
+              <input id="del-reason" className="form-control" maxLength={300} value={form.reason} onChange={set('reason')} />
+            </div>
+          </div>
+          {error && <div className="alert alert-danger small py-2 mt-3 mb-0" role="alert">{error}</div>}
+          <div className="d-flex flex-wrap gap-2 mt-3">
+            <button type="submit" className="btn btn-danger" disabled={busy || form.confirmText.trim().toUpperCase() !== 'DELETE'}>
+              {busy ? 'Deleting…' : 'Permanently delete my account'}
+            </button>
+            <button type="button" className="btn btn-light" onClick={() => { setOpen(false); setError(''); }}>Cancel</button>
+          </div>
+        </form>
+      )}
+    </div>
   );
 }
 

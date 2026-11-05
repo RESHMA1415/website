@@ -62,13 +62,14 @@ export function ShopperProvider({ children }) {
     [loadCart, loadWishlist],
   );
 
-  const logout = useCallback(() => {
+  // `message` replaces the usual notice (e.g. after deleting the account)
+  const logout = useCallback((message) => {
     clearToken();
     setUser(null);
     setWishlist(new Set());
     setCart(EMPTY_CART);
     loadCart();
-    notify('You have been logged out.');
+    notify(typeof message === 'string' ? message : 'You have been logged out.');
     navigate('/');
   }, [loadCart, navigate, notify]);
 

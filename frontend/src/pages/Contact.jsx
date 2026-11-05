@@ -1,3 +1,4 @@
+import ConsentCheckbox from '../components/ConsentCheckbox.jsx';
 import PageHeader from '../components/PageHeader.jsx';
 import StoreMap, { DirectionsButton } from '../components/StoreMap.jsx';
 import { useStore } from '../context/StoreContext.jsx';
@@ -85,7 +86,8 @@ export default function Contact() {
                   <textarea id="c-message" className="form-control" rows={5} required maxLength={2000} />
                 </div>
               </div>
-              <button type="submit" className="btn btn-orange mt-4">Send Message</button>
+              <ConsentCheckbox id="c-consent" purpose="message" className="mt-3 mb-0" />
+              <button type="submit" className="btn btn-orange mt-3">Send Message</button>
             </form>
           </div>
         </div>

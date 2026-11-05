@@ -32,6 +32,11 @@ const userSchema = new mongoose.Schema(
         addedAt: { type: Date, default: Date.now },
       },
     ],
+    // DPDP Act: proof of what the customer agreed to, and when
+    consent: {
+      termsAndPrivacyAcceptedAt: Date,
+      policyVersion: String,
+    },
     isBlocked: { type: Boolean, default: false },
     failedLoginCount: { type: Number, default: 0 },
     lockedUntil: Date,

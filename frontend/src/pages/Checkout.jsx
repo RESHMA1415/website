@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../api/client.js';
 import AddressForm, { EMPTY_ADDRESS } from '../components/AddressForm.jsx';
+import ConsentCheckbox from '../components/ConsentCheckbox.jsx';
 import EmptyState from '../components/EmptyState.jsx';
 import PageHeader from '../components/PageHeader.jsx';
 import { useShopper } from '../context/ShopperContext.jsx';
@@ -250,13 +251,7 @@ export default function Checkout() {
               <div className="small text-muted mb-3">
                 <i className="bi bi-truck me-1" />Delivery in {delivery.minDays}–{delivery.maxDays} business days, anywhere in India.
               </div>
-              <div className="form-check">
-                <input className="form-check-input" type="checkbox" id="agree" checked={agree} onChange={(e) => setAgree(e.target.checked)} />
-                <label className="form-check-label small" htmlFor="agree">
-                  I agree to the <Link to="/policies/terms" target="_blank">Terms & Conditions</Link> and{' '}
-                  <Link to="/policies/refunds" target="_blank">Refund & Cancellation Policy</Link>
-                </label>
-              </div>
+              <ConsentCheckbox id="agree" purpose="order" checked={agree} onChange={setAgree} className="mb-0" />
             </Step>
           </div>
           <div className="col-lg-4">

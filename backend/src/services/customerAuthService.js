@@ -2,6 +2,7 @@ import crypto from 'node:crypto';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { env } from '../config/env.js';
+import { LEGAL_VERSION } from '../content/legal/index.js';
 import { SHOW_EMAIL_LINKS_ON_SCREEN, sendEmail } from '../integrations/email.js';
 import { User } from '../models/index.js';
 import { HttpError } from '../utils/asyncHandler.js';
@@ -49,6 +50,8 @@ export function publicUser(user) {
     mobile: user.mobile,
     gender: user.gender || '',
     dateOfBirth: user.dateOfBirth || null,
+    consentAt: user.consent?.termsAndPrivacyAcceptedAt || null,
+    policyVersion: user.consent?.policyVersion || null,
     createdAt: user.createdAt,
   };
 }
@@ -76,7 +79,8 @@ export async function registerCustomer(body) {
   if (body.confirmPassword !== undefined && body.confirmPassword !== body.password) {
     throw new HttpError(400, 'The two passwords don’t match.');
   }
-  if (body.agreeTerms !== true) throw new HttpError(400, 'Please agree to the Terms & Conditions to create an account.');
+  // Consent must be a clear, separate yes from the customer (DPDP Act)
+  if (body.agreeTerms !== true) throw new HttpError(400, 'Please agree to the Terms & Conditions and Privacy Policy to create an account.');
 
   const [emailTaken, mobileTaken] = await Promise.all([User.exists({ email }), User.exists({ mobile })]);
   if (emailTaken) throw new HttpError(409, 'An account with this email already exists. Please log in instead.');
@@ -84,7 +88,14 @@ export async function registerCustomer(body) {
 
   let user;
   try {
-    user = await User.create({ name, email, mobile, passwordHash: await bcrypt.hash(body.password, 12), lastLoginAt: new Date() });
+    user = await User.create({
+      name,
+      email,
+      mobile,
+      passwordHash: await bcrypt.hash(body.password, 12),
+      lastLoginAt: new Date(),
+      consent: { termsAndPrivacyAcceptedAt: new Date(), policyVersion: LEGAL_VERSION },
+    });
   } catch (err) {
     if (err.code === 11000) throw new HttpError(409, 'An account with these details already exists. Please log in instead.');
     throw err;
