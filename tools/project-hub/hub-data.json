@@ -1,5 +1,5 @@
 {
-  "statusDate": "2026-11-05",
+  "statusDate": "2026-11-06",
   "artifactUrl": "https://claude.ai/artifact/J8KvrshBbuSUQTPeudf5vY",
   "phases": [
     {
@@ -599,6 +599,21 @@
     },
     {
       "phase": "x",
+      "area": "Messages",
+      "status": "test",
+      "title": "SMS OTP login and registration",
+      "detail": "Customers log in with a 6-digit SMS code (password still available) and verify their mobile by SMS when signing up. Codes last 5 minutes, 5 wrong tries, resend after 30 seconds. Until the SMS details are complete, the code is shown on screen for testing.",
+      "waitingOn": "Your SMS Access Token Key and the exact approved SMS template text."
+    },
+    {
+      "phase": "x",
+      "area": "Setup",
+      "status": "done",
+      "title": "Reusable SMS OTP skill",
+      "detail": "A global Claude skill (networkz-sms-otp) so the same company SMS gateway can be added to other projects quickly. No passwords or keys stored in it."
+    },
+    {
+      "phase": "x",
       "area": "Your task",
       "status": "test",
       "title": "Tidy the catalogue",
@@ -675,7 +690,7 @@
       "name": "Login, Register, Forgot and Reset password",
       "path": "/login, /register, …",
       "status": "done",
-      "note": "Consent box on Register."
+      "note": "Login opens on SMS code (password optional); Register verifies the mobile by SMS code. Consent box on Register."
     },
     {
       "app": "store",
@@ -989,6 +1004,21 @@
     {
       "id": "—",
       "text": "OK to upgrade Vite and React Router to new major versions (security advisories)",
+      "state": "needed"
+    },
+    {
+      "id": "22",
+      "text": "SMS OTP: login opens on SMS code with password optional; registration verifies mobile by SMS code and sets a password",
+      "state": "done"
+    },
+    {
+      "id": "22",
+      "text": "SMS OTP limits: 5-minute code, 5 wrong tries, resend after 30 s, 5 codes per number per hour",
+      "state": "confirm"
+    },
+    {
+      "id": "—",
+      "text": "SMS Access Token Key and exact DLT template text for template 1707161553278051772 (to put in backend/.env)",
       "state": "needed"
     }
   ]
