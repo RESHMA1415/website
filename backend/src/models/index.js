@@ -8,6 +8,7 @@ export { default as DeletionLog } from './DeletionLog.js';
 export { default as Media } from './Media.js';
 export { default as NotificationLog } from './NotificationLog.js';
 export { default as Order } from './Order.js';
+export { default as Otp } from './Otp.js';
 export { default as Payment } from './Payment.js';
 export { default as Product } from './Product.js';
 export { default as ReturnRequest } from './ReturnRequest.js';

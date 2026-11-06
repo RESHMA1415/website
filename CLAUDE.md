@@ -25,7 +25,7 @@ The owner is a **non-technical business owner**. When reporting to them:
 | Database | MongoDB (Mongoose) |
 | Auth | JWT; separate auth for customers and admin |
 | Payments | Razorpay (Checkout, Webhooks, Refunds) |
-| Messaging | Email (transactional provider) + WhatsApp (click-to-chat link + Meta Cloud API templates) |
+| Messaging | Email (transactional provider) + WhatsApp (click-to-chat link + Meta Cloud API templates) + SMS OTP (NetworkZ Systems gateway) |
 | Media | Cloud storage with resizing (e.g. Cloudinary) |
 
 Do not swap or add major libraries/frameworks without asking.
@@ -126,6 +126,15 @@ Follow PRD §21 phases. Don't build advanced features ahead of their phase unles
 - **Consent (DPDP):** every form that collects personal data uses `components/ConsentCheckbox.jsx`: a required, unticked box whose policy links open in a new tab. This covers register, checkout, contact and newsletter. Registration is refused server-side without `agreeTerms`. `User.consent` stores the acceptance time and `LEGAL_VERSION` (in `content/legal/index.js`); bump that constant whenever a policy changes.
 - **Delete my account** (My Account → Profile → Your Data & Privacy): `POST /api/account/delete` requires the password and typed "DELETE". It is refused while orders are in progress (confirmed to out-for-delivery, or open returns). It erases the user, addresses, wishlist, cart and unpaid pending orders, and keeps other orders (legal records). It emails a confirmation first and writes a `DeletionLog` with no personal data.
 - The footer's bottom line always links the three policies.
+
+**SMS OTP login & registration (owner request, after Phase 4):**
+- Gateway: NetworkZ Systems API v1.0 in `src/integrations/sms.js` (form POST to `send-sms`, MD5 signature chain). Settings come only from `backend/.env`: `SMS_ACCESS_TOKEN`, `SMS_ACCESS_TOKEN_KEY`, `SMS_ENTITY_ID`, `SMS_HEADER`, `SMS_TEMPLATE_ID`, `SMS_OTP_TEMPLATE` (exact DLT text with `{#var#}`), `SMS_ROUTE`. `smsConfigured()` needs all of them.
+- Rules live in `services/otpService.js` (`OTP_RULES`): 6 digits, 5 min, 5 wrong tries, 30 s resend, 5 per number per hour, 15 per IP per 15 min. Only an HMAC of the code is stored (`Otp` model, TTL index). Wrong tries use `$inc`; a code is used exactly once.
+- Routes: `POST /api/auth/otp/request` `{mobile, purpose: login|register}`, `POST /api/auth/otp/login` `{mobile, code, remember}` (same customer JWT). `POST /api/auth/register` now **requires `otp`** and sets `User.mobileVerifiedAt`. Password login and forgot-password are unchanged.
+- Store: Login opens on OTP ("Use password instead"; `?method=password` opens the password form). Register: "Continue: verify mobile" → code → "Verify & Create Account". `components/OtpStep.jsx` has the resend countdown.
+- Not fully configured: development returns `devOtp` and shows it in a yellow "Testing mode" box; production refuses OTP (503) so customers use their password. In production set Express `trust proxy` so the per-IP limit sees real addresses.
+- Changing the mobile number in My Account does not re-verify by OTP yet.
+- A reusable global skill `networkz-sms-otp` (in `~/.claude/skills/`) documents this integration for other projects.
 
 **Phase 4 notes:**
 - Razorpay lives in `src/integrations/razorpay.js` (plain fetch, keys from `.env`). With no keys, `payments.onlineAvailable` is false and checkout offers COD only. The webhook is `POST /api/payments/razorpay/webhook`, mounted in app.js before `express.json` (raw body for the HMAC). Event ids are recorded in `Payment.processedEventIds`.

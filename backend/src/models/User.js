@@ -19,6 +19,8 @@ const userSchema = new mongoose.Schema(
     name: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     mobile: { type: String, required: true, unique: true, match: /^[6-9]\d{9}$/ },
+    // Set when the customer proved they own the number with an SMS OTP
+    mobileVerifiedAt: Date,
     passwordHash: { type: String, required: true, select: false },
     // Logins issued before this time stop working (password change or reset)
     passwordChangedAt: { type: Date, default: Date.now },

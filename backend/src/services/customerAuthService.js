@@ -56,7 +56,7 @@ export function publicUser(user) {
   };
 }
 
-function signCustomerToken(user, remember) {
+export function signCustomerToken(user, remember) {
   const days = remember ? SESSION_DAYS.remember : SESSION_DAYS.normal;
   return jwt.sign({ sub: String(user._id), role: 'customer' }, env.jwtSecret, { expiresIn: `${days}d` });
 }
@@ -71,7 +71,10 @@ async function welcomeEmail(user) {
   });
 }
 
-export async function registerCustomer(body) {
+// `verifyMobile`, when given, runs after every other check and just before the
+// account is created (used for the SMS OTP), so a code is never used up by a
+// registration that would fail anyway.
+export async function registerCustomer(body, { verifyMobile } = {}) {
   const name = requireText(body.name, 'full name', 80);
   const email = cleanEmail(body.email);
   const mobile = cleanMobile(body.mobile);
@@ -85,6 +88,7 @@ export async function registerCustomer(body) {
   const [emailTaken, mobileTaken] = await Promise.all([User.exists({ email }), User.exists({ mobile })]);
   if (emailTaken) throw new HttpError(409, 'An account with this email already exists. Please log in instead.');
   if (mobileTaken) throw new HttpError(409, 'An account with this mobile number already exists. Please log in instead.');
+  if (verifyMobile) await verifyMobile(mobile);
 
   let user;
   try {
@@ -92,6 +96,7 @@ export async function registerCustomer(body) {
       name,
       email,
       mobile,
+      mobileVerifiedAt: verifyMobile ? new Date() : undefined,
       passwordHash: await bcrypt.hash(body.password, 12),
       lastLoginAt: new Date(),
       consent: { termsAndPrivacyAcceptedAt: new Date(), policyVersion: LEGAL_VERSION },

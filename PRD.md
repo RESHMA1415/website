@@ -558,11 +558,12 @@ Same layout, pre-filtered by category.
 After success → **Order Confirmation page**: "Thank you!", order number, summary, expected delivery, buttons "Track Order" and "Continue Shopping".
 
 ### 13.9 Login / Register
-- **Register:** Full name\*, Email\*, Mobile number\*, Password\* (min 8 chars, 1 letter + 1 number), Confirm password\*, agree to Terms\*.
-- **Login:** Email or mobile + password. "Remember me".
+- **Register:** Full name\*, Email\*, Mobile number\*, Password\* (min 8 chars, 1 letter + 1 number), Confirm password\*, agree to Terms\*. The mobile number is then **verified with a 6-digit SMS code (OTP)** before the account is created.
+- **Login:** **Mobile number + SMS code (OTP)** by default; "Use password instead" keeps login with email or mobile + password. "Remember me".
+- **OTP rules:** 6 digits, valid 5 minutes, up to 5 wrong tries per code, a new code after 30 seconds, at most 5 codes per number per hour. Sent through the company SMS gateway (NetworkZ Systems, DLT-registered template).
 - **Forgot password:** enter email → reset link (valid 30 minutes).
 - After login, user returns to the page they were on (e.g. checkout).
-- *(Future: login with OTP / Google — §23.)*
+- *(Future: login with Google — §23.)*
 
 ### 13.10 My Account
 - **Profile:** name, email, mobile, gender (optional), date of birth (optional). Change password.
@@ -921,7 +922,7 @@ The store is ready to launch when **all** of the following are true:
 | Feature | Priority for next version |
 |---|---|
 | Coupons & discount codes | High |
-| Login with mobile OTP / Google | High |
+| Login with Google (mobile OTP login was added in v1.0) | High |
 | Shiprocket (or similar) courier integration: auto-booking, live tracking, pincode serviceability | High |
 | GST invoices (if/when GST-registered) | Medium |
 | Staff accounts with limited permissions | Medium |
@@ -964,6 +965,7 @@ These were filled in by the product manager where the owner said *"as per your s
 | 19 | A prepaid order that comes back undelivered (RTO) is **refunded in full** after contacting the customer | ☐ |
 | 20 | Accounts inactive for **3 years** may be closed and erased after 48 hours' notice; security logs kept for at least 1 year (DPDP Rules) | ☐ |
 | 21 | Legal name and Grievance Officer on the policies | ☑ SHOPME is a sole proprietorship of RESHMA PR, who is also the Grievance Officer |
+| 22 | SMS OTP limits: code valid **5 minutes**, **5 wrong tries**, resend after **30 seconds**, **5 codes per number per hour**, 15 requests per connection per 15 minutes | ☑ Flow chosen by owner: login opens on OTP (password optional); registration verifies the mobile by OTP and sets a password. Limits ☐ |
 
 ---
 

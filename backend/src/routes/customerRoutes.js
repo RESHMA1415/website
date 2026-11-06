@@ -14,10 +14,10 @@ import { addToCart, buildCartView, getCart, mergeGuestCart, removeCartItem, upda
 import {
   changeCustomerPassword,
   loginCustomer,
-  registerCustomer,
   requestPasswordReset,
   resetPassword,
 } from '../services/customerAuthService.js';
+import { loginWithOtp, registerWithOtp, requestOtp } from '../services/otpService.js';
 import { addToWishlist, getWishlist, moveCartItemToWishlist, removeFromWishlist, wishlistIds } from '../services/wishlistService.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
@@ -32,8 +32,12 @@ async function withMergedCart(req, session) {
 }
 
 // ----- Login & registration -----
-router.post('/auth/register', handle(async (req) => withMergedCart(req, await registerCustomer(req.body || {}))));
+// Registration needs the mobile number confirmed with an SMS code
+router.post('/auth/register', handle(async (req) => withMergedCart(req, await registerWithOtp(req.body || {}))));
 router.post('/auth/login', handle(async (req) => withMergedCart(req, await loginCustomer(req.body || {}))));
+// SMS OTP: send a code (login or register), then log in with it
+router.post('/auth/otp/request', handle((req) => requestOtp(req.body || {}, { ip: req.ip })));
+router.post('/auth/otp/login', handle(async (req) => withMergedCart(req, await loginWithOtp(req.body || {}))));
 router.post('/auth/forgot-password', handle((req) => requestPasswordReset(req.body?.email)));
 router.post('/auth/reset-password', handle(async (req) => withMergedCart(req, await resetPassword(req.body || {}))));
 router.get('/auth/me', requireCustomer, handle((req) => getProfile(req.customer._id)));
