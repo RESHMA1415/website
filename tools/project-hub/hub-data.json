@@ -1,5 +1,5 @@
 {
-  "statusDate": "2026-11-06",
+  "statusDate": "2026-11-07",
   "artifactUrl": "https://claude.ai/artifact/J8KvrshBbuSUQTPeudf5vY",
   "phases": [
     {
@@ -602,8 +602,8 @@
       "area": "Messages",
       "status": "test",
       "title": "SMS OTP login and registration",
-      "detail": "Customers log in with a 6-digit SMS code (password still available) and verify their mobile by SMS when signing up. Codes last 5 minutes, 5 wrong tries, resend after 30 seconds. Until the SMS details are complete, the code is shown on screen for testing.",
-      "waitingOn": "Your SMS Access Token Key and the exact approved SMS template text."
+      "detail": "Customers log in with a 6-digit SMS code (password still available) and verify their mobile by SMS when signing up. Codes last 5 minutes, 5 wrong tries, resend after 30 seconds. Your SMS key and template are saved; the gateway accepts them. Until NetworkZ enables sending, the code is shown on screen for testing.",
+      "waitingOn": "NetworkZ must enable the transactional route on account nswebsitetrg (error 412). Tell us when they confirm."
     },
     {
       "phase": "x",
@@ -1018,7 +1018,12 @@
     },
     {
       "id": "—",
-      "text": "SMS Access Token Key and exact DLT template text for template 1707161553278051772 (to put in backend/.env)",
+      "text": "SMS Access Token Key and approved template text (template 1707174177501770137, ending NETSYS)",
+      "state": "done"
+    },
+    {
+      "id": "—",
+      "text": "Ask NetworkZ to enable the transactional SMS route for account nswebsitetrg (header NETSYS, template 1707174177501770137)",
       "state": "needed"
     }
   ]
