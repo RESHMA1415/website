@@ -369,72 +369,72 @@
     {
       "phase": 7,
       "area": "Messages",
-      "status": "notstarted",
+      "status": "test",
       "title": "Connect an email service",
-      "detail": "Welcome, password reset and order emails start sending.",
-      "waitingOn": "Needs an email service account (PRD §20)."
+      "detail": "Built and tested: branded emails for every order, return, refund, review and account event, with automatic retries. Sent from your Gmail.",
+      "waitingOn": "Your Gmail App Password in backend/.env (steps in the Phase 7 report), then press “Send me a test email” in admin → My Account."
     },
     {
       "phase": 7,
       "area": "Messages",
-      "status": "notstarted",
+      "status": "planned",
       "title": "WhatsApp automatic messages",
-      "detail": "Order confirmed, shipped, delivered and refund updates.",
-      "waitingOn": "Needs Meta WhatsApp Business approval."
+      "detail": "Postponed by your decision. The WhatsApp chat button stays on every page.",
+      "waitingOn": "Your Meta WhatsApp Business account, when you want it."
     },
     {
       "phase": 7,
       "area": "Admin",
-      "status": "notstarted",
+      "status": "done",
       "title": "Contact messages inbox",
-      "detail": "Contact form saved to the admin panel with a reply status."
+      "detail": "Contact Us messages arrive in admin → Contact Messages (New/Replied/Closed, reply by email, private note); customer gets a copy, you get an alert."
     },
     {
       "phase": 7,
       "area": "Messages",
-      "status": "notstarted",
+      "status": "done",
       "title": "Newsletter sign-ups",
-      "detail": "Saved with consent; unsubscribe any time."
+      "detail": "Sign-ups with consent, confirmation email and one-click unsubscribe; list and CSV export in admin."
     },
     {
       "phase": 7,
       "area": "Messages",
-      "status": "notstarted",
+      "status": "done",
       "title": "Admin alerts",
-      "detail": "New orders, returns and a daily low-stock summary."
+      "detail": "Emails to you for new orders, cancellations, returns, reviews and contact messages, plus a daily low-stock summary after 9 AM."
     },
     {
       "phase": 8,
       "area": "Admin",
-      "status": "planned",
+      "status": "notstarted",
       "title": "Dashboard numbers",
       "detail": "Sales, orders, pending work and stock alerts at a glance."
     },
     {
       "phase": 8,
       "area": "Admin",
-      "status": "planned",
+      "status": "notstarted",
       "title": "Sales reports",
       "detail": "By day, product and category; download."
     },
     {
       "phase": 8,
       "area": "Admin",
-      "status": "planned",
+      "status": "notstarted",
       "title": "Payments screen",
       "detail": "Every payment and refund, including any that need a hand refund."
     },
     {
       "phase": 8,
       "area": "Admin",
-      "status": "planned",
+      "status": "notstarted",
       "title": "Customers screen",
       "detail": "List, details, block or unblock, export."
     },
     {
       "phase": 8,
       "area": "Admin",
-      "status": "planned",
+      "status": "notstarted",
       "title": "Business Settings editing",
       "detail": "Change fees, limits, contact details and policy pages yourself."
     },
@@ -681,6 +681,21 @@
       "status": "done",
       "title": "Steadier local database",
       "detail": "The test database no longer stops or moves when the server restarts itself during work."
+    },
+    {
+      "phase": 7,
+      "area": "Store",
+      "status": "done",
+      "title": "Payment failed: complete your payment",
+      "detail": "If an online payment fails, the customer gets one email and a “Complete payment” button on the order while it is kept."
+    },
+    {
+      "phase": 7,
+      "area": "Your task",
+      "status": "test",
+      "title": "Receive all messages for a test order",
+      "detail": "After adding the Gmail App Password: place a test order and follow it to delivery; check the emails arrive.",
+      "waitingOn": "Your Gmail App Password first."
     }
   ],
   "screens": [
@@ -801,7 +816,7 @@
       "name": "Contact Us",
       "path": "/contact",
       "status": "done",
-      "note": "Map and details done; saving messages comes in Phase 7."
+      "note": "Form saves to admin and emails a copy."
     },
     {
       "app": "store",
@@ -905,8 +920,8 @@
       "app": "admin",
       "name": "Contact Messages",
       "path": "/messages",
-      "status": "planned",
-      "note": "Phase 7."
+      "status": "done",
+      "note": "Inbox with New/Replied/Closed, reply by email, notes; newsletter sign-ups tab."
     },
     {
       "app": "admin",
@@ -963,6 +978,13 @@
       "path": "/account/orders/:order/review/:product",
       "status": "done",
       "note": "Stars, photos, video, fit feedback."
+    },
+    {
+      "app": "store",
+      "name": "Newsletter unsubscribe",
+      "path": "/newsletter/unsubscribe",
+      "status": "done",
+      "note": "One click from the email."
     }
   ],
   "decisions": [
@@ -1114,6 +1136,16 @@
     {
       "id": "—",
       "text": "Ask NetworkZ to enable the transactional SMS route for account nswebsitetrg (header NETSYS, template 1707174177501770137)",
+      "state": "needed"
+    },
+    {
+      "id": "24",
+      "text": "Emails sent from your Gmail for now; automatic WhatsApp messages postponed",
+      "state": "done"
+    },
+    {
+      "id": "—",
+      "text": "Gmail App Password for shopmesupport2@gmail.com (to switch on real emails)",
       "state": "needed"
     }
   ]
