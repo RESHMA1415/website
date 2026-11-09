@@ -490,12 +490,11 @@
       "detail": "Privacy, Terms and Refund & Cancellation checked by a legal or CA advisor."
     },
     {
-      "phase": 9,
+      "phase": "x",
       "area": "Store",
-      "status": "planned",
+      "status": "done",
       "title": "Pincode → city/state auto-fill",
-      "detail": "Fills city and state from the pincode at checkout.",
-      "waitingOn": "Needs your OK to use a free pincode lookup service."
+      "detail": "City and state fill in from the pincode (India Post). If the service is busy, customers just type them."
     },
     {
       "phase": "x",
@@ -589,12 +588,11 @@
       "detail": "8 flows clicked and typed in a real browser: 28 of 28 checks passed, no errors. Video and report in the project folder."
     },
     {
-      "phase": 9,
+      "phase": "x",
       "area": "Launch",
-      "status": "planned",
+      "status": "done",
       "title": "Security upgrade of Vite and React Router",
-      "detail": "4 advisories (1 high) in two building blocks; fixing needs major version upgrades.",
-      "waitingOn": "Your OK to upgrade."
+      "detail": "Vite 8 and React Router 7: 0 security warnings. All tests re-run on the new versions."
     },
     {
       "phase": "x",
@@ -616,7 +614,7 @@
       "area": "Your task",
       "status": "test",
       "title": "Tidy the catalogue",
-      "detail": "Rename the watch’s web address, hide the 6 sample products, write the FAQ page.",
+      "detail": "Rename the watch’s web address and hide the 6 sample products. (FAQ page is now written.)",
       "waitingOn": "Your turn (see the test report)."
     },
     {
@@ -634,6 +632,55 @@
       "title": "Write, approve and reply to a review",
       "detail": "Deliver a test order in the admin panel, review it from My Orders with a photo, then approve and reply in Reviews.",
       "waitingOn": "Your turn (steps in the Phase 6 report)."
+    },
+    {
+      "phase": "x",
+      "area": "Store",
+      "status": "done",
+      "title": "FAQ and Shipping Policy pages",
+      "detail": "Full FAQ and Shipping Policy written from your rules; Refund policy now says return pickup is free."
+    },
+    {
+      "phase": "x",
+      "area": "Admin",
+      "status": "done",
+      "title": "Bulk Mark Shipped",
+      "detail": "Tick several orders, type one courier for all and a tracking number per order, ship together."
+    },
+    {
+      "phase": "x",
+      "area": "Setup",
+      "status": "done",
+      "title": "Reliable local database restarts",
+      "detail": "The test database now always comes back on its usual port after an automatic restart."
+    },
+    {
+      "phase": "x",
+      "area": "Store",
+      "status": "done",
+      "title": "FAQ and full Shipping Policy",
+      "detail": "FAQ (orders, delivery, cancelling, returns, refunds, account, reviews) and a full Shipping Policy, written from your rules."
+    },
+    {
+      "phase": "x",
+      "area": "Legal",
+      "status": "done",
+      "title": "Free return pickup",
+      "detail": "Your decision: return pickup is free. Added to the Refund & Cancellation Policy, Shipping Policy and FAQ."
+    },
+    {
+      "phase": "x",
+      "area": "Admin",
+      "status": "done",
+      "title": "Bulk Mark Shipped",
+      "detail": "Tick several orders, enter courier and tracking number for each in one window, ship them together."
+    },
+    {
+      "phase": "x",
+      "area": "Setup",
+      "status": "done",
+      "title": "Steadier local database",
+      "detail": "The test database no longer stops or moves when the server restarts itself during work."
     }
   ],
   "screens": [
@@ -1026,8 +1073,8 @@
     },
     {
       "id": "—",
-      "text": "Is return pickup free for the customer?",
-      "state": "needed"
+      "text": "Return pickup is free for the customer",
+      "state": "done"
     },
     {
       "id": "—",
@@ -1036,8 +1083,8 @@
     },
     {
       "id": "—",
-      "text": "Use a free pincode lookup to fill city and state automatically?",
-      "state": "needed"
+      "text": "Use India Post pincode lookup to fill city and state (approved)",
+      "state": "done"
     },
     {
       "id": "—",
@@ -1046,8 +1093,8 @@
     },
     {
       "id": "—",
-      "text": "OK to upgrade Vite and React Router to new major versions (security advisories)",
-      "state": "needed"
+      "text": "Security upgrade of Vite and React Router: yes (done)",
+      "state": "done"
     },
     {
       "id": "22",
