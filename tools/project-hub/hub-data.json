@@ -1,5 +1,5 @@
 {
-  "statusDate": "2026-11-07",
+  "statusDate": "2026-11-09",
   "artifactUrl": "https://claude.ai/artifact/J8KvrshBbuSUQTPeudf5vY",
   "phases": [
     {
@@ -279,91 +279,92 @@
     {
       "phase": 5,
       "area": "Admin",
-      "status": "notstarted",
+      "status": "done",
       "title": "Orders screen",
-      "detail": "List, filter and open orders; see items, address and payment."
+      "detail": "Tabs (New, Processing, Shipped, Delivered, Cancelled, Returns), counts, search, filters, bulk Mark Processing."
     },
     {
       "phase": 5,
       "area": "Admin",
-      "status": "notstarted",
+      "status": "done",
       "title": "Order status updates",
-      "detail": "Packed → Shipped (courier + tracking) → Out for Delivery → Delivered; forward only."
+      "detail": "Processing → Shipped (courier + tracking) → Out for Delivery → Delivered, forward only, every step time-stamped. Delivery failed / RTO puts items back in stock."
     },
     {
       "phase": 5,
       "area": "Admin",
-      "status": "notstarted",
+      "status": "done",
       "title": "Packing slip and receipt",
-      "detail": "Printable slip with address, items and COD amount to collect."
+      "detail": "Print packing slips for one or many orders, with the COD amount to collect."
     },
     {
       "phase": 5,
       "area": "Store",
-      "status": "notstarted",
+      "status": "done",
       "title": "Customer cancellation",
-      "detail": "Cancel before shipping with a reason; stock restored; refund if paid online."
+      "detail": "Customers cancel before shipping with a reason; stock goes back and online payments are refunded automatically."
     },
     {
       "phase": 5,
       "area": "Store",
-      "status": "notstarted",
+      "status": "done",
       "title": "Returns and exchanges",
-      "detail": "Request within 7 days with photos; admin approves, picks up, checks, restocks."
+      "detail": "Within 7 days of delivery: choose items, reason, photos, UPI/bank for COD. Admin approves, arranges pickup, restocks, refunds or ships the replacement."
     },
     {
       "phase": 5,
       "area": "Payments",
-      "status": "notstarted",
+      "status": "test",
       "title": "Refunds",
-      "detail": "One-click Razorpay refunds; COD refunds paid by hand with a reference."
+      "detail": "Full or partial refunds from the order, return or Payments page. COD refunds are recorded with your UPI/bank reference. Online refunds go through Razorpay.",
+      "waitingOn": "Your Razorpay test keys, to try an online refund (COD refunds work now)."
     },
     {
       "phase": 5,
       "area": "Store",
-      "status": "notstarted",
+      "status": "done",
       "title": "Order tracking page",
-      "detail": "Look up an order and see its timeline."
+      "detail": "Track Order works with order number + mobile or email, and shows courier tracking."
     },
     {
       "phase": 5,
       "area": "Store",
-      "status": "notstarted",
+      "status": "done",
       "title": "Download receipt",
-      "detail": "From the order page."
+      "detail": "Customers print or save a receipt from the order page."
     },
     {
       "phase": 5,
       "area": "Server",
-      "status": "notstarted",
+      "status": "done",
       "title": "Undelivered (RTO) handling",
-      "detail": "Stock restored when a parcel comes back."
+      "detail": "Mark delivery failed; restock when the parcel is back; refund prepaid orders from the order page."
     },
     {
       "phase": 6,
       "area": "Store",
-      "status": "planned",
+      "status": "notstarted",
       "title": "Write a review",
       "detail": "Stars, text, up to 5 photos and 1 video; verified buyers only."
     },
     {
       "phase": 6,
       "area": "Admin",
-      "status": "planned",
+      "status": "notstarted",
       "title": "Review moderation and replies",
       "detail": "Approve, reject with reason, reply publicly."
     },
     {
       "phase": 6,
       "area": "Store",
-      "status": "planned",
+      "status": "notstarted",
       "title": "Ratings on product pages",
       "detail": "Average and 5★–1★ breakdown from approved reviews."
     },
     {
       "phase": 6,
       "area": "Store",
-      "status": "planned",
+      "status": "notstarted",
       "title": "My Reviews",
       "detail": "See review status and edit."
     },
@@ -603,7 +604,7 @@
       "status": "test",
       "title": "SMS OTP login and registration",
       "detail": "Customers log in with a 6-digit SMS code (password still available) and verify their mobile by SMS when signing up. Codes last 5 minutes, 5 wrong tries, resend after 30 seconds. Your SMS key and template are saved; the gateway accepts them. Until NetworkZ enables sending, the code is shown on screen for testing.",
-      "waitingOn": "NetworkZ must enable the transactional route on account nswebsitetrg (error 412). Tell us when they confirm."
+      "waitingOn": "On hold (your decision). NetworkZ must enable the transactional route on account nswebsitetrg (error 412); the code shows on screen until then."
     },
     {
       "phase": "x",
@@ -619,6 +620,14 @@
       "title": "Tidy the catalogue",
       "detail": "Rename the watch’s web address, hide the 6 sample products, write the FAQ page.",
       "waitingOn": "Your turn (see the test report)."
+    },
+    {
+      "phase": 5,
+      "area": "Your task",
+      "status": "test",
+      "title": "Run an order from placing to refund",
+      "detail": "Place a COD test order, ship and deliver it in the admin panel, request a return as the customer, then approve, receive and refund it.",
+      "waitingOn": "Your turn (steps in the Phase 5 report)."
     }
   ],
   "screens": [
@@ -717,8 +726,8 @@
       "app": "store",
       "name": "Order detail",
       "path": "/account/orders/…",
-      "status": "notstarted",
-      "note": "Shows the order; cancel, return and receipt buttons come in Phase 5."
+      "status": "done",
+      "note": "Cancel, return/exchange, receipt, courier tracking and return progress."
     },
     {
       "app": "store",
@@ -731,8 +740,8 @@
       "app": "store",
       "name": "Track Order",
       "path": "/track-order",
-      "status": "notstarted",
-      "note": "Layout only; real lookups in Phase 5."
+      "status": "done",
+      "note": "Order number + mobile or email."
     },
     {
       "app": "store",
@@ -822,15 +831,15 @@
       "app": "admin",
       "name": "Orders",
       "path": "/orders",
-      "status": "notstarted",
-      "note": "Phase 5."
+      "status": "done",
+      "note": "Status buttons, courier details, packing slips, refunds, notes."
     },
     {
       "app": "admin",
       "name": "Returns",
       "path": "/returns",
-      "status": "notstarted",
-      "note": "Phase 5."
+      "status": "done",
+      "note": "Approve/reject, pickup, receive with restock, refund or replacement."
     },
     {
       "app": "admin",
@@ -850,8 +859,8 @@
       "app": "admin",
       "name": "Payments",
       "path": "/payments",
-      "status": "planned",
-      "note": "Phase 8."
+      "status": "dev",
+      "note": "List, totals and refunds work; date-range totals and export in Phase 8."
     },
     {
       "app": "admin",
@@ -873,6 +882,27 @@
       "path": "/settings",
       "status": "planned",
       "note": "Phase 8."
+    },
+    {
+      "app": "store",
+      "name": "Return / exchange request",
+      "path": "/account/orders/:order/return",
+      "status": "done",
+      "note": "Items, reason, photos, COD refund details, pickup address."
+    },
+    {
+      "app": "store",
+      "name": "Order receipt",
+      "path": "/account/orders/:order/receipt",
+      "status": "done",
+      "note": "Print or save as PDF."
+    },
+    {
+      "app": "admin",
+      "name": "Packing slips",
+      "path": "/orders/print",
+      "status": "done",
+      "note": "One slip per printed page."
     }
   ],
   "decisions": [
