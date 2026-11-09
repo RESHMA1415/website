@@ -1,12 +1,14 @@
 // Pincode → city and state (PRD §6.7, §13.8), using India Post's free public
 // lookup (api.postalpincode.in). Only the 6-digit pincode is sent: never a name,
 // phone or address. Owner approved this service on 9 Nov 2026.
-// Answers are remembered for a day; if the service is slow or down, the
-// customer simply types the city and state.
+// Found answers are remembered for 30 days (a pincode's city doesn't change).
+// The free service sometimes says "No records found" for valid pincodes when
+// busy, so a "not found" is never remembered and never blocks the customer:
+// they simply type the city and state.
 import { INDIAN_STATES, PINCODE_PATTERN } from '../utils/india.js';
 
 const API = 'https://api.postalpincode.in/pincode';
-const DAY = 24 * 3600 * 1000;
+const KEEP = 30 * 24 * 3600 * 1000;
 const cache = new Map(); // pincode -> { at, value }
 
 const key = (s) => String(s || '').toLowerCase().replace(/&/g, 'and').replace(/[^a-z]/g, '');
@@ -32,7 +34,7 @@ export async function lookupPincode(pincode) {
   const pin = String(pincode || '').trim();
   if (!PINCODE_PATTERN.test(pin)) return { found: false };
   const hit = cache.get(pin);
-  if (hit && Date.now() - hit.at < DAY) return hit.value;
+  if (hit && Date.now() - hit.at < KEEP) return hit.value;
 
   let value;
   try {
@@ -55,7 +57,7 @@ export async function lookupPincode(pincode) {
     console.error(`Pincode lookup for ${pin} failed: ${err.message}`);
     return { found: false, unavailable: true };
   }
-  cache.set(pin, { at: Date.now(), value });
+  if (value.found) cache.set(pin, { at: Date.now(), value });
   if (cache.size > 20000) cache.clear(); // keep memory bounded
   return value;
 }

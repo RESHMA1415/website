@@ -37,7 +37,8 @@ export default function AddressForm({ idPrefix = 'addr', value, onChange }) {
       .then((r) => {
         if (cancelled) return;
         if (!r.found) {
-          setPinNote(r.unavailable ? null : { tone: 'warning', text: 'We couldn’t find this pincode. Please check it, or type your city and state.' });
+          // The lookup service can miss valid pincodes, so never suggest the pincode is wrong
+          setPinNote({ tone: 'muted', text: 'Please type your city and state.' });
           return;
         }
         const now = latest.current;

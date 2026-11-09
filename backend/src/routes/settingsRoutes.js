@@ -36,8 +36,10 @@ router.get(
     recent.push(now);
     pinLog.set(req.ip, recent);
     if (pinLog.size > 5000) pinLog.clear();
-    res.set('Cache-Control', 'public, max-age=86400');
-    res.json(await lookupPincode(req.params.pincode));
+    const result = await lookupPincode(req.params.pincode);
+    // Browsers may keep a found answer; a "not found" is asked again next time
+    res.set('Cache-Control', result.found ? 'public, max-age=86400' : 'no-store');
+    res.json(result);
   }),
 );
 
