@@ -164,7 +164,7 @@ Follow PRD §21 phases. Don't build advanced features ahead of their phase unles
 - Guest carts are keyed by a random `X-Guest-Id` header (localStorage `shopme.guestId`). `mergeGuestCart` runs on login, register and reset. Cart routes use `optionalCustomer`; account and wishlist routes use `requireCustomer`.
 - `src/integrations/email.js` has only a log driver until Phase 7. In development the forgot-password response includes `devResetLink`, shown on screen; never in production or once SMTP is set.
 - Checkout and order pages are behind login but still Phase 4/5 previews. "Buy Now" adds to cart and opens /checkout.
-- Pincode → city/state auto-fill (PRD §13.8) is not built yet. It needs a pincode lookup service; ask the owner before adding one.
+- Pincode → city/state auto-fill (PRD §13.8): `integrations/pincode.js` asks India Post (api.postalpincode.in, owner-approved; only the pincode is sent), caches answers for a day, and maps state names to `INDIAN_STATES`. `GET /api/pincode/:pincode` (60 per IP per 10 min) never fails an address: `AddressForm` fills only empty or self-filled city/state fields.
 
 **Phase 2 notes:**
 - The single admin account is created on first start from `ADMIN_EMAIL` / `ADMIN_INITIAL_PASSWORD` in `backend/.env`.

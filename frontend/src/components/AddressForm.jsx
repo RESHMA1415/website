@@ -1,4 +1,8 @@
+import { useEffect, useRef, useState } from 'react';
+import { api } from '../api/client.js';
 import { INDIAN_STATES } from '../utils/format.js';
+
+const PINCODE = /^[1-9][0-9]{5}$/;
 
 export const EMPTY_ADDRESS = {
   fullName: '', mobile: '', alternateMobile: '', pincode: '', house: '', street: '', landmark: '', city: '', state: '', type: 'home',
@@ -13,6 +17,47 @@ export default function AddressForm({ idPrefix = 'addr', value, onChange }) {
   const bind = (key) => (controlled ? { value: value[key] ?? '', onChange: (e) => onChange({ ...value, [key]: e.target.value }) } : {});
   const typeProps = (type) =>
     controlled ? { checked: (value.type || 'home') === type, onChange: () => onChange({ ...value, type }) } : { defaultChecked: type === 'home' };
+
+  // City and state fill in from the pincode (India Post lookup through our server).
+  // Only fields that are empty, or that we filled ourselves, are changed, so a
+  // customer's own typing is never overwritten.
+  const [pinNote, setPinNote] = useState(null);
+  const filled = useRef({ city: '', state: '' });
+  const latest = useRef(value);
+  latest.current = value;
+  const pincode = controlled ? String(value.pincode || '').trim() : '';
+  useEffect(() => {
+    if (!PINCODE.test(pincode)) {
+      setPinNote(null);
+      return undefined;
+    }
+    let cancelled = false;
+    setPinNote({ tone: 'muted', text: 'Looking up your pincode…' });
+    api(`/pincode/${pincode}`)
+      .then((r) => {
+        if (cancelled) return;
+        if (!r.found) {
+          setPinNote(r.unavailable ? null : { tone: 'warning', text: 'We couldn’t find this pincode. Please check it, or type your city and state.' });
+          return;
+        }
+        const now = latest.current;
+        const patch = {};
+        if (r.city && (!now.city || now.city === filled.current.city)) patch.city = r.city;
+        if (r.state && (!now.state || now.state === filled.current.state)) patch.state = r.state;
+        // A saved address that already matches counts as filled by us, so a new pincode can update it
+        filled.current = {
+          city: patch.city ?? (now.city === r.city ? r.city : filled.current.city),
+          state: patch.state ?? (now.state === r.state ? r.state : filled.current.state),
+        };
+        if (Object.keys(patch).length) onChange({ ...now, ...patch });
+        setPinNote({ tone: 'success', text: `${[r.city, r.state].filter(Boolean).join(', ')}` });
+      })
+      .catch(() => !cancelled && setPinNote(null));
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pincode]);
 
   return (
     <div className="row g-3">
@@ -31,6 +76,11 @@ export default function AddressForm({ idPrefix = 'addr', value, onChange }) {
       <div className="col-md-6">
         <label className="form-label" htmlFor={id('pincode')}>Pincode *</label>
         <input id={id('pincode')} className="form-control" required inputMode="numeric" pattern="[1-9][0-9]{5}" maxLength={6} placeholder="6-digit pincode" autoComplete="postal-code" title="6-digit pincode" {...bind('pincode')} />
+        {pinNote && (
+          <div className={`form-text ${pinNote.tone === 'warning' ? 'text-danger' : pinNote.tone === 'success' ? 'text-success' : ''}`} aria-live="polite">
+            {pinNote.tone === 'success' && <i className="bi bi-geo-alt-fill me-1" />}{pinNote.text}
+          </div>
+        )}
       </div>
       <div className="col-12">
         <label className="form-label" htmlFor={id('house')}>House / Flat / Building *</label>

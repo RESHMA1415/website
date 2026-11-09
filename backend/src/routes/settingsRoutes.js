@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { lookupPincode } from '../integrations/pincode.js';
 import { getPage, getPublicSettings } from '../services/settingsService.js';
 import { asyncHandler, HttpError } from '../utils/asyncHandler.js';
 
@@ -21,6 +22,22 @@ router.get(
     const name = ALIASES[req.params.name] || req.params.name;
     if (!PAGES.includes(name)) throw new HttpError(404, 'Page not found.');
     res.json({ name, content: await getPage(name) });
+  }),
+);
+
+// City and state for a pincode (address forms). Limited per connection.
+const pinLog = new Map();
+router.get(
+  '/pincode/:pincode',
+  asyncHandler(async (req, res) => {
+    const now = Date.now();
+    const recent = (pinLog.get(req.ip) || []).filter((t) => now - t < 10 * 60000);
+    if (recent.length >= 60) throw new HttpError(429, 'Too many pincode lookups. Please type the city and state.');
+    recent.push(now);
+    pinLog.set(req.ip, recent);
+    if (pinLog.size > 5000) pinLog.clear();
+    res.set('Cache-Control', 'public, max-age=86400');
+    res.json(await lookupPincode(req.params.pincode));
   }),
 );
 
