@@ -109,6 +109,11 @@ export default function OrderDetail() {
                   <div className="flex-grow-1 small" style={{ minWidth: 0 }}>
                     <div className="fw-semibold">{item.name}</div>
                     <div className="text-muted">{item.optionLabel}{item.optionLabel ? ' · ' : ''}Qty {item.quantity} × {formatINR(item.price)}</div>
+                    {order.canReview && (
+                      <Link to={`/account/orders/${order.orderNumber}/review/${item.product}`} className="small">
+                        <i className={`bi ${item.reviewed ? 'bi-pencil' : 'bi-star'} me-1`} />{item.reviewed ? 'Your review' : 'Write a Review'}
+                      </Link>
+                    )}
                   </div>
                   <div className="fw-semibold text-nowrap">{formatINR(item.price * item.quantity)}</div>
                 </div>
@@ -146,7 +151,6 @@ export default function OrderDetail() {
               <div className="d-flex flex-wrap gap-2">
                 {order.canCancel && <button type="button" className="btn btn-outline-danger btn-sm" onClick={() => setCancelling(true)}>Cancel Order</button>}
                 {order.canReturn && <Link className="btn btn-outline-navy btn-sm" to={`/account/orders/${order.orderNumber}/return`}>Return / Exchange</Link>}
-                {order.status === 'delivered' && <button type="button" className="btn btn-outline-navy btn-sm" disabled title="Reviews arrive in the next update">Write a Review (coming soon)</button>}
                 <Link className="btn btn-outline-navy btn-sm" to={`/account/orders/${order.orderNumber}/receipt`}><i className="bi bi-receipt me-1" />Download Receipt</Link>
                 {settings.store.whatsappNumber && (
                   <a

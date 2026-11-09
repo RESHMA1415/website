@@ -37,6 +37,7 @@ import {
 import { deleteMedia, listMedia, uploadMedia } from '../services/mediaService.js';
 import { listPaymentsForAdmin, refundPaymentByAdmin } from '../services/paymentAdminService.js';
 import { getReturnForAdmin, listReturnsForAdmin, returnAction } from '../services/returnService.js';
+import { bulkApprove, listReviewsForAdmin, pendingReviewCount, reviewAction } from '../services/reviewService.js';
 import {
   bulkUpdateProducts,
   createProduct,
@@ -134,6 +135,12 @@ router.post('/orders/:orderNumber/refund', handle((req) => refundOrderByAdmin(re
 router.get('/returns', handle((req) => listReturnsForAdmin(req.query)));
 router.get('/returns/:id', handle((req) => getReturnForAdmin(req.params.id)));
 router.post('/returns/:id/:action', handle((req) => returnAction(req.params.id, req.params.action, req.body || {})));
+
+// ----- Reviews (PRD §11.3, §14.9) -----
+router.get('/reviews', handle((req) => listReviewsForAdmin(req.query)));
+router.get('/reviews/pending-count', handle(() => pendingReviewCount()));
+router.post('/reviews/bulk-approve', handle((req) => bulkApprove(req.body || {})));
+router.post('/reviews/:id/:action', handle((req) => reviewAction(req.params.id, req.params.action, req.body || {})));
 
 // ----- Payments & refunds (PRD §14.8) -----
 router.get('/payments', handle((req) => listPaymentsForAdmin(req.query)));

@@ -8,6 +8,7 @@ import Stars from '../components/Stars.jsx';
 import { useShopper } from '../context/ShopperContext.jsx';
 import { useStore } from '../context/StoreContext.jsx';
 import { useApi } from '../hooks/useApi.js';
+import ProductReviews from '../components/ProductReviews.jsx';
 import { formatINR, whatsappLink } from '../utils/format.js';
 
 const RECENT_KEY = 'shopme.recentlyViewed';
@@ -206,45 +207,6 @@ function DetailsAccordion({ product, settings }) {
         </div>
       ))}
     </div>
-  );
-}
-
-function ReviewsSummary({ product }) {
-  const total = product.ratingCount || 0;
-  return (
-    <section className="section pb-0" id="reviews">
-      <h2 className="section-title mb-4">Ratings & Reviews</h2>
-      <div className="row g-4">
-        <div className="col-md-4">
-          <div className="card-soft p-4 text-center">
-            <div className="display-5 fw-bold text-navy">{total ? product.ratingAverage.toFixed(1) : '–'}</div>
-            <Stars value={product.ratingAverage} className="fs-5" />
-            <div className="small text-muted mt-1">{total} review{total === 1 ? '' : 's'}</div>
-            <div className="mt-3">
-              {[5, 4, 3, 2, 1].map((star) => {
-                const count = product.ratingBreakdown?.[star] || 0;
-                return (
-                  <div key={star} className="d-flex align-items-center gap-2 small mb-1">
-                    <span style={{ width: 28 }}>{star}★</span>
-                    <div className="rating-bar"><div style={{ width: total ? `${(count / total) * 100}%` : 0 }} /></div>
-                    <span className="text-muted" style={{ width: 24 }}>{count}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-        <div className="col-md-8">
-          <div className="card-soft p-4 h-100 d-flex flex-column justify-content-center text-center">
-            <i className="bi bi-chat-square-heart fs-1 text-orange" />
-            <h3 className="h5 mt-2">No reviews yet</h3>
-            <p className="text-muted small mb-0">
-              Only customers who bought and received this product can review it, with photos or a video.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
   );
 }
 
@@ -461,7 +423,7 @@ export default function ProductDetails() {
         </div>
       </div>
 
-      <ReviewsSummary product={product} />
+      <ProductReviews product={product} />
 
       {related?.products?.filter((p) => p.slug !== slug).length > 0 && (
         <section className="section pb-0">

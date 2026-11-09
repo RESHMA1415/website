@@ -11,7 +11,8 @@ import { HttpError } from '../utils/asyncHandler.js';
 
 export const UPLOADS_URL = '/uploads';
 export const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-export const VIDEO_TYPES = ['video/mp4'];
+export const VIDEO_TYPES = ['video/mp4', 'video/quicktime'];
+export const MAX_VIDEO_SECONDS = 60; // product and review videos (PRD §5.3, §11.2)
 export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 export const MAX_VIDEO_BYTES = 50 * 1024 * 1024;
 
@@ -65,14 +66,57 @@ export async function storeImage(buffer) {
   };
 }
 
-// MP4 files start with an "ftyp" box at byte 4
-export async function storeVideo(buffer) {
-  if (buffer.length < 12 || buffer.toString('ascii', 4, 8) !== 'ftyp') {
-    throw new HttpError(400, 'Please upload an MP4 video.');
+// MP4 and MOV files are a list of "boxes": 4-byte size, 4-byte type, contents.
+// The movie length is in moov › mvhd (time scale + duration).
+const TOP_BOXES = ['ftyp', 'moov', 'mdat', 'free', 'wide', 'skip', 'pnot', 'uuid'];
+
+function boxes(buffer, start, end, visit) {
+  let pos = start;
+  while (pos + 8 <= end) {
+    let size = buffer.readUInt32BE(pos);
+    const type = buffer.toString('ascii', pos + 4, pos + 8);
+    let header = 8;
+    if (size === 1) {
+      if (pos + 16 > end) return;
+      size = Number(buffer.readBigUInt64BE(pos + 8));
+      header = 16;
+    } else if (size === 0) {
+      size = end - pos;
+    }
+    if (size < header) return;
+    if (visit(type, pos + header, Math.min(pos + size, end)) === false) return;
+    pos += size;
   }
-  const name = `${newId()}.mp4`;
+}
+
+export function videoDurationSeconds(buffer) {
+  let seconds = null;
+  boxes(buffer, 0, buffer.length, (type, start, end) => {
+    if (type !== 'moov') return true;
+    boxes(buffer, start, end, (inner, s) => {
+      if (inner !== 'mvhd') return true;
+      const version = buffer.readUInt8(s);
+      const timescale = version === 1 ? buffer.readUInt32BE(s + 20) : buffer.readUInt32BE(s + 12);
+      const duration = version === 1 ? Number(buffer.readBigUInt64BE(s + 24)) : buffer.readUInt32BE(s + 16);
+      if (timescale > 0) seconds = duration / timescale;
+      return false;
+    });
+    return false;
+  });
+  return seconds;
+}
+
+// Checks it really is an MP4/MOV video of at most 60 seconds, then stores it
+export async function storeVideo(buffer, { maxSeconds = MAX_VIDEO_SECONDS } = {}) {
+  const firstBox = buffer.length >= 12 ? buffer.toString('ascii', 4, 8) : '';
+  if (!TOP_BOXES.includes(firstBox)) throw new HttpError(400, 'Please upload an MP4 or MOV video.');
+  const seconds = videoDurationSeconds(buffer);
+  if (seconds == null) throw new HttpError(400, 'We couldn’t read this video. Please upload an MP4 or MOV file.');
+  if (seconds > maxSeconds + 0.5) throw new HttpError(400, `The video is ${Math.round(seconds)} seconds long. Please keep it to ${maxSeconds} seconds or less.`);
+  const isMov = firstBox !== 'ftyp' || buffer.toString('ascii', 8, 12) === 'qt  ';
+  const name = `${newId()}.${isMov ? 'mov' : 'mp4'}`;
   const url = await writeFile(name, buffer);
-  return { url, bytes: buffer.length, storage: { driver: 'local', keys: [name] } };
+  return { url, bytes: buffer.length, seconds: Math.round(seconds), storage: { driver: 'local', keys: [name] } };
 }
 
 export async function removeStored(storage) {

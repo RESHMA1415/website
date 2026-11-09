@@ -487,7 +487,9 @@ function customerOrder(order, payment, extra = {}) {
     status: order.status,
     paymentMethod: order.paymentMethod,
     paymentStatus: order.paymentStatus,
-    items: order.items.map((i) => ({ name: i.name, imageUrl: i.imageUrl, options: i.options, optionLabel: optionText(i.options), sku: i.sku, mrp: i.mrp, price: i.price, quantity: i.quantity, product: i.product })),
+    items: order.items.map((i) => ({ name: i.name, imageUrl: i.imageUrl, options: i.options, optionLabel: optionText(i.options), sku: i.sku, mrp: i.mrp, price: i.price, quantity: i.quantity, product: i.product, reviewed: Boolean(i.reviewed) })),
+    // Verified-buyer reviews open once the order was delivered (PRD §11.1)
+    canReview: order.statusHistory.some((h) => h.status === 'delivered'),
     address: order.address,
     subtotal: order.subtotal,
     deliveryCharge: order.deliveryCharge,

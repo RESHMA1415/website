@@ -6,6 +6,7 @@ import OrderDetail from './pages/account/OrderDetail.jsx';
 import Orders from './pages/account/Orders.jsx';
 import Receipt from './pages/account/Receipt.jsx';
 import ReturnRequest from './pages/account/ReturnRequest.jsx';
+import ReviewForm from './pages/account/ReviewForm.jsx';
 import RequireLogin from './components/RequireLogin.jsx';
 import ForgotPassword from './pages/auth/ForgotPassword.jsx';
 import Login from './pages/auth/Login.jsx';
@@ -49,6 +50,7 @@ export default function App() {
         <Route path="account/orders" element={<RequireLogin><Orders /></RequireLogin>} />
         <Route path="account/orders/:orderNumber" element={<RequireLogin><OrderDetail /></RequireLogin>} />
         <Route path="account/orders/:orderNumber/return" element={<RequireLogin><ReturnRequest /></RequireLogin>} />
+        <Route path="account/orders/:orderNumber/review/:productId" element={<RequireLogin><ReviewForm /></RequireLogin>} />
         <Route path="account/orders/:orderNumber/receipt" element={<RequireLogin><Receipt /></RequireLogin>} />
         <Route path="track-order" element={<TrackOrder />} />
         <Route path="contact" element={<Contact />} />

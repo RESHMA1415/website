@@ -312,15 +312,76 @@ function Addresses() {
   );
 }
 
+const REVIEW_STATUS = {
+  pending: ['Waiting for approval', 'warning'],
+  approved: ['Published', 'success'],
+  rejected: ['Not published', 'secondary'],
+  hidden: ['Not shown', 'secondary'],
+};
+
+// My Reviews (PRD §13.10): written reviews and delivered products to review
 function Reviews() {
+  const [data, setData] = useState(null);
+  const [error, setError] = useState('');
+  useEffect(() => {
+    api('/reviews/mine').then(setData).catch((err) => setError(err.message));
+  }, []);
+  if (error) return <div className="alert alert-danger">{error}</div>;
+  if (!data) return <div className="card-soft p-4 text-muted">Loading…</div>;
+  if (!data.reviews.length && !data.toReview.length) {
+    return (
+      <div className="card-soft">
+        <EmptyState icon="bi-star" title="No reviews yet" text="After your order is delivered, you can review each product with stars, a comment, photos or a video." />
+      </div>
+    );
+  }
   return (
-    <div className="card-soft">
-      <EmptyState
-        icon="bi-star"
-        title="No reviews yet"
-        text="After your order is delivered, you can review each product with stars, a comment, photos or a video."
-      />
-    </div>
+    <>
+      {data.toReview.length > 0 && (
+        <div className="card-soft p-4 mb-4">
+          <h2 className="h5 mb-3">Waiting for your review</h2>
+          <div className="d-grid gap-2">
+            {data.toReview.map((p) => (
+              <div key={`${p.orderNumber}-${p.productId}`} className="d-flex align-items-center gap-3">
+                <div className="cart-line-image" style={{ width: 48, height: 60 }}>{p.imageUrl ? <img src={p.imageUrl} alt="" loading="lazy" /> : <i className="bi bi-image text-muted" />}</div>
+                <div className="small flex-grow-1">
+                  <div className="fw-semibold">{p.name}</div>
+                  <div className="text-muted">Order {p.orderNumber}{p.deliveredAt ? ` · delivered ${formatDate(p.deliveredAt)}` : ''}</div>
+                </div>
+                <Link className="btn btn-orange btn-sm" to={`/account/orders/${p.orderNumber}/review/${p.productId}`}>Write a review</Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      {data.reviews.length > 0 && (
+        <div className="d-grid gap-3">
+          {data.reviews.map((r) => {
+            const [label, tone] = REVIEW_STATUS[r.status] || [r.status, 'secondary'];
+            return (
+              <div key={r.id} className="card-soft p-3">
+                <div className="d-flex gap-3">
+                  <div className="cart-line-image" style={{ width: 48, height: 60 }}>{r.imageUrl ? <img src={r.imageUrl} alt="" loading="lazy" /> : <i className="bi bi-image text-muted" />}</div>
+                  <div className="flex-grow-1 small" style={{ minWidth: 0 }}>
+                    <div className="d-flex flex-wrap justify-content-between gap-2">
+                      {r.productSlug ? <Link to={`/product/${r.productSlug}#reviews`} className="fw-semibold text-navy">{r.productName}</Link> : <span className="fw-semibold">{r.productName}</span>}
+                      <span className={`badge rounded-pill text-bg-${tone}`}>{label}</span>
+                    </div>
+                    <div className="text-warning">{'★'.repeat(r.rating)}<span className="text-muted">{'★'.repeat(5 - r.rating)}</span>{r.title && <span className="text-body fw-semibold ms-2">{r.title}</span>}</div>
+                    <p className="mb-1 mt-1">{r.text}</p>
+                    {r.adminReply && <div className="review-reply"><div className="fw-semibold text-navy">Response from SHOPME</div>{r.adminReply.text}</div>}
+                    <div className="text-muted mt-1">
+                      Posted {formatDate(r.createdAt)}{r.editedAt ? ` · edited ${formatDate(r.editedAt)}` : ''}
+                      {r.canEdit && r.orderNumber && <> · <Link to={`/account/orders/${r.orderNumber}/review/${r.productId}`}>Edit</Link></>}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </>
   );
 }
 

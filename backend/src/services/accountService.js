@@ -6,6 +6,7 @@ import { INDIAN_STATES, PINCODE_PATTERN } from '../utils/india.js';
 import { cleanText, requireObjectId, requireText } from '../utils/text.js';
 import { cleanEmail, cleanMobile, publicUser } from './customerAuthService.js';
 import { getSettings } from './settingsService.js';
+import { deleteReviewsOfUser } from './reviewService.js';
 
 // My Account: profile and saved addresses (PRD §13.10, §13.8 address fields)
 const MAX_ADDRESSES = 10;
@@ -163,9 +164,10 @@ export async function deleteAccount(userId, { password, confirmText, reason }) {
     event: 'account_deleted',
     to: user.email,
     subject: `Your ${store.name} account has been deleted`,
-    text: `Hi ${user.name},\n\nAs you asked, we have deleted your ${store.name} account and the personal data in it (profile, saved addresses, wishlist and cart).\n\n${ordersKept ? `Records of your ${ordersKept} past order(s) are kept only for as long as tax and consumer laws require, as explained in our Privacy Policy.\n\n` : ''}If you didn't ask for this, please contact us right away at ${store.email} or ${store.phone}.`,
+    text: `Hi ${user.name},\n\nAs you asked, we have deleted your ${store.name} account and the personal data in it (profile, saved addresses, wishlist, cart and reviews).\n\n${ordersKept ? `Records of your ${ordersKept} past order(s) are kept only for as long as tax and consumer laws require, as explained in our Privacy Policy.\n\n` : ''}If you didn't ask for this, please contact us right away at ${store.email} or ${store.phone}.`,
   }).catch(() => {});
 
+  await deleteReviewsOfUser(user._id);
   await Promise.all([
     Cart.deleteMany({ user: user._id }),
     // Unpaid online orders never placed are not legal records: remove them

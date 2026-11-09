@@ -29,7 +29,7 @@ export async function uploadMedia(files = []) {
         if (file.size > MAX_VIDEO_BYTES) throw new HttpError(400, `is larger than ${mb(MAX_VIDEO_BYTES)}`);
         stored = { kind: 'video', ...(await storeVideo(file.buffer)) };
       } else {
-        throw new HttpError(400, 'is not a JPG, PNG, WebP photo or MP4 video');
+        throw new HttpError(400, 'is not a JPG, PNG, WebP photo or MP4/MOV video');
       }
       saved.push((await Media.create({ ...stored, originalName: name })).toObject());
     } catch (err) {

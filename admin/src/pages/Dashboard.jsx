@@ -11,6 +11,7 @@ export default function Dashboard() {
   const { data: out } = useApi('/admin/inventory?stock=out&limit=8');
   const { data: low } = useApi('/admin/inventory?stock=low&limit=8');
   const alerts = [...(out?.items || []), ...(low?.items || [])].slice(0, 8);
+  const { data: waiting } = useApi('/admin/reviews?tab=pending&limit=5');
 
   return (
     <>
@@ -39,7 +40,7 @@ export default function Dashboard() {
         <div className="col-6 col-xl-3"><StatCard icon="bi-box-seam" label="Waiting to be Packed" value="0" tone="orange" /></div>
         <div className="col-6 col-xl-3"><StatCard icon="bi-truck" label="Shipped, Not Delivered" value="0" /></div>
         <div className="col-6 col-xl-3"><StatCard icon="bi-arrow-repeat" label="Pending Returns" value="0" tone="red" /></div>
-        <div className="col-6 col-xl-3"><StatCard icon="bi-star" label="Reviews to Approve" value="0" tone="orange" /></div>
+        <div className="col-6 col-xl-3"><Link to="/reviews" className="text-reset d-block h-100"><StatCard icon="bi-star" label="Reviews to Approve" value={String(waiting?.counts?.pending ?? 0)} tone="orange" /></Link></div>
       </div>
 
       <div className="row g-3 mb-4">
@@ -103,7 +104,17 @@ export default function Dashboard() {
         </div>
         <div className="col-lg-4">
           <Panel title="Reviews Waiting for Approval" actions={<Link to="/reviews" className="small">Open</Link>} bodyClass="">
-            <DataTable columns={['Product', 'Rating']} empty="No reviews waiting." />
+            <DataTable
+              columns={['Product', 'Rating']}
+              rows={waiting?.items || []}
+              empty="No reviews waiting."
+              renderRow={(r) => (
+                <tr key={r.id}>
+                  <td className="small"><Link to="/reviews">{r.product?.name || 'Product'}</Link><div className="text-muted">{r.author}</div></td>
+                  <td className="small text-warning text-nowrap">{'★'.repeat(r.rating)}</td>
+                </tr>
+              )}
+            />
           </Panel>
         </div>
         <div className="col-lg-4">

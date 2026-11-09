@@ -116,7 +116,8 @@ Follow PRD §21 phases. Don't build advanced features ahead of their phase unles
 - ✅ Phase 3: Accounts, Cart & Wishlist. Customer register/login (email or mobile, 5-try/15-min lock, blocked users refused), forgot/reset password (30-min single-use link), My Account (profile, change password, up to 10 addresses with default). Server-priced cart for guests and customers, with warnings (sold out, only X left, price changed, unavailable), max per item from Settings, and the guest cart merged on login. Wishlist (login only) with price-drop note and Move to Cart.
 - ✅ Phase 4: Checkout & Payments. Single-page checkout (saved or new address, payment method, review and Terms) with server-computed totals for online and COD. Orders `SHM-YYMMDD-XXXX` (India date, daily Counter) store item, price and address snapshots. COD orders confirm immediately. Online orders go through Razorpay: pending order + Razorpay order for the server total, signature check, payment fetch/capture, webhook backup, retry after failure. Stock is reduced only on COD placement or confirmed payment, with an atomic per-variant `$gte` check and auto-refund when the item sold out meanwhile. Unpaid orders are closed after 30 min (sweeper every 5 min in server.js). Thank-you page, My Orders list and order detail (read-only).
 - ✅ Phase 5: Orders & Fulfilment. Admin Orders (tabs with counts, filters, search, bulk Mark Processing, packing slips), order page (forward-only status buttons, courier + tracking, Delivery failed/RTO with restock, cancel with reason, refunds, internal notes, timeline). Customer cancel before shipping with automatic full refund for online orders. Returns & exchanges within the Settings return window (photos, COD payout details, exchange to same-or-cheaper in-stock option), admin steps Approve/Reject → Pickup → Received (restock yes/no) → Refund or Ship replacement → Close. Payments list with refunds. Public Track Order, customer receipt.
-- ⏭ Phase 6: Reviews (next).
+- ✅ Phase 6: Reviews. Verified-buyer reviews (delivered orders only, one per product per order) with stars, title, text, ≤5 photos, 1 video ≤60 s (MP4/MOV), fit feedback for clothing; edit within 30 days (back to Pending). Admin moderation (Pending/Approved/Rejected/Hidden, internal reject reason, public reply, bulk approve, dashboard count). Product page: rating summary with clickable star bars, customer photo/video gallery, sort and filter, Helpful votes. My Reviews (written + waiting for a review). Reminder email 3 days after delivery.
+- ⏭ Phase 7: Notifications (next).
 
 **Legal pages:**
 - The Privacy Policy (DPDP Act 2023 / Rules 2025), Terms & Conditions and Refund & Cancellation Policy are Markdown files in `backend/src/content/legal/`. They seed Settings `pages.privacy`, `pages.terms` and `pages.refunds`.
@@ -137,6 +138,12 @@ Follow PRD §21 phases. Don't build advanced features ahead of their phase unles
 - Changing the mobile number in My Account does not re-verify by OTP yet.
 - A reusable global skill `networkz-sms-otp` (in `~/.claude/skills/`) documents this integration for other projects.
 
+**Phase 6 notes:**
+- `services/reviewService.js`: `REVIEW_RULES`, `submitReview` (create or edit; unique index product+order+user), `recomputeRatings` (recalculated from approved reviews after every status change, never incremented), public `listProductReviews`, `markHelpful` (`$addToSet`, not on your own review), admin `reviewAction`/`bulkApprove`, `sendReviewReminders` (hourly from server.js; `Order.reviewReminderSent` claimed atomically; only orders delivered 3–30 days ago), `deleteReviewsOfUser` (called by Delete my account).
+- Public names are stored at creation as `Review.authorName` ("Priya S."). The public API never returns email or account ids; the rejection reason is internal.
+- Routes: `GET /api/products/:slug/reviews` (optional login, for "votedHelpful"), `GET|POST /api/orders/:orderNumber/review/:productId`, `POST /api/reviews/media` (files), `GET /api/reviews/mine`, `POST /api/reviews/:id/helpful`; admin `/api/admin/reviews`, `/reviews/pending-count`, `/reviews/bulk-approve`, `/reviews/:id/:action` (approve, reject, hide, unhide, reply, delete-reply).
+- Emails (log driver until Phase 7): admin alert on new/edited review, customer on approval and first reply, reminder.
+
 **Phase 5 notes:**
 - Services: `fulfilmentService.js` (admin orders, `MOVES` status map, cancel, `refundOnePayment`/`refundOrder`, RTO, packing slips, public `trackOrder`), `returnService.js` (customer request + admin `returnAction`), `paymentAdminService.js`, `orderNotifications.js` (emails per event, fire-and-forget). Shared stock helpers `reserveStock`/`releaseStock`/`logOrderStock` are exported from `orderService.js`; `restoreStock` lives in fulfilment.
 - Every status move is a compare-and-set on the current status. Refunds reserve the amount on `Payment.refundedAmount` with an `$expr` guard before calling Razorpay (rolled back on failure), so parallel refunds can't exceed what was paid. A Razorpay failure during cancel leaves `refund_initiated` and the admin refunds from the order or Payments page.
@@ -144,7 +151,6 @@ Follow PRD §21 phases. Don't build advanced features ahead of their phase unles
 - COD: delivered → `cod_collected`; cancelled or delivery failed → payment status `cancelled` ("Not collected"). COD refunds are manual and need a UPI/bank reference.
 - Admin can mark Shipped straight from Confirmed. Bulk action is Mark Processing only (shipping needs per-order tracking numbers). Payments date-range totals and CSV export are Phase 8.
 - Customer return photos: `POST /api/returns/photos` (≤5 images, stored like media, not in the Media Library). Public tracking `POST /api/track` (order number + order mobile or account email/mobile, 30 lookups per IP per 15 min) never returns the address.
-- "Write a Review" on delivered orders is a disabled placeholder until Phase 6.
 
 **Phase 4 notes:**
 - Razorpay lives in `src/integrations/razorpay.js` (plain fetch, keys from `.env`). With no keys, `payments.onlineAvailable` is false and checkout offers COD only. The webhook is `POST /api/payments/razorpay/webhook`, mounted in app.js before `express.json` (raw body for the HMAC). Event ids are recorded in `Payment.processedEventIds`.
@@ -162,7 +168,7 @@ Follow PRD §21 phases. Don't build advanced features ahead of their phase unles
 **Phase 2 notes:**
 - The single admin account is created on first start from `ADMIN_EMAIL` / `ADMIN_INITIAL_PASSWORD` in `backend/.env`.
 - Development uploads are stored in `%LOCALAPPDATA%\shopme\uploads` and served at `/uploads` (both Vite apps proxy it). `src/integrations/media.js` must get a Cloudinary driver before launch.
-- The 60-second video limit is not checked on the server yet (that needs a video tool).
+- Videos (product and review) must be MP4/MOV of 60 seconds or less: `media.js` reads the length from the file's `moov › mvhd` box (no video tool needed).
 - Hidden categories leave the menu and their page closes; their products stay in search and Shop All.
 - Admin list endpoints return `{ items, total, page, pages }`. Pickers that need every row (category and size-chart selects) request `?limit=200`. Categories are paged by top-level category, each with its full sub-tree.
 - Stock edits (product form, Inventory quick edit, CSV with "Stock when downloaded") send the value the admin saw (`stockLoaded`). Only the difference is applied to live stock, written compare-and-set. `variants.sku` has a unique index; `Product.syncIndexes()` runs on start. A variant with no `lowStockLevel` uses Settings `orders.lowStockDefault`.

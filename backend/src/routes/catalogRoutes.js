@@ -1,4 +1,6 @@
 import { Router } from 'express';
+import { optionalCustomer } from '../middleware/requireCustomer.js';
+import { listProductReviews } from '../services/reviewService.js';
 import { Banner, Category } from '../models/index.js';
 import { getProductBySlug, listProducts, productFilters, suggestProducts } from '../services/productService.js';
 import { asyncHandler, HttpError } from '../utils/asyncHandler.js';
@@ -82,6 +84,15 @@ router.get(
     const product = await getProductBySlug(req.params.slug);
     if (!product) throw new HttpError(404, 'This product is no longer available.');
     res.json(product);
+  }),
+);
+
+// Approved reviews, rating summary and customer photo/video gallery (PRD §11.4)
+router.get(
+  '/products/:slug/reviews',
+  optionalCustomer,
+  asyncHandler(async (req, res) => {
+    res.json(await listProductReviews(req.params.slug, req.query, req.customer?._id));
   }),
 );
 

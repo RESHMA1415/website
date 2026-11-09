@@ -635,3 +635,18 @@ a { text-decoration: none; }
   header, footer, .site-header, .site-footer, .no-print, .whatsapp-fab, .announcement, .page-header { display: none !important; }
   .receipt { border: 0 !important; box-shadow: none !important; }
 }
+
+/* Reviews (PRD §11) */
+.rating-bar span { display: block; height: 100%; background: #f5a623; }
+.rating-row { display: flex; align-items: center; gap: 0.5rem; width: 100%; background: none; border: 0; padding: 0.15rem 0.25rem; border-radius: 6px; font-size: 0.85rem; }
+.rating-row:not(:disabled):hover, .rating-row.active { background: var(--shop-bg-soft); }
+.rating-row:disabled { opacity: 0.6; }
+.review-card { border: 1px solid var(--shop-border); border-radius: 12px; padding: 1rem; }
+.verified-badge { color: var(--shop-success, #198754); font-weight: 600; }
+.review-thumb { width: 72px; height: 72px; border-radius: 8px; overflow: hidden; border: 1px solid var(--shop-border); padding: 0; background: var(--shop-navy); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 1.6rem; }
+.review-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.review-reply { background: var(--shop-bg-soft); border-left: 3px solid var(--shop-orange); border-radius: 8px; padding: 0.6rem 0.8rem; margin-top: 0.5rem; }
+.star-input { display: inline-flex; gap: 0.25rem; }
+.star-input button { background: none; border: 0; padding: 0; font-size: 2rem; color: #d0d3da; line-height: 1; }
+.star-input button.on { color: #f5a623; }
+.star-input button:focus-visible { outline: 2px solid var(--shop-orange); border-radius: 4px; }
