@@ -241,10 +241,9 @@
     {
       "phase": 4,
       "area": "Payments",
-      "status": "test",
+      "status": "done",
       "title": "Online payments with Razorpay",
-      "detail": "Built and tested with a pretend Razorpay: signatures, retries, automatic refunds.",
-      "waitingOn": "Waiting for your Razorpay test keys."
+      "detail": "Test mode switched on with your keys; you placed and checked a test online payment."
     },
     {
       "phase": 4,
@@ -314,10 +313,9 @@
     {
       "phase": 5,
       "area": "Payments",
-      "status": "test",
+      "status": "done",
       "title": "Refunds",
-      "detail": "Full or partial refunds from the order, return or Payments page. COD refunds are recorded with your UPI/bank reference. Online refunds go through Razorpay.",
-      "waitingOn": "Your Razorpay test keys, to try an online refund (COD refunds work now)."
+      "detail": "Full or partial refunds from the order, return or Payments page. COD refunds are recorded with your UPI/bank reference. Online refunds go through Razorpay."
     },
     {
       "phase": 5,
@@ -343,35 +341,35 @@
     {
       "phase": 6,
       "area": "Store",
-      "status": "notstarted",
+      "status": "done",
       "title": "Write a review",
-      "detail": "Stars, text, up to 5 photos and 1 video; verified buyers only."
+      "detail": "From a delivered order: stars, title, text, up to 5 photos, one video (60 s max), fit feedback; edit within 30 days."
     },
     {
       "phase": 6,
       "area": "Admin",
-      "status": "notstarted",
+      "status": "done",
       "title": "Review moderation and replies",
-      "detail": "Approve, reject with reason, reply publicly."
+      "detail": "Approve, reject (private reason), hide, reply as “Response from SHOPME”, bulk approve; count on the dashboard."
     },
     {
       "phase": 6,
       "area": "Store",
-      "status": "notstarted",
+      "status": "done",
       "title": "Ratings on product pages",
-      "detail": "Average and 5★–1★ breakdown from approved reviews."
+      "detail": "Average and star bars from approved reviews, customer photo/video gallery, sort, filter and Helpful votes."
     },
     {
       "phase": 6,
       "area": "Store",
-      "status": "notstarted",
+      "status": "done",
       "title": "My Reviews",
-      "detail": "See review status and edit."
+      "detail": "Your reviews with status, plus delivered products waiting for a review. Reminder email 3 days after delivery."
     },
     {
       "phase": 7,
       "area": "Messages",
-      "status": "planned",
+      "status": "notstarted",
       "title": "Connect an email service",
       "detail": "Welcome, password reset and order emails start sending.",
       "waitingOn": "Needs an email service account (PRD §20)."
@@ -379,7 +377,7 @@
     {
       "phase": 7,
       "area": "Messages",
-      "status": "planned",
+      "status": "notstarted",
       "title": "WhatsApp automatic messages",
       "detail": "Order confirmed, shipped, delivered and refund updates.",
       "waitingOn": "Needs Meta WhatsApp Business approval."
@@ -387,21 +385,21 @@
     {
       "phase": 7,
       "area": "Admin",
-      "status": "planned",
+      "status": "notstarted",
       "title": "Contact messages inbox",
       "detail": "Contact form saved to the admin panel with a reply status."
     },
     {
       "phase": 7,
       "area": "Messages",
-      "status": "planned",
+      "status": "notstarted",
       "title": "Newsletter sign-ups",
       "detail": "Saved with consent; unsubscribe any time."
     },
     {
       "phase": 7,
       "area": "Messages",
-      "status": "planned",
+      "status": "notstarted",
       "title": "Admin alerts",
       "detail": "New orders, returns and a daily low-stock summary."
     },
@@ -628,6 +626,14 @@
       "title": "Run an order from placing to refund",
       "detail": "Place a COD test order, ship and deliver it in the admin panel, request a return as the customer, then approve, receive and refund it.",
       "waitingOn": "Your turn (steps in the Phase 5 report)."
+    },
+    {
+      "phase": 6,
+      "area": "Your task",
+      "status": "test",
+      "title": "Write, approve and reply to a review",
+      "detail": "Deliver a test order in the admin panel, review it from My Orders with a photo, then approve and reply in Reviews.",
+      "waitingOn": "Your turn (steps in the Phase 6 report)."
     }
   ],
   "screens": [
@@ -664,7 +670,7 @@
       "name": "Product details",
       "path": "/product/…",
       "status": "done",
-      "note": "Reviews section arrives in Phase 6."
+      "note": "Ratings & Reviews with gallery, sort, filter and Helpful votes."
     },
     {
       "app": "store",
@@ -733,8 +739,8 @@
       "app": "store",
       "name": "My Reviews",
       "path": "/account/reviews",
-      "status": "planned",
-      "note": "Phase 6."
+      "status": "done",
+      "note": "Written reviews with status and edit; products waiting for a review."
     },
     {
       "app": "store",
@@ -782,8 +788,8 @@
       "app": "admin",
       "name": "Dashboard",
       "path": "/",
-      "status": "planned",
-      "note": "Stock alerts work now; sales numbers in Phase 8."
+      "status": "dev",
+      "note": "Stock alerts and reviews waiting work now; sales numbers in Phase 8."
     },
     {
       "app": "admin",
@@ -845,8 +851,8 @@
       "app": "admin",
       "name": "Reviews",
       "path": "/reviews",
-      "status": "planned",
-      "note": "Phase 6."
+      "status": "done",
+      "note": "Pending/Approved/Rejected/Hidden, reply, bulk approve."
     },
     {
       "app": "admin",
@@ -903,6 +909,13 @@
       "path": "/orders/print",
       "status": "done",
       "note": "One slip per printed page."
+    },
+    {
+      "app": "store",
+      "name": "Write a review",
+      "path": "/account/orders/:order/review/:product",
+      "status": "done",
+      "note": "Stars, photos, video, fit feedback."
     }
   ],
   "decisions": [
@@ -1018,8 +1031,8 @@
     },
     {
       "id": "—",
-      "text": "Razorpay test keys (to switch on online payments)",
-      "state": "needed"
+      "text": "Razorpay test keys (added and checked)",
+      "state": "done"
     },
     {
       "id": "—",
