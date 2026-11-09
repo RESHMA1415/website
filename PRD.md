@@ -965,8 +965,8 @@ These were filled in by the product manager where the owner said *"as per your s
 | 19 | A prepaid order that comes back undelivered (RTO) is **refunded in full** after contacting the customer | ☐ |
 | 20 | Accounts inactive for **3 years** may be closed and erased after 48 hours' notice; security logs kept for at least 1 year (DPDP Rules) | ☐ |
 | 21 | Legal name and Grievance Officer on the policies | ☑ SHOPME is a sole proprietorship of RESHMA PR, who is also the Grievance Officer |
-| 23 | Return pickup for approved returns and exchanges is **free** for the customer (SHOPME arranges and pays for it) | ☑ Owner decision, 9 Nov 2026 |
 | 22 | SMS OTP limits: code valid **5 minutes**, **5 wrong tries**, resend after **30 seconds**, **5 codes per number per hour**, 15 requests per connection per 15 minutes | ☑ Flow chosen by owner: login opens on OTP (password optional); registration verifies the mobile by OTP and sets a password. Limits ☐ |
+| 23 | Return pickup for approved returns and exchanges is **free** for the customer (SHOPME arranges and pays for it) | ☑ Owner decision, 9 Nov 2026 |
 
 ---
 
