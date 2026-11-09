@@ -25,6 +25,7 @@ import {
 import {
   addInternalNote,
   bulkMarkProcessing,
+  bulkMarkShipped,
   cancelOrderByAdmin,
   getOrderForAdmin,
   listOrdersForAdmin,
@@ -123,6 +124,7 @@ router.delete('/size-charts/:id', handle((req) => deleteSizeChart(req.params.id)
 router.get('/orders', handle((req) => listOrdersForAdmin(req.query)));
 router.get('/orders/print', handle((req) => packingSlips(req.query)));
 router.post('/orders/bulk/processing', handle((req) => bulkMarkProcessing(req.body || {})));
+router.post('/orders/bulk/shipped', handle((req) => bulkMarkShipped(req.body || {})));
 router.get('/orders/:orderNumber', handle((req) => getOrderForAdmin(req.params.orderNumber)));
 router.post('/orders/:orderNumber/status', handle((req) => updateOrderStatus(req.params.orderNumber, req.body || {})));
 router.post('/orders/:orderNumber/shipping', handle((req) => updateShipping(req.params.orderNumber, req.body || {})));

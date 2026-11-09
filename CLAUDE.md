@@ -150,7 +150,7 @@ Follow PRD §21 phases. Don't build advanced features ahead of their phase unles
 - Every status move is a compare-and-set on the current status. Refunds reserve the amount on `Payment.refundedAmount` with an `$expr` guard before calling Razorpay (rolled back on failure), so parallel refunds can't exceed what was paid. A Razorpay failure during cancel leaves `refund_initiated` and the admin refunds from the order or Payments page.
 - Return quantities are claimed atomically on `Order.items.returnRequestedQty`; rejection gives them back. The delivery charge is refunded once per order (`deliveryRefundClaimed`) for damaged/wrong items. Refund amounts follow PRD §6.9; exchanges allow only same-or-cheaper in-stock options and refund the difference.
 - COD: delivered → `cod_collected`; cancelled or delivery failed → payment status `cancelled` ("Not collected"). COD refunds are manual and need a UPI/bank reference.
-- Admin can mark Shipped straight from Confirmed. Bulk action is Mark Processing only (shipping needs per-order tracking numbers). Payments date-range totals and CSV export are Phase 8.
+- Admin can mark Shipped straight from Confirmed. Bulk actions: Mark Processing, and Mark Shipped (`POST /api/admin/orders/bulk/shipped` with a courier + tracking number per order; a "courier for all" box in the Orders list window; orders that can't ship are skipped with a reason). Payments date-range totals and CSV export are Phase 8.
 - Customer return photos: `POST /api/returns/photos` (≤5 images, stored like media, not in the Media Library). Public tracking `POST /api/track` (order number + order mobile or account email/mobile, 30 lookups per IP per 15 min) never returns the address.
 
 **Phase 4 notes:**

@@ -305,6 +305,27 @@ export async function bulkMarkProcessing(body = {}) {
   return { moved, skipped };
 }
 
+// Several orders → Shipped at once, each with its own courier and tracking number
+export async function bulkMarkShipped(body = {}) {
+  const rows = Array.isArray(body.shipments) ? body.shipments.slice(0, 100) : [];
+  if (!rows.length) throw new HttpError(400, 'Please add at least one order to ship.');
+  const shipped = [];
+  const skipped = [];
+  const seen = new Set();
+  for (const row of rows) {
+    const orderNumber = cleanText(row?.orderNumber, 30);
+    if (!orderNumber || seen.has(orderNumber)) continue;
+    seen.add(orderNumber);
+    try {
+      await moveOrder({ orderNumber }, 'shipped', { courier: row.courier, trackingNumber: row.trackingNumber, trackingUrl: row.trackingUrl });
+      shipped.push(orderNumber);
+    } catch (err) {
+      skipped.push({ orderNumber, reason: err.message });
+    }
+  }
+  return { shipped, skipped };
+}
+
 export async function addInternalNote(orderNumber, body = {}) {
   const text = cleanText(body.text, 1000);
   if (!text) throw new HttpError(400, 'Please write the note.');
