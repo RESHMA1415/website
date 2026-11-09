@@ -23,6 +23,8 @@ export const env = {
   adminInitialPassword: process.env.ADMIN_INITIAL_PASSWORD || '',
   // Customer website address, used in links inside emails (e.g. password reset)
   storeUrl: (process.env.STORE_URL || 'http://localhost:5173').replace(/\/+$/, ''),
+  // Admin panel address, for links in alert emails to the owner
+  adminUrl: (process.env.ADMIN_URL || 'http://localhost:5174').replace(/\/+$/, ''),
   localDbPath: process.env.LOCAL_DB_PATH || path.join(localDataRoot, 'db'),
   uploadsPath: process.env.UPLOADS_PATH || path.join(localDataRoot, 'uploads'),
 };

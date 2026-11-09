@@ -39,6 +39,8 @@ import { deleteMedia, listMedia, uploadMedia } from '../services/mediaService.js
 import { listPaymentsForAdmin, refundPaymentByAdmin } from '../services/paymentAdminService.js';
 import { getReturnForAdmin, listReturnsForAdmin, returnAction } from '../services/returnService.js';
 import { bulkApprove, listReviewsForAdmin, pendingReviewCount, reviewAction } from '../services/reviewService.js';
+import { exportSubscribersCsv, listMessagesForAdmin, listSubscribersForAdmin, newMessageCount, updateMessage } from '../services/messageService.js';
+import { sendEmail, verifyEmailConnection } from '../integrations/email.js';
 import {
   bulkUpdateProducts,
   createProduct,
@@ -143,6 +145,37 @@ router.get('/reviews', handle((req) => listReviewsForAdmin(req.query)));
 router.get('/reviews/pending-count', handle(() => pendingReviewCount()));
 router.post('/reviews/bulk-approve', handle((req) => bulkApprove(req.body || {})));
 router.post('/reviews/:id/:action', handle((req) => reviewAction(req.params.id, req.params.action, req.body || {})));
+
+// ----- Contact messages and newsletter (PRD §14.12) -----
+router.get('/messages', handle((req) => listMessagesForAdmin(req.query)));
+router.get('/messages/new-count', handle(() => newMessageCount()));
+router.patch('/messages/:id', handle((req) => updateMessage(req.params.id, req.body || {})));
+router.get('/newsletter', handle((req) => listSubscribersForAdmin(req.query)));
+router.get(
+  '/newsletter/export',
+  asyncHandler(async (req, res) => {
+    res.set('Content-Type', 'text/csv; charset=utf-8');
+    res.set('Content-Disposition', `attachment; filename="shopme-newsletter-${new Date().toISOString().slice(0, 10)}.csv"`);
+    res.send(await exportSubscribersCsv());
+  }),
+);
+
+// ----- Email connection check (admin Account page) -----
+router.get('/email/status', handle(() => verifyEmailConnection()));
+router.post(
+  '/email/test',
+  handle(async (req) => {
+    const status = await verifyEmailConnection();
+    if (!status.connected) return { sent: false, ...status };
+    const result = await sendEmail({
+      event: 'email_test',
+      to: req.admin.email,
+      subject: 'SHOPME test email',
+      text: 'Good news: your store can send emails. Customers will now get order updates, password resets and more by email.',
+    });
+    return { sent: Boolean(result.delivered), to: req.admin.email, ...status };
+  }),
+);
 
 // ----- Payments & refunds (PRD §14.8) -----
 router.get('/payments', handle((req) => listPaymentsForAdmin(req.query)));

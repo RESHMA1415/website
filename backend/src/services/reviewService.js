@@ -124,6 +124,7 @@ async function alertAdminNewReview(review, productName, edited) {
     await sendEmail({
       event: 'review_submitted_admin',
       to: settings.notifications.adminAlertEmail,
+      action: { label: 'Open Reviews', url: `${env.adminUrl}/reviews` },
       subject: `${edited ? 'Edited' : 'New'} review to approve: ${productName} (${review.rating}★)`,
       text: `${review.authorName} ${edited ? 'edited their' : 'wrote a'} ${review.rating}-star review of ${productName}:\n\n${review.title ? `${review.title}\n` : ''}${review.text}\n\nOpen Reviews in the admin panel to approve or reject it.`,
     });
@@ -354,6 +355,7 @@ async function tellCustomer(review, event, subject, body) {
     await sendEmail({
       event,
       to: user.email,
+      ...(product?.slug && { action: { label: 'See your review', url: `${env.storeUrl}/product/${product.slug}#reviews` } }),
       subject: subject(product?.name || 'your product'),
       text: `Hi ${user.name},\n\n${body(product?.name || 'your product')}\n\n${product?.slug ? `See it here: ${env.storeUrl}/product/${product.slug}#reviews\n\n` : ''}Thank you for shopping with ${settings.store.name}!`,
     });
@@ -450,6 +452,8 @@ export async function sendReviewReminders(now = new Date()) {
     await sendEmail({
       event: 'review_reminder',
       to: user.email,
+      order: order._id,
+      action: { label: 'Write a review', url: `${env.storeUrl}/account/orders/${order.orderNumber}/review/${open[0].product}` },
       subject: `How do you like your ${open[0].name}${open.length > 1 ? ` and ${open.length - 1} more` : ''}?`,
       text: `Hi ${user.name},\n\nWe hope you're enjoying your order ${order.orderNumber}. Could you spare a minute to review it? Your photos and thoughts help other shoppers.\n\n${open.map((i) => `- ${i.name}: ${env.storeUrl}/account/orders/${order.orderNumber}/review/${i.product}`).join('\n')}\n\nThank you!\n${settings.store.name}`,
     });

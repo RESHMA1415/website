@@ -6,6 +6,8 @@ import { seedIfEmpty } from './seed/seeder.js';
 import { ensureAdminAccount } from './services/adminAuthService.js';
 import { expireUnpaidOrders } from './services/orderService.js';
 import { sendReviewReminders } from './services/reviewService.js';
+import { retryFailedEmails } from './integrations/email.js';
+import { sendLowStockSummary } from './services/messageService.js';
 
 async function start() {
   await connectDatabase();
@@ -22,6 +24,11 @@ async function start() {
   const remind = () => sendReviewReminders().catch((err) => console.error('Review reminders failed', err));
   setTimeout(remind, 60 * 1000).unref();
   setInterval(remind, 60 * 60 * 1000).unref();
+  // Failed emails are tried again (up to 3 times); the stock alert goes out once a day after 9 AM
+  setInterval(() => retryFailedEmails().catch((err) => console.error('Email retry failed', err)), 5 * 60 * 1000).unref();
+  const stockAlert = () => sendLowStockSummary().catch((err) => console.error('Low-stock summary failed', err));
+  setTimeout(stockAlert, 2 * 60 * 1000).unref();
+  setInterval(stockAlert, 30 * 60 * 1000).unref();
   const server = createApp().listen(env.port, () => {
     console.log(`SHOPME API running at http://localhost:${env.port}/api`);
   });

@@ -5,6 +5,14 @@ import { useAuth } from '../auth.jsx';
 import { ErrorNote, Modal, PageTitle, Panel } from '../components/ui.jsx';
 import { METHOD, ORDER_STATUS, PAYMENT_STATUS, Pill, RETURN_STATUS } from '../orderLabels.jsx';
 
+const EMAIL_EVENTS = {
+  order_confirmed: 'Order confirmed', order_confirmed_admin: 'New order alert (to you)', order_processing: 'Being packed', order_shipped: 'Shipped with tracking',
+  order_out_for_delivery: 'Out for delivery', order_delivered: 'Delivered', order_delivery_failed: 'Delivery unsuccessful', order_cancelled: 'Order cancelled',
+  refund_processed: 'Refund processed', return_requested: 'Return request received', return_approved: 'Return approved', return_rejected: 'Return rejected',
+  return_pickup_scheduled: 'Pickup arranged', return_received: 'Return received', return_replacement_shipped: 'Replacement shipped',
+  review_reminder: 'Review reminder', payment_failed: 'Payment failed – retry',
+};
+
 const STATUS_BUTTONS = [
   ['processing', 'Mark Processing', 'bi-box-seam'],
   ['shipped', 'Mark Shipped', 'bi-truck'],
@@ -309,6 +317,26 @@ export default function OrderDetail() {
               </Panel>
             </div>
           )}
+
+          <div className="mt-4">
+            <Panel title="Emails to the customer" bodyClass="p-0">
+              {o.messages?.length ? (
+                <ul className="list-group list-group-flush small">
+                  {o.messages.map((n) => (
+                    <li key={n._id} className="list-group-item d-flex flex-wrap justify-content-between gap-2">
+                      <span>{EMAIL_EVENTS[n.event] || n.event.replace(/_/g, ' ')}<span className="text-muted"> · {n.recipient}</span></span>
+                      <span className="text-nowrap">
+                        <span className={`status-pill ${{ sent: 'tone-green', failed: 'tone-red', logged: 'tone-muted', skipped: 'tone-muted', queued: 'tone-orange' }[n.status] || 'tone-muted'}`} title={n.error || ''}>
+                          {{ sent: 'Sent', failed: n.attempts >= 3 ? 'Failed' : 'Retrying', logged: 'Not sent (email not set up)', skipped: 'Switched off', queued: 'Sending' }[n.status] || n.status}
+                        </span>
+                        <span className="text-muted ms-2">{formatDateTime(n.sentAt || n.createdAt)}</span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : <div className="small text-muted p-3">No emails yet.</div>}
+            </Panel>
+          </div>
 
           <div className="mt-4">
             <Panel title="Internal notes (only you see these)">

@@ -66,6 +66,7 @@ async function welcomeEmail(user) {
   await sendEmail({
     event: 'account_registered',
     to: user.email,
+    action: { label: 'Start shopping', url: env.storeUrl },
     subject: `Welcome to ${store.name}!`,
     text: `Hi ${user.name},\n\nYour ${store.name} account is ready. You can now save a wishlist, check out faster and track your orders.\n\nShop now: ${env.storeUrl}\n\nNeed help? Reply to this email or WhatsApp us on ${store.phone}.`,
   });
@@ -193,6 +194,7 @@ export async function requestPasswordReset(emailInput) {
   await sendEmail({
     event: 'password_reset',
     to: user.email,
+    action: { label: 'Set a new password', url: link },
     subject: `Reset your ${store.name} password`,
     text: `Hi ${user.name},\n\nWe received a request to reset your password. Open this link within ${RESET_MINUTES} minutes to choose a new one:\n\n${link}\n\nIf you didn’t ask for this, you can ignore this email. Your password stays the same.`,
   });

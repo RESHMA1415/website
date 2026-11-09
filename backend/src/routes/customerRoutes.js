@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { submitContact, subscribeNewsletter, unsubscribeNewsletter } from '../services/messageService.js';
 import { GUEST_HEADER, cartOwner, optionalCustomer, requireCustomer } from '../middleware/requireCustomer.js';
 import {
   addAddress,
@@ -69,5 +70,11 @@ router.get('/wishlist', requireCustomer, handle((req) => getWishlist(req.custome
 router.get('/wishlist/ids', requireCustomer, handle((req) => wishlistIds(req.customer._id)));
 router.post('/wishlist/:productId', requireCustomer, handle((req) => addToWishlist(req.customer._id, req.params.productId)));
 router.delete('/wishlist/:productId', requireCustomer, handle((req) => removeFromWishlist(req.customer._id, req.params.productId)));
+
+
+// Contact Us and newsletter (PRD §13.13, §13.1). A logged-in sender is linked to their account.
+router.post('/contact', optionalCustomer, handle((req) => submitContact(req.body || {}, { ip: req.ip, userId: req.customer?._id })));
+router.post('/newsletter', handle((req) => subscribeNewsletter(req.body || {}, { ip: req.ip })));
+router.post('/newsletter/unsubscribe', handle((req) => unsubscribeNewsletter(req.body || {})));
 
 export default router;

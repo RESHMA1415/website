@@ -12,6 +12,7 @@ export default function Dashboard() {
   const { data: low } = useApi('/admin/inventory?stock=low&limit=8');
   const alerts = [...(out?.items || []), ...(low?.items || [])].slice(0, 8);
   const { data: waiting } = useApi('/admin/reviews?tab=pending&limit=5');
+  const { data: inbox } = useApi('/admin/messages?tab=new&limit=5');
 
   return (
     <>
@@ -119,7 +120,17 @@ export default function Dashboard() {
         </div>
         <div className="col-lg-4">
           <Panel title="Latest Contact Messages" actions={<Link to="/messages" className="small">Open</Link>} bodyClass="">
-            <DataTable columns={['From', 'Subject']} empty="No messages yet." />
+            <DataTable
+              columns={['From', 'Subject']}
+              rows={inbox?.items || []}
+              empty="No new messages."
+              renderRow={(m) => (
+                <tr key={m._id}>
+                  <td className="small"><Link to="/messages">{m.name}</Link><div className="text-muted">{new Date(m.createdAt).toLocaleDateString('en-IN')}</div></td>
+                  <td className="small">{m.subjectLabel}</td>
+                </tr>
+              )}
+            />
           </Panel>
         </div>
       </div>

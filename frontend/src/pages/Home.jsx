@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { api } from '../api/client.js';
 import ConsentCheckbox from '../components/ConsentCheckbox.jsx';
 import ProductGrid from '../components/ProductGrid.jsx';
 import { useStore } from '../context/StoreContext.jsx';
@@ -95,6 +96,24 @@ function ProductRow({ title, subtitle, query, link }) {
 
 function Newsletter() {
   const { notify } = useStore();
+  const [contact, setContact] = useState('');
+  const [agree, setAgree] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState('');
+  const subscribe = async (e) => {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      const r = await api('/newsletter', { method: 'POST', body: { contact, agree, source: 'homepage' } });
+      setDone(r.already ? 'You’re already on our list. Thank you!' : 'You’re subscribed! Watch out for new arrivals and offers.');
+      setContact('');
+      setAgree(false);
+    } catch (err) {
+      notify(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
   return (
     <section className="section pt-0">
       <div className="container">
@@ -104,18 +123,16 @@ function Newsletter() {
           <form
             className="mx-auto"
             style={{ maxWidth: 480 }}
-            onSubmit={(e) => {
-              e.preventDefault();
-              notify('Sign-ups are saved once notifications go live in Phase 7.');
-            }}
+            onSubmit={subscribe}
           >
+            {done && <div className="alert alert-light py-2 small" role="status">{done}</div>}
             <div className="d-flex flex-column flex-sm-row gap-2">
-              <input type="text" className="form-control" placeholder="Email or WhatsApp number" aria-label="Email or WhatsApp number" required />
-              <button type="submit" className="btn btn-orange text-nowrap">
-                Subscribe
+              <input type="text" className="form-control" placeholder="Email or WhatsApp number" aria-label="Email or WhatsApp number" required maxLength={120} value={contact} onChange={(e) => setContact(e.target.value)} />
+              <button type="submit" className="btn btn-orange text-nowrap" disabled={busy}>
+                {busy ? '…' : 'Subscribe'}
               </button>
             </div>
-            <ConsentCheckbox id="nl-consent" purpose="updates" className="consent-on-dark text-start mt-3 mb-0" />
+            <ConsentCheckbox id="nl-consent" purpose="updates" className="consent-on-dark text-start mt-3 mb-0" checked={agree} onChange={setAgree} />
           </form>
         </div>
       </div>

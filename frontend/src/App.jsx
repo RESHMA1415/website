@@ -22,6 +22,7 @@ import Policy from './pages/Policy.jsx';
 import ProductDetails from './pages/ProductDetails.jsx';
 import Shop from './pages/Shop.jsx';
 import TrackOrder from './pages/TrackOrder.jsx';
+import Unsubscribe from './pages/Unsubscribe.jsx';
 import Wishlist from './pages/Wishlist.jsx';
 
 export default function App() {
@@ -53,6 +54,7 @@ export default function App() {
         <Route path="account/orders/:orderNumber/review/:productId" element={<RequireLogin><ReviewForm /></RequireLogin>} />
         <Route path="account/orders/:orderNumber/receipt" element={<RequireLogin><Receipt /></RequireLogin>} />
         <Route path="track-order" element={<TrackOrder />} />
+        <Route path="newsletter/unsubscribe" element={<Unsubscribe />} />
         <Route path="contact" element={<Contact />} />
         <Route path="policies/:page" element={<Policy />} />
         <Route path="*" element={<NotFound />} />

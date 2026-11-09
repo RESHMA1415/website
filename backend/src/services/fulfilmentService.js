@@ -1,5 +1,5 @@
 import { razorpayConfigured, refundPayment as razorpayRefund } from '../integrations/razorpay.js';
-import { Order, Payment, Product, ReturnRequest, StockMovement, User } from '../models/index.js';
+import { NotificationLog, Order, Payment, Product, ReturnRequest, StockMovement, User } from '../models/index.js';
 import { HttpError } from '../utils/asyncHandler.js';
 import { cleanLink, cleanText, escapeRegex, pageParams, toBool } from '../utils/text.js';
 import { cleanEmail, cleanMobile } from './customerAuthService.js';
@@ -435,12 +435,13 @@ function nextActions(order) {
 export async function getOrderForAdmin(orderNumber) {
   const order = await Order.findOne({ orderNumber: cleanText(orderNumber, 30) }).lean();
   if (!order) throw new HttpError(404, 'We couldn’t find that order.');
-  const [user, payments, returns, settings, orderCount] = await Promise.all([
+  const [user, payments, returns, settings, orderCount, messages] = await Promise.all([
     User.findById(order.user, { name: 1, email: 1, mobile: 1, isBlocked: 1, createdAt: 1 }).lean(),
     Payment.find({ order: order._id }).sort({ createdAt: 1 }).lean(),
     ReturnRequest.find({ order: order._id }).sort({ createdAt: -1 }).lean(),
     getSettings(),
     Order.countDocuments({ user: order.user, ...PLACED }),
+    NotificationLog.find({ order: order._id }, { event: 1, channel: 1, recipient: 1, status: 1, attempts: 1, error: 1, createdAt: 1, sentAt: 1 }).sort({ createdAt: 1 }).limit(100).lean(),
   ]);
   const refundable = payments
     .filter((p) => (p.provider === 'cod' ? ['cod_collected', 'partially_refunded'].includes(p.status) : REFUNDABLE_ONLINE.includes(p.status)))
@@ -459,6 +460,8 @@ export async function getOrderForAdmin(orderNumber) {
     refundable,
     returnWindowEndsAt: returnWindowEnd(order, settings),
     onlineRefundsAvailable: razorpayConfigured(),
+    // Emails sent about this order (PRD §15 Notification Log)
+    messages,
   };
 }
 

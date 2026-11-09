@@ -18,15 +18,17 @@ async function toCustomer(order, event, subject, body) {
   await sendEmail({
     event,
     to: user.email,
+    order: order._id,
+    action: { label: 'View your order', url: orderLink(order) },
     subject,
     text: `Hi ${user.name},\n\n${body}\n\nView your order: ${orderLink(order)}\n\nNeed help? Reply to this email or WhatsApp us on ${settings.store.phone || settings.store.whatsappNumber || ''}.\n${settings.store.name}`,
   });
 }
 
-async function toAdmin(event, subject, text) {
+async function toAdmin(event, subject, text, action) {
   const settings = await getSettings();
   if (!settings.notifications?.adminAlertEmail) return;
-  await sendEmail({ event, to: settings.notifications.adminAlertEmail, subject, text });
+  await sendEmail({ event, to: settings.notifications.adminAlertEmail, subject, text, action });
 }
 
 function fire(task) {

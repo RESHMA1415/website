@@ -967,6 +967,7 @@ These were filled in by the product manager where the owner said *"as per your s
 | 21 | Legal name and Grievance Officer on the policies | ☑ SHOPME is a sole proprietorship of RESHMA PR, who is also the Grievance Officer |
 | 22 | SMS OTP limits: code valid **5 minutes**, **5 wrong tries**, resend after **30 seconds**, **5 codes per number per hour**, 15 requests per connection per 15 minutes | ☑ Flow chosen by owner: login opens on OTP (password optional); registration verifies the mobile by OTP and sets a password. Limits ☐ |
 | 23 | Return pickup for approved returns and exchanges is **free** for the customer (SHOPME arranges and pays for it) | ☑ Owner decision, 9 Nov 2026 |
+| 24 | Customer emails are sent from the owner's Gmail (shopmesupport2@gmail.com) until a business email on the store's domain exists; automatic WhatsApp messages (§12.2) are postponed (WhatsApp chat button stays) | ☑ Owner decision, 9 Nov 2026 |
 
 ---
 

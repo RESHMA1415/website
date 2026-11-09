@@ -99,6 +99,8 @@ const orderSchema = new mongoose.Schema(
     internalNotes: [{ text: String, at: { type: Date, default: Date.now } }],
     refundedAmount: { type: Number, default: 0 },
     reviewReminderSent: { type: Boolean, default: false },
+    // "Payment failed, retry" email goes out once per order (PRD §12.2)
+    paymentFailedEmailSent: { type: Boolean, default: false },
   },
   { timestamps: true },
 );

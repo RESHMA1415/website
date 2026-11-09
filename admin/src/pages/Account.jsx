@@ -1,7 +1,45 @@
 import { useState } from 'react';
-import { api, formatDateTime, setToken } from '../api.js';
+import { api, formatDateTime, setToken, useApi } from '../api.js';
 import { useAuth } from '../auth.jsx';
 import { ErrorNote, PageTitle, Panel } from '../components/ui.jsx';
+
+// Is the store able to send emails? (Phase 7: Gmail set up in backend/.env)
+function EmailStatus() {
+  const { notify } = useAuth();
+  const { data, loading, reload } = useApi('/admin/email/status');
+  const [busy, setBusy] = useState(false);
+  const test = async () => {
+    setBusy(true);
+    try {
+      const r = await api('/admin/email/test', { method: 'POST' });
+      if (r.sent) notify(`Test email sent to ${r.to}. Check your inbox (and spam folder).`);
+      else notify(r.reason || 'The test email could not be sent.', 'error');
+      reload();
+    } catch (err) {
+      notify(err.message, 'error');
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <Panel title="Store emails">
+      {loading && !data ? (
+        <div className="small text-muted">Checking…</div>
+      ) : data?.connected ? (
+        <div className="small">
+          <div className="text-success fw-semibold mb-1"><i className="bi bi-check-circle-fill me-1" />Connected</div>
+          <div className="text-muted mb-3">Customer emails are sent from {data.from}.</div>
+          <button type="button" className="btn btn-sm btn-orange" disabled={busy} onClick={test}>{busy ? 'Sending…' : 'Send me a test email'}</button>
+        </div>
+      ) : (
+        <div className="small">
+          <div className="text-danger fw-semibold mb-1"><i className="bi bi-x-circle-fill me-1" />Not sending yet</div>
+          <div className="text-muted">{data?.reason || 'Email isn’t set up yet.'} Until then, emails are only written to the server log.</div>
+        </div>
+      )}
+    </Panel>
+  );
+}
 
 export default function Account() {
   const { admin, setAdmin, notify } = useAuth();
@@ -46,6 +84,7 @@ export default function Account() {
               <dt>Last login</dt><dd className="mb-0">{formatDateTime(admin?.lastLoginAt) || '–'}</dd>
             </dl>
           </Panel>
+          <div className="mt-3"><EmailStatus /></div>
         </div>
         <div className="col-lg-7">
           <Panel title="Change password">

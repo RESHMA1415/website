@@ -140,6 +140,8 @@ async function orderConfirmedMessages(order) {
       await sendEmail({
         event: 'order_confirmed',
         to: user.email,
+        order: order._id,
+        action: { label: 'View your order', url: `${env.storeUrl}/account/orders/${order.orderNumber}` },
         subject: `Order confirmed: ${order.orderNumber}`,
         text: `Hi ${user.name},\n\nThank you for shopping with ${settings.store.name}! Your order ${order.orderNumber} is confirmed.\n\n${lines}\n\n${money}\n${paid}\n\nExpected delivery: ${settings.delivery.estimateMinDays}–${settings.delivery.estimateMaxDays} business days.\nTrack your order: ${env.storeUrl}/account/orders/${order.orderNumber}`,
       });
@@ -148,6 +150,8 @@ async function orderConfirmedMessages(order) {
       await sendEmail({
         event: 'order_confirmed_admin',
         to: settings.notifications.adminAlertEmail,
+        order: order._id,
+        action: { label: 'Open in admin panel', url: `${env.adminUrl}/orders/${order.orderNumber}` },
         subject: `New order ${order.orderNumber} (${order.paymentMethod === 'cod' ? 'COD' : 'Paid online'}) ${formatINR(order.total)}`,
         text: `New order ${order.orderNumber} from ${order.address.fullName} (${order.address.mobile}), ${order.address.city}.\n\n${lines}\n\n${money}`,
       });
@@ -359,6 +363,31 @@ export async function verifyCheckoutPayment(userId, body) {
 }
 
 // The Razorpay window was closed or the payment failed. The order waits for a retry.
+// "Payment failed – retry" email (PRD §12.2), once per order, while it can still be paid
+async function paymentFailedMessage(orderId) {
+  try {
+    const order = await Order.findOneAndUpdate(
+      { _id: orderId, status: 'pending_payment', paymentFailedEmailSent: { $ne: true } },
+      { paymentFailedEmailSent: true },
+      { new: true },
+    ).lean();
+    if (!order || isExpired(order)) return;
+    const [user, settings] = await Promise.all([User.findById(order.user, { name: 1, email: 1 }).lean(), getSettings()]);
+    if (!user?.email) return;
+    const minutesLeft = Math.max(1, PENDING_PAYMENT_MINUTES - Math.floor((Date.now() - new Date(order.createdAt).getTime()) / 60000));
+    await sendEmail({
+      event: 'payment_failed',
+      to: user.email,
+      order: order._id,
+      subject: `Payment not completed for order ${order.orderNumber}`,
+      text: `Hi ${user.name},\n\nYour payment of ${formatINR(order.total)} for order ${order.orderNumber} didn't go through. No money was taken. If money was deducted, your bank or Razorpay returns it automatically within 5–7 business days.\n\nYour order is kept for about ${minutesLeft} more minutes. You can try paying again here: ${env.storeUrl}/account/orders/${order.orderNumber}\n\nNeed help? Call or WhatsApp us on ${settings.store.phone}.`,
+      action: { label: 'Complete your payment', url: `${env.storeUrl}/account/orders/${order.orderNumber}` },
+    });
+  } catch (err) {
+    console.error('Payment failed email', err);
+  }
+}
+
 export async function recordPaymentFailure(userId, body) {
   const razorpayOrderId = cleanText(body.razorpayOrderId, 60);
   await Payment.updateOne(
@@ -368,6 +397,7 @@ export async function recordPaymentFailure(userId, body) {
   const payment = await Payment.findOne({ razorpayOrderId, user: userId }).lean();
   if (!payment) throw new HttpError(404, 'We couldn’t find this payment.');
   const order = await Order.findById(payment.order).lean();
+  paymentFailedMessage(order._id);
   return outcome(order);
 }
 
@@ -410,6 +440,7 @@ export async function handleRazorpayWebhook(rawBody, signature, eventId) {
     }
     if (event.event === 'payment.failed') {
       await Payment.updateOne({ _id: payment._id, status: 'pending' }, { status: 'failed', failureReason: cleanText(entity.error_description, 200) || 'Payment failed' });
+      paymentFailedMessage(payment.order);
       return { failed: true };
     }
     return { ignored: true };

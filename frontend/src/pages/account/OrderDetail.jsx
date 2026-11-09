@@ -6,6 +6,7 @@ import ReturnProgress from '../../components/ReturnProgress.jsx';
 import TrackingCard from '../../components/TrackingCard.jsx';
 import { useStore } from '../../context/StoreContext.jsx';
 import { formatDate, formatINR, whatsappLink } from '../../utils/format.js';
+import { openRazorpay } from '../../utils/razorpay.js';
 import { PAYMENT_METHOD, PAYMENT_STATUS, StatusBadge } from '../../utils/orders.jsx';
 import AccountLayout from './AccountLayout.jsx';
 
@@ -80,6 +81,31 @@ export default function OrderDetail() {
   }, [orderNumber]);
   useEffect(load, [load]);
 
+  // An online order whose payment failed can be paid again while it is kept (30 minutes)
+  const [paying, setPaying] = useState(false);
+  const completePayment = async () => {
+    setPaying(true);
+    try {
+      const start = await api(`/orders/${orderNumber}/retry-payment`, { method: 'POST' });
+      const result = await openRazorpay(start.razorpay);
+      if (result.paid) {
+        await api('/payments/verify', {
+          method: 'POST',
+          body: { razorpayOrderId: result.paid.razorpay_order_id, razorpayPaymentId: result.paid.razorpay_payment_id, signature: result.paid.razorpay_signature },
+        }).catch((err) => notify(err.message));
+        notify('Thank you! Your payment was received.');
+      } else {
+        await api('/payments/failed', { method: 'POST', body: { razorpayOrderId: start.razorpay.orderId, reason: result.reason } }).catch(() => {});
+        notify('The payment wasn’t completed. No money was taken.');
+      }
+    } catch (err) {
+      notify(err.message);
+    } finally {
+      setPaying(false);
+      load();
+    }
+  };
+
   const cancelled = (result) => {
     setCancelling(false);
     notify(result.refund?.ok ? `Order cancelled. Your refund of ${formatINR(result.refund.amount)} has been started.` : 'Your order has been cancelled.');
@@ -90,6 +116,20 @@ export default function OrderDetail() {
     <AccountLayout title={`Order ${orderNumber}`} crumbs={[{ label: 'Orders', to: '/account/orders' }, { label: orderNumber }]}>
       {error && <div className="alert alert-danger">{error} <Link to="/account/orders">Back to My Orders</Link></div>}
       {!order && !error && <div className="card-soft p-4 text-muted">Loading your order…</div>}
+      {order?.status === 'pending_payment' && (
+        <div className={`alert ${order.canRetryPayment ? 'alert-warning' : 'alert-secondary'} d-flex flex-wrap gap-3 align-items-center justify-content-between`}>
+          <div className="small">
+            {order.canRetryPayment
+              ? <><strong>Payment not completed.</strong> Your order is kept for a short time. No money was taken.</>
+              : 'This payment session has expired. Please add the items to your cart and order again.'}
+          </div>
+          {order.canRetryPayment && (
+            <button type="button" className="btn btn-orange btn-sm" disabled={paying} onClick={completePayment}>
+              {paying ? 'Opening…' : `Complete payment of ${formatINR(order.total)}`}
+            </button>
+          )}
+        </div>
+      )}
       {order && (
         <div className="row g-4">
           <div className="col-md-7">
