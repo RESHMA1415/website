@@ -63,7 +63,7 @@ Run from the repo root:
 
 Each app also has its own `npm run dev` / `npm run build` (use `--prefix backend|frontend|admin`).
 
-**Development database:** with `MONGODB_URI` empty in `backend/.env`, the backend starts a private local MongoDB (`mongodb-memory-server`) on port 27027, with data kept in `%LOCALAPPDATA%\shopme\db`. That folder is outside the project so OneDrive never syncs live database files. A fresh database is seeded automatically on startup. To reset it, stop the backend and delete that folder. Production must set `MONGODB_URI` (MongoDB Atlas).
+**Development database:** with `MONGODB_URI` empty in `backend/.env`, the backend starts a private local MongoDB (`mongodb-memory-server`) on port 27027, with data kept in `%LOCALAPPDATA%\shopme\db`. That folder is outside the project so OneDrive never syncs live database files. After an automatic restart, `config/db.js` waits for port 27027 to be free and retries (the old database may still hold its lock), and never accepts another port. A fresh database is seeded automatically on startup. To reset it, stop the backend and delete that folder. Production must set `MONGODB_URI` (MongoDB Atlas).
 
 There are no automated tests yet. The pricing rules were checked against the PRD §6.2 worked examples.
 
