@@ -121,6 +121,7 @@ Follow PRD §21 phases. Don't build advanced features ahead of their phase unles
 
 **Legal pages:**
 - The Privacy Policy (DPDP Act 2023 / Rules 2025), Terms & Conditions and Refund & Cancellation Policy are Markdown files in `backend/src/content/legal/`. They seed Settings `pages.privacy`, `pages.terms` and `pages.refunds`.
+- The Shipping Policy (`shipping-policy.md`) and FAQ (`faq.md`) live in the same folder and seed `pages.shipping` and `pages.faq` (`INFO_PAGES`). Return pickup is free (owner decision, PRD §24 #23).
 - The store renders them with `components/MarkdownText.jsx`, a small safe renderer (no HTML).
 - `returns` and `cancellation` are aliases of `refunds`, on both the API and the store routes.
 - Proprietor and Grievance Officer: RESHMA PR (owner-provided).

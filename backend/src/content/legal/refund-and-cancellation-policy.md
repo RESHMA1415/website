@@ -1,7 +1,7 @@
 # Refund & Cancellation Policy
 
 **Effective date:** 5 November 2026
-**Last updated:** 5 November 2026
+**Last updated:** 9 November 2026
 
 This policy explains how you can cancel an order, return or exchange a product, and get a refund when you shop with **SHOPME**, a sole proprietorship of **RESHMA PR**, Apsara Arcade, MKK Nair Road, Palarivattom, Ernakulam, Kerala – 682025. It forms part of our [Terms & Conditions](/policies/terms) and follows the Consumer Protection Act, 2019 and the Consumer Protection (E-Commerce) Rules, 2020.
 
@@ -11,6 +11,7 @@ This policy explains how you can cancel an order, return or exchange a product, 
 |---|---|
 | Cancellation | Free, any time **before the order is shipped** |
 | Return / exchange window | **7 days from the date of delivery** |
+| Return pickup | **Free**. We arrange the courier pickup from your address |
 | Non-returnable items | Products marked "Non-returnable", such as beauty products (hygiene). Exception: damaged, defective or wrong items |
 | Refund time | Started within **2 business days** of approval. Credited within **5–7 business days** after that |
 | Online payments | Refunded to the **original payment method** (UPI, card, net banking or wallet) through Razorpay |
@@ -61,7 +62,7 @@ If you receive a damaged, defective or wrong item, please report it **within 7 d
 ### 2.5 How a return works
 1. **Request:** choose the items and quantity, Return or Exchange, and a reason. For Cash on Delivery orders, give the UPI ID or bank details for your refund.
 2. **Review:** we approve or reject the request, usually **within 2 business days**. If we reject it, we tell you why.
-3. **Pickup:** for approved requests, we arrange for the courier to collect the item from your address. Please keep it packed and ready.
+3. **Pickup (free):** for approved requests, we arrange for the courier to collect the item from your address, **at no cost to you**. Please keep it packed and ready.
 4. **Quality check:** when the item reaches us, we check its condition. If it doesn't meet Section 2.2, we may decline the return and send the item back to you.
 5. **Refund or replacement:** we process your refund (Section 3) or ship your exchange item.
 

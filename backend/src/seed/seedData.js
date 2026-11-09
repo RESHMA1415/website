@@ -1,7 +1,7 @@
 // Starter data for a fresh database. Sample products are placeholders the
 // owner replaces with real stock in Phase 2.
 
-import { LEGAL_PAGES } from '../content/legal/index.js';
+import { INFO_PAGES, LEGAL_PAGES } from '../content/legal/index.js';
 
 export const categoryTree = [
   {
@@ -256,7 +256,6 @@ export const defaultPages = {
     'SHOPME brings you modern, affordable fashion for men and women, from everyday clothing to beauty and accessories. (Replace this with your brand story in Business Settings.)',
   // Privacy Policy, Terms & Conditions and Refund & Cancellation Policy (src/content/legal)
   ...LEGAL_PAGES,
-  shipping:
-    'We deliver anywhere in India. Orders are usually delivered in 4–7 business days. Delivery is free on orders of ₹500 and above; a ₹50 delivery charge applies below ₹500.',
-  faq: 'Frequently asked questions will appear here.',
+  // Shipping Policy and FAQ (src/content/legal)
+  ...INFO_PAGES,
 };
