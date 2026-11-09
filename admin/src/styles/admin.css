@@ -176,3 +176,32 @@ input[type='color'].form-control-color { width: 2.4rem; height: 2rem; padding: 0
 .sticky-actions { position: sticky; bottom: 0; background: rgba(244, 245, 248, 0.95); padding: 0.75rem 0; z-index: 5; border-top: 1px solid var(--shop-border); margin-top: 1rem; }
 
 .login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--shop-navy), var(--shop-navy-light)); padding: 1rem; }
+
+/* Order, payment and return statuses */
+.tone-blue { background: #e7f0ff; color: #1d4ed8; }
+.tone-orange { background: #fff3e0; color: #c25700; }
+.tone-navy { background: #eef1f8; color: #14213d; }
+.tone-green { background: #e8f6ee; color: #198754; }
+.tone-red { background: #fdecec; color: #dc3545; }
+.tone-muted { background: #f0f1f4; color: #6b7280; }
+.order-timeline { list-style: none; padding: 0; margin: 0; }
+.order-timeline li { position: relative; padding: 0 0 0.9rem 1.4rem; border-left: 2px solid var(--shop-border); margin-left: 0.4rem; }
+.order-timeline li:last-child { border-left-color: transparent; padding-bottom: 0; }
+.order-timeline li::before { content: ''; position: absolute; left: -7px; top: 3px; width: 12px; height: 12px; border-radius: 50%; background: var(--shop-orange); }
+.return-photo { width: 96px; height: 96px; object-fit: cover; border-radius: 8px; border: 1px solid var(--shop-border); }
+
+/* Packing slips: print only the slips */
+.slip { background: #fff; color: #000; padding: 1.5rem; border: 1px solid #ddd; margin-bottom: 1.5rem; page-break-after: always; break-after: page; }
+.slip table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.slip th, .slip td { border-bottom: 1px solid #ddd; padding: 0.35rem 0.25rem; text-align: left; }
+.slip .cod-box { border: 2px solid #000; padding: 0.5rem 0.75rem; font-weight: 700; display: inline-block; }
+@media print {
+  .no-print, .admin-sidebar, .admin-topbar, .sidebar-backdrop { display: none !important; }
+  .admin-main { margin-left: 0 !important; }
+  .admin-content { padding: 0 !important; }
+  body { background: #fff !important; }
+  .slip { border: 0; margin: 0; padding: 0; }
+}
+
+.btn-outline-navy { color: var(--shop-navy); border-color: var(--shop-navy); }
+.btn-outline-navy:hover { background: var(--shop-navy); color: #fff; }

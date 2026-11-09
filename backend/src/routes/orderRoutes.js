@@ -1,4 +1,7 @@
 import { Router } from 'express';
+import multer from 'multer';
+import { cancelMyOrder, trackOrder } from '../services/fulfilmentService.js';
+import { createReturnRequest, getReturnOptions, uploadReturnPhotos } from '../services/returnService.js';
 import { requireCustomer } from '../middleware/requireCustomer.js';
 import {
   getCheckout,
@@ -12,8 +15,9 @@ import {
 } from '../services/orderService.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
-// Checkout, payments and My Orders (PRD Phase 4)
+// Checkout, payments, My Orders, cancellations, returns and tracking (PRD Phases 4–5)
 const router = Router();
+const photoUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 8 * 1024 * 1024, files: 5 } });
 const handle = (fn) => asyncHandler(async (req, res) => res.json(await fn(req, res)));
 
 router.get('/checkout', requireCustomer, handle((req) => getCheckout(req.customer._id)));
@@ -21,6 +25,12 @@ router.post('/orders', requireCustomer, handle((req) => placeOrder(req.customer.
 router.get('/orders', requireCustomer, handle((req) => listMyOrders(req.customer._id, req.query)));
 router.get('/orders/:orderNumber', requireCustomer, handle((req) => getMyOrder(req.customer._id, req.params.orderNumber)));
 router.post('/orders/:orderNumber/retry-payment', requireCustomer, handle((req) => retryPayment(req.customer._id, req.params.orderNumber)));
+router.post('/orders/:orderNumber/cancel', requireCustomer, handle((req) => cancelMyOrder(req.customer._id, req.params.orderNumber, req.body || {})));
+router.get('/orders/:orderNumber/return-options', requireCustomer, handle((req) => getReturnOptions(req.customer._id, req.params.orderNumber)));
+router.post('/orders/:orderNumber/returns', requireCustomer, handle((req) => createReturnRequest(req.customer._id, req.params.orderNumber, req.body || {})));
+router.post('/returns/photos', requireCustomer, photoUpload.array('photos', 5), handle((req) => uploadReturnPhotos(req.files)));
+// Public tracking with order number + mobile/email (no login)
+router.post('/track', handle((req) => trackOrder(req.body || {}, { ip: req.ip })));
 router.post('/payments/verify', requireCustomer, handle((req) => verifyCheckoutPayment(req.customer._id, req.body || {})));
 router.post('/payments/failed', requireCustomer, handle((req) => recordPaymentFailure(req.customer._id, req.body || {})));
 

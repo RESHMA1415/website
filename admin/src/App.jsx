@@ -9,7 +9,9 @@ import Inventory from './pages/Inventory.jsx';
 import Login from './pages/Login.jsx';
 import Media from './pages/Media.jsx';
 import Messages from './pages/Messages.jsx';
+import OrderDetail from './pages/OrderDetail.jsx';
 import Orders from './pages/Orders.jsx';
+import PackingSlips from './pages/PackingSlips.jsx';
 import Payments from './pages/Payments.jsx';
 import ProductForm from './pages/ProductForm.jsx';
 import Products from './pages/Products.jsx';
@@ -48,6 +50,8 @@ export default function App() {
         <Route path="inventory" element={<Inventory />} />
         <Route path="media" element={<Media />} />
         <Route path="orders" element={<Orders />} />
+        <Route path="orders/print" element={<PackingSlips />} />
+        <Route path="orders/:orderNumber" element={<OrderDetail />} />
         <Route path="returns" element={<Returns />} />
         <Route path="payments" element={<Payments />} />
         <Route path="reports" element={<Reports />} />

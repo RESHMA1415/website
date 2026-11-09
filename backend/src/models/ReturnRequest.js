@@ -44,8 +44,12 @@ const returnRequestSchema = new mongoose.Schema(
     pickupAddress: mongoose.Schema.Types.Mixed,
     status: { type: String, enum: RETURN_STATUSES, default: 'requested' },
     statusHistory: [
-      { status: String, note: String, at: { type: Date, default: Date.now } },
+      { status: String, note: String, by: { type: String, enum: ['customer', 'admin', 'system'] }, at: { type: Date, default: Date.now } },
     ],
+    includesDeliveryCharge: { type: Boolean, default: false },
+    refundedAmount: { type: Number, default: 0 },
+    refundReference: String,
+    refundedAt: Date,
     rejectionReason: String,
     reversePickupTracking: String,
     restock: Boolean,
@@ -54,5 +58,9 @@ const returnRequestSchema = new mongoose.Schema(
   },
   { timestamps: true },
 );
+
+returnRequestSchema.index({ order: 1 });
+returnRequestSchema.index({ status: 1, createdAt: -1 });
+returnRequestSchema.index({ user: 1, createdAt: -1 });
 
 export default mongoose.model('ReturnRequest', returnRequestSchema);

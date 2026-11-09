@@ -26,6 +26,7 @@ export const PAYMENT_STATUSES = [
   'partially_refunded',
   'cod_pending',
   'cod_collected',
+  'cancelled', // COD order cancelled or not delivered: nothing to collect
 ];
 
 // Snapshot of what was bought, frozen at purchase time (PRD §15)
@@ -41,6 +42,8 @@ const orderItemSchema = new mongoose.Schema({
   quantity: { type: Number, required: true, min: 1 },
   isReturnable: Boolean,
   reviewed: { type: Boolean, default: false },
+  // Units already in an open or finished return/exchange request (never more than quantity)
+  returnRequestedQty: { type: Number, default: 0 },
 });
 
 const addressSnapshotSchema = new mongoose.Schema(
@@ -89,6 +92,10 @@ const orderSchema = new mongoose.Schema(
       deliveredAt: Date,
     },
     cancellation: { reason: String, by: String, at: Date },
+    // Courier could not deliver: when the parcel came back and was restocked
+    rto: { restockedAt: Date, restocked: Boolean },
+    // A wrong/damaged item refund includes the delivery charge once per order
+    deliveryRefundClaimed: { type: Boolean, default: false },
     internalNotes: [{ text: String, at: { type: Date, default: Date.now } }],
     refundedAmount: { type: Number, default: 0 },
     reviewReminderSent: { type: Boolean, default: false },
@@ -98,5 +105,6 @@ const orderSchema = new mongoose.Schema(
 
 orderSchema.index({ user: 1, createdAt: -1 });
 orderSchema.index({ status: 1, createdAt: -1 });
+orderSchema.index({ 'address.mobile': 1 });
 
 export default mongoose.model('Order', orderSchema);

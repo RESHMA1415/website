@@ -622,3 +622,16 @@ a { text-decoration: none; }
 .otp-dev { letter-spacing: 0.15em; font-size: 1.05em; }
 .register-details { border: 0; padding: 0; margin: 0; min-width: 0; }
 .register-details:disabled { opacity: 0.7; }
+
+/* Orders: tracking, returns, receipt */
+.timeline li.failed .dot { background: #dc3545; border-color: #dc3545; }
+.tracking-card { background: var(--shop-bg-soft, #f7f8fb); border-radius: 12px; padding: 0.75rem 1rem; }
+.return-card { border: 1px solid var(--shop-border); border-radius: 12px; padding: 1rem; }
+.return-item { border: 1px solid var(--shop-border); border-radius: 12px; padding: 0.75rem; }
+.return-item.selected { border-color: var(--shop-orange); background: #fff8f1; }
+.return-photo { width: 72px; height: 72px; object-fit: cover; border-radius: 8px; border: 1px solid var(--shop-border); }
+.receipt { max-width: 760px; margin: 0 auto; background: #fff; }
+@media print {
+  header, footer, .site-header, .site-footer, .no-print, .whatsapp-fab, .announcement, .page-header { display: none !important; }
+  .receipt { border: 0 !important; box-shadow: none !important; }
+}

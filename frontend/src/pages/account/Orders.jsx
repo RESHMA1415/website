@@ -32,7 +32,7 @@ export default function Orders() {
       )}
       {data?.items.map((order) => (
         <Link key={order.orderNumber} to={`/account/orders/${order.orderNumber}`} className="card-soft p-3 p-md-4 mb-3 d-block order-card">
-          <div className="d-flex flex-wrap justify-content-between gap-2 mb-2">
+          <div className="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-2">
             <div>
               <div className="fw-semibold text-navy">{order.orderNumber}</div>
               <div className="small text-muted">Placed on {formatDate(order.createdAt)}</div>

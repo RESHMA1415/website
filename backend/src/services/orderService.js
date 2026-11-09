@@ -12,7 +12,7 @@ import {
   verifyPaymentSignature,
   verifyWebhookSignature,
 } from '../integrations/razorpay.js';
-import { Cart, Counter, Order, Payment, Product, StockMovement, User } from '../models/index.js';
+import { Cart, Counter, Order, Payment, Product, ReturnRequest, StockMovement, User } from '../models/index.js';
 import { HttpError } from '../utils/asyncHandler.js';
 import { cleanText, pageParams } from '../utils/text.js';
 import { addAddress, cleanAddress, listAddresses } from './accountService.js';
@@ -84,7 +84,7 @@ async function resolveAddress(userId, body) {
 // ---------- Stock (PRD §6.5): reduced only when an order is paid or COD placed ----------
 // Each decrement only succeeds while enough stock is left, so the last item
 // can never be sold twice. On a shortfall, everything taken so far is put back.
-async function reserveStock(items) {
+export async function reserveStock(items) {
   const taken = [];
   for (const item of items) {
     const updated = await Product.findOneAndUpdate(
@@ -103,7 +103,7 @@ async function reserveStock(items) {
   return taken;
 }
 
-async function releaseStock(taken) {
+export async function releaseStock(taken) {
   for (const { item } of taken) {
     await Product.updateOne(
       { _id: item.product, 'variants._id': item.variantId },
@@ -112,11 +112,11 @@ async function releaseStock(taken) {
   }
 }
 
-async function logOrderStock(order, taken) {
+export async function logOrderStock(order, taken, reason = 'order', note = order.orderNumber) {
   if (!taken.length) return;
   await StockMovement.insertMany(
     taken.map(({ item, stockAfter }) => ({
-      product: item.product, variantId: item.variantId, sku: item.sku, change: -item.quantity, stockAfter, reason: 'order', order: order._id, note: order.orderNumber,
+      product: item.product, variantId: item.variantId, sku: item.sku, change: -item.quantity, stockAfter, reason, order: order._id, note,
     })),
   );
 }
@@ -270,7 +270,10 @@ async function startPaymentAttempt(order) {
 async function refundWholePayment(payment, reason) {
   try {
     const refund = await refundPayment(payment.razorpayPaymentId, payment.amount, { reason });
-    await Payment.updateOne({ _id: payment._id }, { status: 'refunded', $push: { refunds: { amount: payment.amount, razorpayRefundId: refund.id, reason } } });
+    await Payment.updateOne(
+      { _id: payment._id },
+      { status: 'refunded', $inc: { refundedAmount: payment.amount }, $push: { refunds: { amount: payment.amount, razorpayRefundId: refund.id, reason, by: 'system' } } },
+    );
     return 'refunded';
   } catch (err) {
     // The admin sees this in Payments and can refund by hand (Phase 5/8)
@@ -440,9 +443,44 @@ export async function expireUnpaidOrders() {
 
 // ---------- My Orders ----------
 // Orders that were never paid/placed are not shown to the customer (PRD §8.1)
-const PLACED = { 'statusHistory.status': 'confirmed' };
+export const PLACED = { 'statusHistory.status': 'confirmed' };
+export const CANCELLABLE_STATUSES = ['confirmed', 'processing'];
+// Statuses an order can be in after delivery (returns may follow)
+export const AFTER_DELIVERY = ['delivered', 'return_requested', 'return_approved', 'return_rejected', 'returned', 'refunded', 'exchanged'];
 
-function customerOrder(order, payment) {
+// Last day a return/exchange can be requested (PRD §10.2), or null
+export function returnWindowEnd(order, settings) {
+  if (!order.shipping?.deliveredAt || !AFTER_DELIVERY.includes(order.status)) return null;
+  return new Date(new Date(order.shipping.deliveredAt).getTime() + settings.orders.returnWindowDays * 86400000);
+}
+
+const RETURN_STEP = {
+  requested: 'Requested', approved: 'Approved', rejected: 'Rejected', pickup_scheduled: 'Pickup scheduled',
+  received: 'Received by us', refunded: 'Refunded', replacement_shipped: 'Replacement shipped', closed: 'Closed',
+};
+
+export function customerReturn(r, order) {
+  const byId = new Map(order.items.map((i) => [String(i._id), i]));
+  return {
+    id: r._id,
+    type: r.type,
+    reason: r.reason,
+    status: r.status,
+    statusLabel: RETURN_STEP[r.status] || r.status,
+    createdAt: r.createdAt,
+    rejectionReason: r.rejectionReason,
+    reversePickupTracking: r.reversePickupTracking,
+    replacementTracking: r.replacementTracking?.trackingNumber ? r.replacementTracking : undefined,
+    refundedAmount: r.refundedAmount || 0,
+    items: r.items.map((x) => {
+      const item = byId.get(String(x.orderItemId));
+      return { name: item?.name, optionLabel: optionText(item?.options), quantity: x.quantity };
+    }),
+    history: r.statusHistory.map((h) => ({ status: h.status, label: RETURN_STEP[h.status] || h.status, at: h.at, note: h.by === 'admin' && h.status !== 'rejected' ? undefined : h.note })),
+  };
+}
+
+function customerOrder(order, payment, extra = {}) {
   return {
     orderNumber: order.orderNumber,
     createdAt: order.createdAt,
@@ -462,6 +500,8 @@ function customerOrder(order, payment) {
     refundedAmount: order.refundedAmount,
     payment: payment ? { method: payment.method, status: payment.status } : undefined,
     canRetryPayment: order.status === 'pending_payment' && !isExpired(order),
+    canCancel: CANCELLABLE_STATUSES.includes(order.status),
+    ...extra,
   };
 }
 
@@ -478,6 +518,16 @@ export async function listMyOrders(userId, query) {
 export async function getMyOrder(userId, orderNumber) {
   const order = await Order.findOne({ orderNumber: cleanText(orderNumber, 30), user: userId }).lean();
   if (!order) throw new HttpError(404, 'We couldn’t find that order.');
-  const payment = await Payment.findOne({ order: order._id }).sort({ createdAt: -1 }).lean();
-  return customerOrder(order, payment);
+  const [payment, returns, settings] = await Promise.all([
+    Payment.findOne({ order: order._id }).sort({ createdAt: -1 }).lean(),
+    ReturnRequest.find({ order: order._id }).sort({ createdAt: -1 }).lean(),
+    getSettings(),
+  ]);
+  const windowEnd = returnWindowEnd(order, settings);
+  const openQty = order.items.some((i) => i.quantity > (i.returnRequestedQty || 0));
+  return customerOrder(order, payment, {
+    returnWindowEndsAt: windowEnd,
+    canReturn: Boolean(windowEnd && windowEnd > new Date() && openQty),
+    returns: returns.map((r) => customerReturn(r, order)),
+  });
 }

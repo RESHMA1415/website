@@ -141,7 +141,7 @@ export async function deleteAddress(userId, addressId) {
 // Orders still on their way (or with an open return) must finish first, so we
 // can deliver or refund them. Order and payment records are kept afterwards
 // because tax and consumer laws require it (Privacy Policy §6).
-const ORDERS_IN_PROGRESS = ['confirmed', 'processing', 'shipped', 'out_for_delivery', 'return_requested', 'return_approved'];
+const ORDERS_IN_PROGRESS = ['confirmed', 'processing', 'shipped', 'out_for_delivery', 'return_requested', 'return_approved', 'returned', 'delivery_failed'];
 
 export async function deleteAccount(userId, { password, confirmText, reason }) {
   const user = await User.findById(userId).select('+passwordHash');

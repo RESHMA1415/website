@@ -1,59 +1,84 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { api } from '../api/client.js';
 import OrderTimeline from '../components/OrderTimeline.jsx';
 import PageHeader from '../components/PageHeader.jsx';
-import PhaseNotice from '../components/PhaseNotice.jsx';
+import ReturnProgress from '../components/ReturnProgress.jsx';
+import TrackingCard from '../components/TrackingCard.jsx';
+import { useShopper } from '../context/ShopperContext.jsx';
+import { formatDate, formatINR } from '../utils/format.js';
+import { StatusBadge } from '../utils/orders.jsx';
 
-// Example timeline so the owner can see how tracking will look
-const EXAMPLE_HISTORY = [
-  { status: 'confirmed', at: new Date(Date.now() - 3 * 86400000) },
-  { status: 'processing', at: new Date(Date.now() - 2 * 86400000) },
-  { status: 'shipped', at: new Date(Date.now() - 86400000) },
-];
-
+// Public order tracking with order number + mobile/email (PRD §13.12)
 export default function TrackOrder() {
-  const [showExample, setShowExample] = useState(false);
+  const { user } = useShopper();
+  const [form, setForm] = useState({ orderNumber: '', contact: '' });
+  const [order, setOrder] = useState(null);
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setBusy(true);
+    setError('');
+    try {
+      setOrder(await api('/track', { method: 'POST', body: form }));
+    } catch (err) {
+      setOrder(null);
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <>
       <PageHeader title="Track Your Order" crumbs={[{ label: 'Track Order' }]} />
       <div className="container" style={{ maxWidth: 760 }}>
-        <PhaseNotice phase={5}>Real order lookups start working in Phase 5. Submitting shows an example.</PhaseNotice>
-        <form
-          className="card-soft p-4 mb-4"
-          onSubmit={(e) => {
-            e.preventDefault();
-            setShowExample(true);
-          }}
-        >
+        <form className="card-soft p-4 mb-4" onSubmit={submit}>
           <div className="row g-3 align-items-end">
             <div className="col-md-5">
               <label className="form-label" htmlFor="t-order">Order number</label>
-              <input id="t-order" className="form-control" placeholder="e.g. SHM-261103-0042" required />
+              <input id="t-order" className="form-control" placeholder="e.g. SHM-261103-0042" required maxLength={30} value={form.orderNumber} onChange={set('orderNumber')} />
             </div>
             <div className="col-md-5">
               <label className="form-label" htmlFor="t-contact">Mobile number or email</label>
-              <input id="t-contact" className="form-control" required />
+              <input id="t-contact" className="form-control" required maxLength={120} placeholder="Used when ordering" value={form.contact} onChange={set('contact')} />
             </div>
             <div className="col-md-2">
-              <button type="submit" className="btn btn-orange w-100">Track</button>
+              <button type="submit" className="btn btn-orange w-100" disabled={busy}>{busy ? '…' : 'Track'}</button>
             </div>
           </div>
+          {user && <p className="small text-muted mt-3 mb-0">Logged in? All your orders are in <Link to="/account/orders">My Orders</Link>.</p>}
         </form>
-        {showExample && (
-          <div className="card-soft p-4">
-            <div className="d-flex flex-wrap justify-content-between gap-2 mb-4">
+        {error && <div className="alert alert-danger" role="alert">{error}</div>}
+        {order && (
+          <div className="card-soft p-4 mb-4">
+            <div className="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-4">
               <div>
-                <div className="small text-muted">Example order</div>
-                <div className="fw-semibold text-navy">SHM-261103-0042</div>
+                <div className="fw-semibold text-navy">{order.orderNumber}</div>
+                <div className="small text-muted">Placed {formatDate(order.createdAt)} · {formatINR(order.total)} · {order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Paid online'}{order.deliveryCity ? ` · to ${order.deliveryCity}` : ''}</div>
               </div>
-              <div className="text-md-end">
-                <div className="small text-muted">Courier · Tracking no.</div>
-                <div className="fw-semibold">Delhivery · 1234567890</div>
-              </div>
+              <StatusBadge status={order.status} />
             </div>
-            <OrderTimeline history={EXAMPLE_HISTORY} />
-            <button type="button" className="btn btn-outline-navy btn-sm" disabled>
-              Track on courier website <i className="bi bi-box-arrow-up-right ms-1" />
-            </button>
+            <div className="small mb-4">
+              {order.items.map((i, n) => <div key={n}>{i.name}{i.optionLabel ? ` (${i.optionLabel})` : ''} × {i.quantity}</div>)}
+            </div>
+            {order.status === 'cancelled' ? (
+              <div className="alert alert-light small">This order was cancelled on {formatDate(order.cancellation?.at)}.{order.cancellation?.reason ? ` Reason: ${order.cancellation.reason}` : ''}</div>
+            ) : (
+              <>
+                <OrderTimeline history={order.statusHistory} />
+                <TrackingCard shipping={order.shipping} />
+              </>
+            )}
+            {order.returns?.length > 0 && (
+              <div className="mt-4">
+                <h2 className="h6">Returns & exchanges</h2>
+                <ReturnProgress returns={order.returns} />
+              </div>
+            )}
           </div>
         )}
       </div>

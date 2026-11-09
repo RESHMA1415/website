@@ -24,3 +24,8 @@ export const INDIAN_STATES = [
   'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand',
   'West Bengal',
 ];
+
+export function formatDateTime(value) {
+  if (!value) return '';
+  return new Date(value).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+}

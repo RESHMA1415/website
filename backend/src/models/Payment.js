@@ -12,9 +12,13 @@ const paymentSchema = new mongoose.Schema(
     method: { type: String, enum: ['upi', 'card', 'netbanking', 'wallet', 'cod', 'other'] },
     status: { type: String, enum: PAYMENT_STATUSES, default: 'pending' },
     failureReason: String,
+    refundedAmount: { type: Number, default: 0 },
     refunds: [
       {
         amount: { type: Number, required: true },
+        // 'processing' while Razorpay is being asked; removed again if it fails
+        state: { type: String, enum: ['processing', 'done'], default: 'done' },
+        by: { type: String, enum: ['system', 'admin'], default: 'admin' },
         razorpayRefundId: String,
         manualReference: String, // UPI/bank reference for COD refunds
         reason: String,
@@ -26,5 +30,8 @@ const paymentSchema = new mongoose.Schema(
   },
   { timestamps: true },
 );
+
+paymentSchema.index({ order: 1, createdAt: -1 });
+paymentSchema.index({ createdAt: -1 });
 
 export default mongoose.model('Payment', paymentSchema);

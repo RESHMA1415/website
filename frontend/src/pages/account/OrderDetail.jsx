@@ -1,22 +1,90 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api } from '../../api/client.js';
 import OrderTimeline from '../../components/OrderTimeline.jsx';
-import PhaseNotice from '../../components/PhaseNotice.jsx';
+import ReturnProgress from '../../components/ReturnProgress.jsx';
+import TrackingCard from '../../components/TrackingCard.jsx';
 import { useStore } from '../../context/StoreContext.jsx';
 import { formatDate, formatINR, whatsappLink } from '../../utils/format.js';
 import { PAYMENT_METHOD, PAYMENT_STATUS, StatusBadge } from '../../utils/orders.jsx';
 import AccountLayout from './AccountLayout.jsx';
 
+// Reasons a customer can give for cancelling (PRD §10.1)
+const CANCEL_REASONS = [
+  ['changed_mind', 'Changed my mind'],
+  ['ordered_by_mistake', 'Ordered by mistake'],
+  ['found_cheaper', 'Found it cheaper elsewhere'],
+  ['delivery_too_slow', 'Delivery is too slow'],
+  ['other', 'Other'],
+];
+
+function CancelModal({ order, onClose, onDone }) {
+  const [reason, setReason] = useState('');
+  const [comment, setComment] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  useEffect(() => {
+    const onKey = (e) => e.key === 'Escape' && onClose();
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose]);
+  const submit = async (e) => {
+    e.preventDefault();
+    setBusy(true);
+    setError('');
+    try {
+      onDone(await api(`/orders/${order.orderNumber}/cancel`, { method: 'POST', body: { reason, comment } }));
+    } catch (err) {
+      setError(err.message);
+      setBusy(false);
+    }
+  };
+  return (
+    <div className="shop-modal-backdrop" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
+      <form className="shop-modal p-4" role="dialog" aria-modal="true" aria-label="Cancel order" onSubmit={submit} style={{ maxWidth: 480 }}>
+        <div className="d-flex justify-content-between align-items-start mb-3">
+          <h2 className="h5 mb-0">Cancel order {order.orderNumber}?</h2>
+          <button type="button" className="btn-close" aria-label="Close" onClick={onClose} />
+        </div>
+        <p className="small text-muted">
+          {order.paymentMethod === 'cod'
+            ? 'This is a Cash on Delivery order, so nothing has been charged.'
+            : `Your full payment of ${formatINR(order.total - (order.refundedAmount || 0))} will be refunded to your original payment method (5–7 business days).`}
+        </p>
+        <label className="form-label" htmlFor="cancel-reason">Why are you cancelling? *</label>
+        <select id="cancel-reason" className="form-select mb-3" required value={reason} onChange={(e) => setReason(e.target.value)}>
+          <option value="">Choose a reason</option>
+          {CANCEL_REASONS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+        </select>
+        <label className="form-label" htmlFor="cancel-comment">Anything else? (optional)</label>
+        <textarea id="cancel-comment" className="form-control mb-3" rows={2} maxLength={300} value={comment} onChange={(e) => setComment(e.target.value)} />
+        {error && <div className="alert alert-danger small py-2">{error}</div>}
+        <div className="d-flex gap-2 justify-content-end">
+          <button type="button" className="btn btn-outline-navy" onClick={onClose}>Keep my order</button>
+          <button type="submit" className="btn btn-danger" disabled={busy || !reason}>{busy ? 'Cancelling…' : 'Cancel Order'}</button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
 export default function OrderDetail() {
   const { orderNumber } = useParams();
-  const { settings } = useStore();
+  const { settings, notify } = useStore();
   const [order, setOrder] = useState(null);
   const [error, setError] = useState('');
+  const [cancelling, setCancelling] = useState(false);
 
-  useEffect(() => {
+  const load = useCallback(() => {
     api(`/orders/${orderNumber}`).then(setOrder).catch((err) => setError(err.message));
   }, [orderNumber]);
+  useEffect(load, [load]);
+
+  const cancelled = (result) => {
+    setCancelling(false);
+    notify(result.refund?.ok ? `Order cancelled. Your refund of ${formatINR(result.refund.amount)} has been started.` : 'Your order has been cancelled.');
+    load();
+  };
 
   return (
     <AccountLayout title={`Order ${orderNumber}`} crumbs={[{ label: 'Orders', to: '/account/orders' }, { label: orderNumber }]}>
@@ -26,7 +94,7 @@ export default function OrderDetail() {
         <div className="row g-4">
           <div className="col-md-7">
             <div className="card-soft p-4 mb-4">
-              <div className="d-flex flex-wrap justify-content-between gap-2 mb-3">
+              <div className="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
                 <div>
                   <h2 className="h5 mb-0">Items</h2>
                   <div className="small text-muted">Placed on {formatDate(order.createdAt)}</div>
@@ -75,12 +143,11 @@ export default function OrderDetail() {
 
             <div className="card-soft p-4">
               <h2 className="h5 mb-3">Need something?</h2>
-              <PhaseNotice phase={5}>Cancelling, returns/exchanges, reviews and receipts are added in the next phases.</PhaseNotice>
               <div className="d-flex flex-wrap gap-2">
-                <button type="button" className="btn btn-outline-navy btn-sm" disabled>Cancel Order</button>
-                <button type="button" className="btn btn-outline-navy btn-sm" disabled>Return / Exchange</button>
-                <button type="button" className="btn btn-outline-navy btn-sm" disabled>Write a Review</button>
-                <button type="button" className="btn btn-outline-navy btn-sm" disabled>Download Receipt</button>
+                {order.canCancel && <button type="button" className="btn btn-outline-danger btn-sm" onClick={() => setCancelling(true)}>Cancel Order</button>}
+                {order.canReturn && <Link className="btn btn-outline-navy btn-sm" to={`/account/orders/${order.orderNumber}/return`}>Return / Exchange</Link>}
+                {order.status === 'delivered' && <button type="button" className="btn btn-outline-navy btn-sm" disabled title="Reviews arrive in the next update">Write a Review (coming soon)</button>}
+                <Link className="btn btn-outline-navy btn-sm" to={`/account/orders/${order.orderNumber}/receipt`}><i className="bi bi-receipt me-1" />Download Receipt</Link>
                 {settings.store.whatsappNumber && (
                   <a
                     className="btn btn-outline-success btn-sm"
@@ -92,7 +159,23 @@ export default function OrderDetail() {
                   </a>
                 )}
               </div>
+              {order.returnWindowEndsAt && (
+                <p className="small text-muted mt-3 mb-0">
+                  {order.canReturn
+                    ? `Return or exchange possible until ${formatDate(order.returnWindowEndsAt)}.`
+                    : new Date(order.returnWindowEndsAt) < new Date() ? `The return window ended on ${formatDate(order.returnWindowEndsAt)}.` : ''}
+                </p>
+              )}
+              {['shipped', 'out_for_delivery'].includes(order.status) && (
+                <p className="small text-muted mt-3 mb-0">Your order has shipped, so it can’t be cancelled now. You can return it after delivery.</p>
+              )}
             </div>
+            {order.returns?.length > 0 && (
+              <div className="card-soft p-4 mt-4">
+                <h2 className="h5 mb-3">Returns & exchanges</h2>
+                <ReturnProgress returns={order.returns} />
+              </div>
+            )}
           </div>
           <div className="col-md-5">
             <div className="card-soft p-4">
@@ -103,12 +186,16 @@ export default function OrderDetail() {
                   {order.cancellation?.reason && <p className="mt-2 mb-0">{order.cancellation.reason}</p>}
                 </div>
               ) : (
-                <OrderTimeline history={order.statusHistory} />
+                <>
+                  <OrderTimeline history={order.statusHistory} />
+                  <TrackingCard shipping={order.shipping} />
+                </>
               )}
             </div>
           </div>
         </div>
       )}
+      {cancelling && order && <CancelModal order={order} onClose={() => setCancelling(false)} onDone={cancelled} />}
     </AccountLayout>
   );
 }

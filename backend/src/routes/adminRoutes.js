@@ -22,7 +22,21 @@ import {
   setVariantStock,
   stockHistory,
 } from '../services/inventoryService.js';
+import {
+  addInternalNote,
+  bulkMarkProcessing,
+  cancelOrderByAdmin,
+  getOrderForAdmin,
+  listOrdersForAdmin,
+  packingSlips,
+  refundOrderByAdmin,
+  rtoReceived,
+  updateOrderStatus,
+  updateShipping,
+} from '../services/fulfilmentService.js';
 import { deleteMedia, listMedia, uploadMedia } from '../services/mediaService.js';
+import { listPaymentsForAdmin, refundPaymentByAdmin } from '../services/paymentAdminService.js';
+import { getReturnForAdmin, listReturnsForAdmin, returnAction } from '../services/returnService.js';
 import {
   bulkUpdateProducts,
   createProduct,
@@ -103,5 +117,26 @@ router.get('/size-charts', handle((req) => listSizeCharts(req.query)));
 router.post('/size-charts', handle((req) => saveSizeChart(null, req.body || {})));
 router.put('/size-charts/:id', handle((req) => saveSizeChart(req.params.id, req.body || {})));
 router.delete('/size-charts/:id', handle((req) => deleteSizeChart(req.params.id)));
+
+// ----- Orders (PRD §14.7) -----
+router.get('/orders', handle((req) => listOrdersForAdmin(req.query)));
+router.get('/orders/print', handle((req) => packingSlips(req.query)));
+router.post('/orders/bulk/processing', handle((req) => bulkMarkProcessing(req.body || {})));
+router.get('/orders/:orderNumber', handle((req) => getOrderForAdmin(req.params.orderNumber)));
+router.post('/orders/:orderNumber/status', handle((req) => updateOrderStatus(req.params.orderNumber, req.body || {})));
+router.post('/orders/:orderNumber/shipping', handle((req) => updateShipping(req.params.orderNumber, req.body || {})));
+router.post('/orders/:orderNumber/rto-received', handle((req) => rtoReceived(req.params.orderNumber)));
+router.post('/orders/:orderNumber/cancel', handle(async (req) => (await cancelOrderByAdmin(req.params.orderNumber, req.body || {}), getOrderForAdmin(req.params.orderNumber))));
+router.post('/orders/:orderNumber/notes', handle((req) => addInternalNote(req.params.orderNumber, req.body || {})));
+router.post('/orders/:orderNumber/refund', handle((req) => refundOrderByAdmin(req.params.orderNumber, req.body || {})));
+
+// ----- Returns & exchanges (PRD §10.5) -----
+router.get('/returns', handle((req) => listReturnsForAdmin(req.query)));
+router.get('/returns/:id', handle((req) => getReturnForAdmin(req.params.id)));
+router.post('/returns/:id/:action', handle((req) => returnAction(req.params.id, req.params.action, req.body || {})));
+
+// ----- Payments & refunds (PRD §14.8) -----
+router.get('/payments', handle((req) => listPaymentsForAdmin(req.query)));
+router.post('/payments/:id/refund', handle((req) => refundPaymentByAdmin(req.params.id, req.body || {})));
 
 export default router;
