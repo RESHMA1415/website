@@ -39,12 +39,15 @@ export default function ReturnRequest() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const fileInput = useRef();
+  const itemsRef = useRef();
 
   useEffect(() => {
     api(`/orders/${orderNumber}/return-options`)
       .then((data) => {
         setOptions(data);
         setAddress(data.pickupAddress);
+        // A one-item order: tick that item for the customer
+        if (data.items.length === 1 && data.items[0].available > 0 && data.items[0].isReturnable) setChosen({ [data.items[0].orderItemId]: { quantity: 1, exchangeVariantId: '' } });
       })
       .catch((err) => setLoadError(err.message));
   }, [orderNumber]);
@@ -91,7 +94,11 @@ export default function ReturnRequest() {
   const submit = async (e) => {
     e.preventDefault();
     setError('');
-    if (!lines.length) return setError('Please choose at least one item.');
+    if (!lines.length) {
+      setError('Please tick the item you want to return or exchange under “Which items?” above.');
+      itemsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
     if (ourMistake && !photos.length) return setError('Please add at least one photo of the item.');
     setBusy(true);
     try {
@@ -138,8 +145,9 @@ export default function ReturnRequest() {
             </div>
           </fieldset>
 
-          <fieldset className="mb-4">
+          <fieldset className="mb-4" ref={itemsRef}>
             <legend className="h6">Which items?</legend>
+            <p className="small text-muted mb-2">Tick each item you want to {type === 'exchange' ? 'exchange' : 'return'}.</p>
             <div className="d-grid gap-2">
               {options.items.map((item) => {
                 const c = chosen[item.orderItemId];
