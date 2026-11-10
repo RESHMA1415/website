@@ -711,6 +711,13 @@
       "title": "Check the numbers match your test orders",
       "detail": "Open Dashboard and Sales Reports after placing test orders; compare totals.",
       "waitingOn": "Your turn (steps in the Phase 8 report)."
+    },
+    {
+      "phase": "x",
+      "area": "Admin",
+      "status": "done",
+      "title": "Ratings in the product list",
+      "detail": "Admin → Products now shows each product’s star rating and review count (PRD §14.2)."
     }
   ],
   "screens": [
