@@ -270,10 +270,9 @@
     {
       "phase": 4,
       "area": "Your task",
-      "status": "test",
+      "status": "done",
       "title": "Place test orders",
-      "detail": "Try a Cash on Delivery order now; online once keys are added.",
-      "waitingOn": "Your turn: place a test order, then ask me to clear it."
+      "detail": "You placed COD and Razorpay test-card orders (10 Nov 2026); payment, stock and emails worked."
     },
     {
       "phase": 5,
@@ -761,10 +760,9 @@
     {
       "phase": "x",
       "area": "Store",
-      "status": "test",
+      "status": "done",
       "title": "Clearer return form",
-      "detail": "The return form now says to tick the item, jumps back to the item list if none is ticked, and ticks the item automatically when the order has only one.",
-      "waitingOn": "Your check: request a return on a delivered order."
+      "detail": "The return form now says to tick the item, jumps back to the item list if none is ticked, and ticks the item automatically when the order has only one. Checked by you on 10 Nov 2026."
     }
   ],
   "screens": [
