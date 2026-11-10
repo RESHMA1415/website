@@ -27,6 +27,10 @@ export const env = {
   adminUrl: (process.env.ADMIN_URL || 'http://localhost:5174').replace(/\/+$/, ''),
   localDbPath: process.env.LOCAL_DB_PATH || path.join(localDataRoot, 'db'),
   uploadsPath: process.env.UPLOADS_PATH || path.join(localDataRoot, 'uploads'),
+  // Single-server hosting: the server can also serve the built store (at /)
+  // and admin panel (at /admin). Leave empty when they are hosted elsewhere.
+  storeDist: process.env.STORE_DIST ? path.resolve(process.env.STORE_DIST) : '',
+  adminDist: process.env.ADMIN_DIST ? path.resolve(process.env.ADMIN_DIST) : '',
   // Number of proxies in front of the server (0 when visitors connect directly)
   trustProxy: Number(process.env.TRUST_PROXY) || 0,
 };

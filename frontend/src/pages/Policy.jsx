@@ -2,6 +2,7 @@ import { Navigate, useParams } from 'react-router-dom';
 import EmptyState from '../components/EmptyState.jsx';
 import MarkdownText from '../components/MarkdownText.jsx';
 import PageHeader from '../components/PageHeader.jsx';
+import usePageMeta from '../hooks/usePageMeta.js';
 import { useApi } from '../hooks/useApi.js';
 
 const TITLES = {
@@ -18,6 +19,7 @@ export default function Policy() {
   const { page } = useParams();
   const title = TITLES[page];
   const { data, loading } = useApi(title ? `/pages/${page}` : null);
+  usePageMeta({ title: title || undefined });
 
   if (MOVED[page]) return <Navigate to={`/policies/${MOVED[page]}`} replace />;
   if (!title) {

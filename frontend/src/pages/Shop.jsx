@@ -6,6 +6,7 @@ import ProductGrid from '../components/ProductGrid.jsx';
 import ShopFilters, { ActiveFilters, FILTER_KEYS } from '../components/ShopFilters.jsx';
 import { useStore } from '../context/StoreContext.jsx';
 import { sizedSrcSet } from '../components/ProductImage.jsx';
+import usePageMeta from '../hooks/usePageMeta.js';
 import { useApi } from '../hooks/useApi.js';
 
 const SORT_OPTIONS = [
@@ -112,6 +113,7 @@ export default function Shop({ categorySlug, newArrivals = false, search = false
   const total = data?.total || 0;
   const from = total ? (page - 1) * PAGE_SIZE + 1 : 0;
   const to = Math.min(total, page * PAGE_SIZE);
+  usePageMeta({ title: typeof title === 'string' ? title : undefined, description: found?.category.description || (typeof title === 'string' ? `Shop ${title} at SHOPME: clothing, fashion, beauty and accessories delivered across India.` : undefined) });
 
   const sidebar = (
     <>

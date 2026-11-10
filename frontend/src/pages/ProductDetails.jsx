@@ -9,6 +9,7 @@ import { useShopper } from '../context/ShopperContext.jsx';
 import { useStore } from '../context/StoreContext.jsx';
 import { useApi } from '../hooks/useApi.js';
 import ProductReviews from '../components/ProductReviews.jsx';
+import usePageMeta from '../hooks/usePageMeta.js';
 import { formatINR, whatsappLink } from '../utils/format.js';
 
 const RECENT_KEY = 'shopme.recentlyViewed';
@@ -214,6 +215,31 @@ export default function ProductDetails() {
   const { slug } = useParams();
   const { settings, notify, setWhatsappMessage } = useStore();
   const { data: product, loading, error } = useApi(`/products/${slug}`);
+  usePageMeta(
+    product
+      ? {
+          title: product.name,
+          description: product.shortDescription || product.description,
+          jsonLd: {
+            '@context': 'https://schema.org',
+            '@type': 'Product',
+            name: product.name,
+            description: (product.shortDescription || product.description || '').slice(0, 500),
+            image: (product.images || []).slice(0, 4).map((i) => new URL(i.url, window.location.origin).href),
+            brand: product.brand ? { '@type': 'Brand', name: product.brand } : undefined,
+            sku: product.variants?.[0]?.sku,
+            offers: {
+              '@type': 'Offer',
+              priceCurrency: 'INR',
+              price: product.sellingPrice,
+              availability: (product.variants || []).some((v) => v.stock > 0) ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+              url: window.location.href,
+            },
+            ...(product.ratingCount ? { aggregateRating: { '@type': 'AggregateRating', ratingValue: product.ratingAverage, reviewCount: product.ratingCount } } : {}),
+          },
+        }
+      : {},
+  );
   const [selection, setSelection] = useState({});
   const [quantity, setQuantity] = useState(1);
   const [showSizeChart, setShowSizeChart] = useState(false);
