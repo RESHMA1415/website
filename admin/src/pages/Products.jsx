@@ -152,7 +152,7 @@ export default function Products() {
         <DataTable
           columns={[
             <input key="all" type="checkbox" className="form-check-input" aria-label="Select all" checked={allChecked} onChange={() => setSelected(allChecked ? [] : items.map((p) => p._id))} />,
-            '', 'Product', 'Category', 'Price', 'Stock', 'Options', 'Status', '',
+            '', 'Product', 'Category', 'Price', 'Stock', 'Options', 'Rating', 'Status', '',
           ]}
           rows={items}
           empty={loading ? 'Loading…' : search || status || stock || category ? 'No products match these filters.' : 'No products yet. Click “Add Product” to create your first one.'}
@@ -187,6 +187,7 @@ export default function Products() {
                 {p.totalStock > 0 && p.outOfStockVariants > 0 && <div className="small text-danger">{p.outOfStockVariants} sold out</div>}
               </td>
               <td>{p.variantCount}</td>
+              <td className="small text-nowrap">{p.ratingCount ? <><span className="text-warning">★</span> {Number(p.ratingAverage).toFixed(1)} <span className="text-muted">({p.ratingCount})</span></> : <span className="text-muted">–</span>}</td>
               <td><StatusPill status={p.status} /></td>
               <td className="text-end text-nowrap">
                 <Link to={`/products/${p._id}`} className="btn btn-sm btn-light" title="Edit"><i className="bi bi-pencil" /></Link>{' '}
