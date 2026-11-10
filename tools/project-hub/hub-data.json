@@ -757,6 +757,14 @@
       "status": "done",
       "title": "Launch guide",
       "detail": "LAUNCH.md: accounts to create, hosting steps, Razorpay live switch, backups and restore, launch checklist status."
+    },
+    {
+      "phase": "x",
+      "area": "Store",
+      "status": "test",
+      "title": "Clearer return form",
+      "detail": "The return form now says to tick the item, jumps back to the item list if none is ticked, and ticks the item automatically when the order has only one.",
+      "waitingOn": "Your check: request a return on a delivered order."
     }
   ],
   "screens": [
