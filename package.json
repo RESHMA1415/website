@@ -7,6 +7,9 @@
     "seed": "npm run seed --prefix backend",
     "dev": "concurrently -n api,shop,admin -c blue,yellow,magenta \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\" \"npm run dev --prefix admin\"",
     "build": "npm run build --prefix frontend && npm run build --prefix admin",
+    "build:server": "npm run build --prefix frontend && npm run build:server --prefix admin",
+    "start": "npm start --prefix backend",
+    "restore": "npm run restore --prefix backend --",
     "hub": "node tools/project-hub/build.mjs"
   },
   "devDependencies": {
