@@ -4,10 +4,12 @@ import path from 'node:path';
 import sharp from 'sharp';
 import { env } from '../config/env.js';
 import { HttpError } from '../utils/asyncHandler.js';
+import { cloudinaryConfigured, cloudinaryDestroy, cloudinaryUpload } from './cloudinary.js';
 
-// Media storage (PRD §14.4). Development stores files on this computer and
-// serves them from /uploads. A Cloudinary driver with the same three
-// functions replaces this before launch (Phase 9).
+// Media storage (PRD §14.4). With Cloudinary keys in backend/.env, photos and
+// videos go to Cloudinary; otherwise they are stored on this computer and
+// served from /uploads (development). Photos are resized here either way.
+// Files saved earlier keep working: each record remembers where it was stored.
 
 export const UPLOADS_URL = '/uploads';
 export const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -19,10 +21,24 @@ export const MAX_VIDEO_BYTES = 50 * 1024 * 1024;
 // Product photos use a 3:4 portrait ratio, so widths are enough
 const IMAGE_SIZES = { large: 1600, medium: 800, thumb: 320 };
 
-async function writeFile(name, data) {
+export const mediaDriver = () => (cloudinaryConfigured() ? 'cloudinary' : 'local');
+
+// Saves one file and returns { url, key } (key is what removeStored needs)
+async function writeFile(name, data, { resourceType = 'image', contentType } = {}) {
+  if (mediaDriver() === 'cloudinary') {
+    const dot = name.lastIndexOf('.');
+    const format = name.slice(dot + 1);
+    try {
+      const up = await cloudinaryUpload(data, { resourceType, publicId: name.slice(0, dot), format, contentType, fileName: name });
+      return { url: up.url, key: `${resourceType}:${up.publicId}` };
+    } catch (err) {
+      console.error('[media] upload to Cloudinary failed:', err.message);
+      throw new HttpError(502, 'We couldn’t save this file just now. Please try again in a minute.');
+    }
+  }
   await fs.mkdir(env.uploadsPath, { recursive: true });
   await fs.writeFile(path.join(env.uploadsPath, name), data);
-  return `${UPLOADS_URL}/${name}`;
+  return { url: `${UPLOADS_URL}/${name}`, key: name };
 }
 
 const newId = () => `${Date.now().toString(36)}-${crypto.randomBytes(6).toString('hex')}`;
@@ -40,19 +56,26 @@ export async function storeImage(buffer) {
   }
 
   const id = newId();
+  const driver = mediaDriver();
   const urls = {};
   const keys = [];
   let size;
-  for (const [label, width] of Object.entries(IMAGE_SIZES)) {
-    const { data, info } = await sharp(buffer)
-      .rotate() // respects the phone camera's orientation
-      .resize({ width, withoutEnlargement: true })
-      .webp({ quality: label === 'thumb' ? 70 : 80 })
-      .toBuffer({ resolveWithObject: true });
-    const name = `${id}-${label}.webp`;
-    urls[label] = await writeFile(name, data);
-    keys.push(name);
-    if (label === 'large') size = info;
+  try {
+    for (const [label, width] of Object.entries(IMAGE_SIZES)) {
+      const { data, info } = await sharp(buffer)
+        .rotate() // respects the phone camera's orientation
+        .resize({ width, withoutEnlargement: true })
+        .webp({ quality: label === 'thumb' ? 70 : 80 })
+        .toBuffer({ resolveWithObject: true });
+      const name = `${id}-${label}.webp`;
+      const saved = await writeFile(name, data, { contentType: 'image/webp' });
+      urls[label] = saved.url;
+      keys.push(saved.key);
+      if (label === 'large') size = info;
+    }
+  } catch (err) {
+    await removeStored({ driver, keys }); // don't leave half a photo behind
+    throw err;
   }
 
   return {
@@ -62,7 +85,7 @@ export async function storeImage(buffer) {
     width: size.width,
     height: size.height,
     bytes: size.size,
-    storage: { driver: 'local', keys },
+    storage: { driver, keys },
   };
 }
 
@@ -115,11 +138,20 @@ export async function storeVideo(buffer, { maxSeconds = MAX_VIDEO_SECONDS } = {}
   if (seconds > maxSeconds + 0.5) throw new HttpError(400, `The video is ${Math.round(seconds)} seconds long. Please keep it to ${maxSeconds} seconds or less.`);
   const isMov = firstBox !== 'ftyp' || buffer.toString('ascii', 8, 12) === 'qt  ';
   const name = `${newId()}.${isMov ? 'mov' : 'mp4'}`;
-  const url = await writeFile(name, buffer);
-  return { url, bytes: buffer.length, seconds: Math.round(seconds), storage: { driver: 'local', keys: [name] } };
+  const driver = mediaDriver();
+  const saved = await writeFile(name, buffer, { resourceType: 'video', contentType: isMov ? 'video/quicktime' : 'video/mp4' });
+  return { url: saved.url, bytes: buffer.length, seconds: Math.round(seconds), storage: { driver, keys: [saved.key] } };
 }
 
 export async function removeStored(storage) {
+  if (storage?.driver === 'cloudinary') {
+    for (const key of storage.keys || []) {
+      const [resourceType, publicId] = key.includes(':') ? key.split(/:(.*)/s) : ['image', key];
+      // Never stop a delete in the admin because Cloudinary is slow: log it
+      await cloudinaryDestroy(publicId, resourceType).catch((err) => console.error('[media] Cloudinary delete failed:', publicId, err.message));
+    }
+    return;
+  }
   if (storage?.driver !== 'local') return;
   for (const key of storage.keys || []) {
     // Keys are generated by us, but never allow a path outside the folder

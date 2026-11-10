@@ -27,6 +27,8 @@ export const env = {
   adminUrl: (process.env.ADMIN_URL || 'http://localhost:5174').replace(/\/+$/, ''),
   localDbPath: process.env.LOCAL_DB_PATH || path.join(localDataRoot, 'db'),
   uploadsPath: process.env.UPLOADS_PATH || path.join(localDataRoot, 'uploads'),
+  // Server copy of the nightly database backups (the online copy goes to Cloudinary)
+  backupPath: process.env.BACKUP_PATH || path.join(localDataRoot, 'backups'),
   // Single-server hosting: the server can also serve the built store (at /)
   // and admin panel (at /admin). Leave empty when they are hosted elsewhere.
   storeDist: process.env.STORE_DIST ? path.resolve(process.env.STORE_DIST) : '',

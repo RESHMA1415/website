@@ -41,6 +41,69 @@ function EmailStatus() {
   );
 }
 
+// Daily database backups (Phase 9): online copy in Cloudinary + server copy
+function Backups() {
+  const { notify } = useAuth();
+  const { data, loading, reload } = useApi('/admin/backups');
+  const [busy, setBusy] = useState(false);
+  const run = async () => {
+    setBusy(true);
+    try {
+      const r = await api('/admin/backups/run', { method: 'POST' });
+      if (!r.started) notify(r.message, 'error');
+      else if (r.status === 'ok') notify('Backup saved.');
+      else notify(r.status === 'partial' ? 'Backup saved on the server only. See the note below.' : 'The backup did not complete. See the note below.', 'error');
+      reload();
+    } catch (err) {
+      notify(err.message, 'error');
+    } finally {
+      setBusy(false);
+    }
+  };
+  const tone = { ok: 'tone-green', partial: 'tone-orange', failed: 'tone-red' };
+  const label = { ok: 'Saved', partial: 'Server only', failed: 'Failed' };
+  const latest = data?.items?.[0];
+  return (
+    <Panel title="Database backups">
+      {loading && !data ? (
+        <div className="small text-muted">Checking…</div>
+      ) : (
+        <div className="small">
+          <p className="text-muted mb-2">
+            A full copy of the store's data is made every night after {data?.hourIndia || 2} AM and kept for {data?.keepDays || 30} days.
+          </p>
+          <ul className="list-unstyled mb-3">
+            <li>
+              <i className={`bi me-1 ${data?.cloudinary && data?.encrypted ? 'bi-check-circle-fill text-success' : 'bi-exclamation-triangle-fill text-warning'}`} aria-hidden="true" />
+              Online copy (Cloudinary): {data?.cloudinary ? (data?.encrypted ? 'on, encrypted' : 'off until the backup key is added') : 'off until Cloudinary is connected'}
+            </li>
+            <li><i className="bi bi-check-circle-fill text-success me-1" aria-hidden="true" />Copy on the server: on</li>
+            <li className="mt-1">Last good backup: <strong>{data?.lastOk ? formatDateTime(data.lastOk) : 'none yet'}</strong></li>
+          </ul>
+          {latest && latest.status !== 'ok' && latest.problem && <div className="alert alert-warning py-2 small">Latest backup: {latest.problem}</div>}
+          <button type="button" className="btn btn-sm btn-orange" disabled={busy} onClick={run}>{busy ? 'Backing up…' : 'Back up now'}</button>
+          {data?.items?.length > 0 && (
+            <div className="table-responsive mt-3">
+              <table className="table table-sm mb-0">
+                <thead><tr><th>When</th><th>Result</th><th className="text-end">Size</th></tr></thead>
+                <tbody>
+                  {data.items.slice(0, 7).map((b) => (
+                    <tr key={b.id}>
+                      <td>{formatDateTime(b.createdAt)}{b.trigger === 'admin' && <span className="text-muted"> (manual)</span>}</td>
+                      <td><span className={`status-pill ${tone[b.status]}`}>{label[b.status]}</span></td>
+                      <td className="text-end">{b.bytes ? `${Math.max(1, Math.round(b.bytes / 1024)).toLocaleString('en-IN')} KB` : '–'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+    </Panel>
+  );
+}
+
 function LoginSecurity() {
   const { admin, setAdmin, notify } = useAuth();
   const [mode, setMode] = useState('');
@@ -167,6 +230,7 @@ export default function Account() {
             </dl>
           </Panel>
           <div className="mt-3"><EmailStatus /></div>
+          <div className="mt-3"><Backups /></div>
           <div className="mt-3"><LoginSecurity /></div>
         </div>
         <div className="col-lg-7">

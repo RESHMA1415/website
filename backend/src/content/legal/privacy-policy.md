@@ -1,7 +1,7 @@
 # Privacy Policy
 
 **Effective date:** 5 November 2026
-**Last updated:** 5 November 2026
+**Last updated:** 10 November 2026
 
 This Privacy Policy explains how SHOPME collects, uses, shares and protects your personal data when you use our website (the "Platform") and buy from us. It is written to meet the **Digital Personal Data Protection Act, 2023** and the **Digital Personal Data Protection Rules, 2025** (together, the "DPDP Act"). It also follows the **Information Technology Act, 2000** and the rules made under it.
 
@@ -79,6 +79,7 @@ Some of our service providers may store or process data on servers outside India
 - **Security logs:** at least 1 year, as the DPDP Rules require, and then deleted.
 - **Reviews:** while they are published. You can ask us to remove your review at any time.
 - **Cash on Delivery refund details (UPI/bank):** only until the refund is completed and recorded.
+- **Backups:** we keep encrypted daily backup copies of the Platform's data for 30 days, so we can recover from technical failures. Data you delete, or that we erase, leaves these backups within 30 days.
 
 ## 7. How we protect your data
 

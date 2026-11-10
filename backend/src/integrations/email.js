@@ -33,7 +33,7 @@ export const EMAIL_CONNECTED = (() => {
 export const SHOW_EMAIL_LINKS_ON_SCREEN = !isProduction && !EMAIL_CONNECTED;
 
 // Messages people need even if the owner switches emails off (security and legal)
-const ESSENTIAL = new Set(['password_reset', 'account_deleted', 'email_test', 'admin_login_code']);
+const ESSENTIAL = new Set(['password_reset', 'account_deleted', 'email_test', 'admin_login_code', 'backup_failed']);
 export const MAX_ATTEMPTS = 3;
 const RETRY_MINUTES = [5, 30]; // wait before the 2nd and 3rd try
 

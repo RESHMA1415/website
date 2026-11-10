@@ -19,8 +19,24 @@ async function upsertCategories(nodes, parent = null, inherited = {}) {
   }
 }
 
-// Seeds a fresh database. The Settings record is written last and marks the
-// seed as complete, so an interrupted seed safely resumes on the next start.
+// What every store needs before it can open, in development and production:
+// the category menu (the /men and /women pages depend on those slugs) and the
+// Business Settings record with the policy pages. Sample products and banners
+// are NOT added here. Does nothing once Settings exist.
+export async function ensureEssentials() {
+  if (await Setting.exists({ key: 'business' })) return false;
+  await upsertCategories(categoryTree);
+  try {
+    await Setting.create({ key: 'business', values: defaultSettings, pages: defaultPages });
+  } catch (err) {
+    if (err.code !== 11000) throw err; // another server created it at the same moment
+  }
+  return true;
+}
+
+// Seeds a fresh development database (adds sample products and banners too).
+// The Settings record is written last and marks the seed as complete, so an
+// interrupted seed safely resumes on the next start.
 export async function seedIfEmpty() {
   if (await Setting.exists({ key: 'business' })) return false;
 

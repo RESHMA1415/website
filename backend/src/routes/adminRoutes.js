@@ -54,6 +54,7 @@ import { getReturnForAdmin, listReturnsForAdmin, returnAction } from '../service
 import { bulkApprove, listReviewsForAdmin, pendingReviewCount, reviewAction } from '../services/reviewService.js';
 import { exportSubscribersCsv, listMessagesForAdmin, listSubscribersForAdmin, newMessageCount, updateMessage } from '../services/messageService.js';
 import { sendEmail, verifyEmailConnection } from '../integrations/email.js';
+import { backupNow, backupStatus } from '../services/backupService.js';
 import {
   bulkUpdateProducts,
   createProduct,
@@ -178,6 +179,10 @@ router.get(
     res.send(await exportSubscribersCsv());
   }),
 );
+
+// ----- Database backups (admin Account page) -----
+router.get('/backups', handle(() => backupStatus()));
+router.post('/backups/run', handle(() => backupNow()));
 
 // ----- Email connection check (admin Account page) -----
 router.get('/email/status', handle(() => verifyEmailConnection()));

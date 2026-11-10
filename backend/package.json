@@ -7,7 +7,8 @@
   "scripts": {
     "dev": "node --watch-path=src src/server.js",
     "start": "node src/server.js",
-    "seed": "node src/seed/seed.js"
+    "seed": "node src/seed/seed.js",
+    "restore": "node src/scripts/restore.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

@@ -1,4 +1,5 @@
 export { default as Admin } from './Admin.js';
+export { default as BackupLog } from './BackupLog.js';
 export { default as Banner } from './Banner.js';
 export { default as Cart } from './Cart.js';
 export { default as Category } from './Category.js';
