@@ -450,8 +450,8 @@
       "area": "Launch",
       "status": "test",
       "title": "Online hosting and database",
-      "detail": "Ready: one-server hosting (shop + admin at /admin), live-database first start, nightly encrypted backups kept 30 days (Admin → My Account → Database backups).",
-      "waitingOn": "Your hosting choice and a MongoDB Atlas account."
+      "detail": "Ready: one-server hosting (shop + admin at /admin), live-database first start, nightly encrypted backups kept 30 days (Admin → My Account → Database backups). Hosting chosen: your AWS Ubuntu server (Mumbai); step-by-step guide in DEPLOY-AWS.md.",
+      "waitingOn": "Your turn: create the server (DEPLOY-AWS.md Parts 1–4), a MongoDB Atlas database and your domain."
     },
     {
       "phase": 9,
@@ -482,8 +482,8 @@
       "area": "Launch",
       "status": "notstarted",
       "title": "GitHub repo and production protection",
-      "detail": "Online copy of the code; production only changes through reviewed merges.",
-      "waitingOn": "Needs your GitHub repository link."
+      "detail": "Code is on GitHub (RESHMA1415/website, development branch), but the repository is public.",
+      "waitingOn": "Your turn: make the repository private; then the production branch is created and protected through a reviewed pull request."
     },
     {
       "phase": 9,
@@ -763,6 +763,13 @@
       "status": "done",
       "title": "Clearer return form",
       "detail": "The return form now says to tick the item, jumps back to the item list if none is ticked, and ticks the item automatically when the order has only one. Checked by you on 10 Nov 2026."
+    },
+    {
+      "phase": 9,
+      "area": "Launch",
+      "status": "done",
+      "title": "AWS server install guide",
+      "detail": "DEPLOY-AWS.md: create the EC2 server, domain records, Atlas database, Node/PM2/Nginx, settings file, HTTPS, moving your products, updating later, troubleshooting."
     }
   ],
   "screens": [
@@ -1178,7 +1185,7 @@
     {
       "id": "—",
       "text": "GitHub repository link (to protect production online)",
-      "state": "needed"
+      "state": "done"
     },
     {
       "id": "—",
@@ -1232,7 +1239,7 @@
     },
     {
       "id": "—",
-      "state": "needed",
+      "state": "done",
       "text": "Hosting choice: one server (recommended) or separate parts — see LAUNCH.md"
     },
     {
@@ -1244,6 +1251,11 @@
       "id": "—",
       "state": "needed",
       "text": "Razorpay business verification for live payments"
+    },
+    {
+      "id": "—",
+      "text": "Make the GitHub repository private (it is public now)",
+      "state": "needed"
     }
   ]
 }
