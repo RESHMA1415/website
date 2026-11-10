@@ -1,5 +1,5 @@
 {
-  "statusDate": "2026-11-09",
+  "statusDate": "2026-11-10",
   "artifactUrl": "https://claude.ai/artifact/J8KvrshBbuSUQTPeudf5vY",
   "phases": [
     {
@@ -406,63 +406,63 @@
     {
       "phase": 8,
       "area": "Admin",
-      "status": "notstarted",
+      "status": "done",
       "title": "Dashboard numbers",
-      "detail": "Sales, orders, pending work and stock alerts at a glance."
+      "detail": "Sales, orders, average order, new customers, to-do counts, sales chart, online/COD split, best sellers, latest orders, stock alerts."
     },
     {
       "phase": 8,
       "area": "Admin",
-      "status": "notstarted",
+      "status": "done",
       "title": "Sales reports",
-      "detail": "By day, product and category; download."
+      "detail": "8 reports with date range, charts and tables, each downloads for Excel."
     },
     {
       "phase": 8,
       "area": "Admin",
-      "status": "notstarted",
+      "status": "done",
       "title": "Payments screen",
-      "detail": "Every payment and refund, including any that need a hand refund."
+      "detail": "Date range, totals, refunds and download for Excel."
     },
     {
       "phase": 8,
       "area": "Admin",
-      "status": "notstarted",
+      "status": "done",
       "title": "Customers screen",
-      "detail": "List, details, block or unblock, export."
+      "detail": "List, search, customer page with orders/reviews/returns, block/unblock, download for Excel."
     },
     {
       "phase": 8,
       "area": "Admin",
-      "status": "notstarted",
+      "status": "done",
       "title": "Business Settings editing",
-      "detail": "Change fees, limits, contact details and policy pages yourself."
+      "detail": "Store details, logo, delivery and COD charges, returns, emails on/off, social, SEO and page text — all editable."
     },
     {
       "phase": 9,
       "area": "Launch",
-      "status": "planned",
+      "status": "notstarted",
       "title": "Full testing, speed and security checks",
       "detail": "Everything on the PRD §22 launch checklist."
     },
     {
       "phase": 9,
       "area": "Launch",
-      "status": "planned",
+      "status": "notstarted",
       "title": "Online hosting and database",
       "detail": "MongoDB Atlas, hosting, daily backups."
     },
     {
       "phase": 9,
       "area": "Launch",
-      "status": "planned",
+      "status": "notstarted",
       "title": "Photos moved to Cloudinary",
       "detail": "Product and banner photos served online."
     },
     {
       "phase": 9,
       "area": "Launch",
-      "status": "planned",
+      "status": "notstarted",
       "title": "Your web address and HTTPS",
       "detail": "The site at your own domain with the secure padlock.",
       "waitingOn": "Needs your domain name."
@@ -470,14 +470,14 @@
     {
       "phase": 9,
       "area": "Payments",
-      "status": "planned",
+      "status": "notstarted",
       "title": "Switch Razorpay to live",
       "detail": "Real payments after Razorpay approves your account."
     },
     {
       "phase": 9,
       "area": "Launch",
-      "status": "planned",
+      "status": "notstarted",
       "title": "GitHub repo and production protection",
       "detail": "Online copy of the code; production only changes through reviewed merges.",
       "waitingOn": "Needs your GitHub repository link."
@@ -485,7 +485,7 @@
     {
       "phase": 9,
       "area": "Legal",
-      "status": "planned",
+      "status": "notstarted",
       "title": "Lawyer review of the policies",
       "detail": "Privacy, Terms and Refund & Cancellation checked by a legal or CA advisor."
     },
@@ -696,6 +696,21 @@
       "title": "Receive all messages for a test order",
       "detail": "After adding the Gmail App Password: place a test order and follow it to delivery; check the emails arrive.",
       "waitingOn": "Your Gmail App Password first."
+    },
+    {
+      "phase": 8,
+      "area": "Admin",
+      "status": "done",
+      "title": "Two-step admin login",
+      "detail": "Optional: a 6-digit code emailed at each admin login. Switch it on in My Account once store emails work."
+    },
+    {
+      "phase": 8,
+      "area": "Your task",
+      "status": "test",
+      "title": "Check the numbers match your test orders",
+      "detail": "Open Dashboard and Sales Reports after placing test orders; compare totals.",
+      "waitingOn": "Your turn (steps in the Phase 8 report)."
     }
   ],
   "screens": [
@@ -850,8 +865,8 @@
       "app": "admin",
       "name": "Dashboard",
       "path": "/",
-      "status": "dev",
-      "note": "Stock alerts and reviews waiting work now; sales numbers in Phase 8."
+      "status": "done",
+      "note": "Live numbers, charts and to-do lists with date range."
     },
     {
       "app": "admin",
@@ -927,29 +942,29 @@
       "app": "admin",
       "name": "Payments",
       "path": "/payments",
-      "status": "dev",
-      "note": "List, totals and refunds work; date-range totals and export in Phase 8."
+      "status": "done",
+      "note": "Date range, totals, refunds, Excel download."
     },
     {
       "app": "admin",
       "name": "Customers",
       "path": "/customers",
-      "status": "planned",
-      "note": "Phase 8."
+      "status": "done",
+      "note": "List, customer page, block/unblock, Excel download."
     },
     {
       "app": "admin",
       "name": "Reports",
       "path": "/reports",
-      "status": "planned",
-      "note": "Phase 8."
+      "status": "done",
+      "note": "8 reports, Excel download."
     },
     {
       "app": "admin",
       "name": "Business Settings",
       "path": "/settings",
-      "status": "planned",
-      "note": "Phase 8."
+      "status": "done",
+      "note": "Every section editable; page text editor."
     },
     {
       "app": "store",
@@ -1147,6 +1162,11 @@
       "id": "—",
       "text": "Gmail App Password for shopmesupport2@gmail.com (to switch on real emails)",
       "state": "needed"
+    },
+    {
+      "id": "25",
+      "text": "Razorpay keys stay in the private server file, not on the Settings screen (safer than PRD §14.11)",
+      "state": "confirm"
     }
   ]
 }
