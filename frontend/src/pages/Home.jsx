@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api/client.js';
 import ConsentCheckbox from '../components/ConsentCheckbox.jsx';
+import { sizedSrcSet, smallerUrl } from '../components/ProductImage.jsx';
 import ProductGrid from '../components/ProductGrid.jsx';
 import { useStore } from '../context/StoreContext.jsx';
 import { useApi } from '../hooks/useApi.js';
@@ -40,7 +41,7 @@ function HeroSlider() {
       {banner.desktopImageUrl && (
         <picture>
           {banner.mobileImageUrl && <source media="(max-width: 767px)" srcSet={banner.mobileImageUrl} />}
-          <img src={banner.desktopImageUrl} alt="" className="hero-image" />
+          <img src={banner.desktopImageUrl} srcSet={sizedSrcSet(banner.desktopImageUrl)} sizes="100vw" alt="" className="hero-image" fetchpriority="high" decoding="async" />
         </picture>
       )}
       {banner.desktopImageUrl && <div className="hero-shade" aria-hidden="true" />}
@@ -169,7 +170,7 @@ export default function Home() {
               <div key={tile.label} className="col">
                 <Link to={tile.to} className="category-tile">
                   <div className="tile-bg" style={{ background: tile.bg }}>
-                    {cover ? <img src={cover} alt="" className="tile-img" loading="lazy" decoding="async" /> : <i className={`bi ${tile.icon}`} />}
+                    {cover ? <img src={smallerUrl(cover)} alt="" className="tile-img" loading="lazy" decoding="async" /> : <i className={`bi ${tile.icon}`} />}
                   </div>
                   <div className="tile-label">
                     {tile.label} <i className="bi bi-arrow-right-short" />

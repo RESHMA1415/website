@@ -12,6 +12,16 @@ const SIZES = {
   thumb: '80px',
 };
 
+// Uploaded photos are stored in three widths (…-thumb / -medium / -large.webp).
+// From the large address, offer the smaller copies so phones download less.
+export function sizedSrcSet(url) {
+  if (!url || !/-large.webp$/.test(url)) return undefined;
+  return [`${url.replace(/-large.webp$/, '-medium.webp')} 800w`, `${url} 1600w`].join(', ');
+}
+export function smallerUrl(url, size = 'medium') {
+  return url && /-large.webp$/.test(url) ? url.replace(/-large.webp$/, `-${size}.webp`) : url;
+}
+
 export function imageSrcSet(image) {
   if (!image) return undefined;
   const parts = [];

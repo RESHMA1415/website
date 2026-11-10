@@ -5,6 +5,7 @@ import PageHeader from '../components/PageHeader.jsx';
 import ProductGrid from '../components/ProductGrid.jsx';
 import ShopFilters, { ActiveFilters, FILTER_KEYS } from '../components/ShopFilters.jsx';
 import { useStore } from '../context/StoreContext.jsx';
+import { sizedSrcSet } from '../components/ProductImage.jsx';
 import { useApi } from '../hooks/useApi.js';
 
 const SORT_OPTIONS = [
@@ -138,7 +139,7 @@ export default function Shop({ categorySlug, newArrivals = false, search = false
       </PageHeader>
       <div className="container">
         {found?.category.bannerUrl && (
-          <img src={found.category.bannerUrl} alt="" className="category-banner mb-4" />
+          <img src={found.category.bannerUrl} srcSet={sizedSrcSet(found.category.bannerUrl)} sizes="(max-width: 991px) 100vw, 1200px" alt="" className="category-banner mb-4" fetchpriority="high" decoding="async" />
         )}
         <div className="row g-4">
           <aside className="col-lg-3 d-none d-lg-block">

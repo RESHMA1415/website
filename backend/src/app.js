@@ -1,3 +1,4 @@
+import compression from 'compression';
 import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
@@ -16,6 +17,8 @@ export function createApp() {
   // X-Forwarded-For; set TRUST_PROXY=1 there so per-visitor limits work
   if (env.trustProxy) app.set('trust proxy', env.trustProxy);
   app.disable('x-powered-by');
+  // Smaller responses on mobile data (PRD §17.1); photos are already compressed WebP
+  app.use(compression({ threshold: 1024 }));
 
   // Product photos are shown on the store and admin sites (other origins in production)
   app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));

@@ -1,32 +1,36 @@
+import { lazy, Suspense } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import Layout from './components/layout/Layout.jsx';
-import About from './pages/About.jsx';
-import Account from './pages/account/Account.jsx';
-import OrderDetail from './pages/account/OrderDetail.jsx';
-import Orders from './pages/account/Orders.jsx';
-import Receipt from './pages/account/Receipt.jsx';
-import ReturnRequest from './pages/account/ReturnRequest.jsx';
-import ReviewForm from './pages/account/ReviewForm.jsx';
 import RequireLogin from './components/RequireLogin.jsx';
-import ForgotPassword from './pages/auth/ForgotPassword.jsx';
-import Login from './pages/auth/Login.jsx';
-import Register from './pages/auth/Register.jsx';
-import ResetPassword from './pages/auth/ResetPassword.jsx';
 import Cart from './pages/Cart.jsx';
-import Checkout from './pages/Checkout.jsx';
-import Contact from './pages/Contact.jsx';
 import Home from './pages/Home.jsx';
 import NotFound from './pages/NotFound.jsx';
-import OrderConfirmation from './pages/OrderConfirmation.jsx';
-import Policy from './pages/Policy.jsx';
 import ProductDetails from './pages/ProductDetails.jsx';
 import Shop from './pages/Shop.jsx';
-import TrackOrder from './pages/TrackOrder.jsx';
-import Unsubscribe from './pages/Unsubscribe.jsx';
-import Wishlist from './pages/Wishlist.jsx';
+
+// Pages most shoppers never open download only when visited (faster first load on mobile)
+const About = lazy(() => import('./pages/About.jsx'));
+const Account = lazy(() => import('./pages/account/Account.jsx'));
+const OrderDetail = lazy(() => import('./pages/account/OrderDetail.jsx'));
+const Orders = lazy(() => import('./pages/account/Orders.jsx'));
+const Receipt = lazy(() => import('./pages/account/Receipt.jsx'));
+const ReturnRequest = lazy(() => import('./pages/account/ReturnRequest.jsx'));
+const ReviewForm = lazy(() => import('./pages/account/ReviewForm.jsx'));
+const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword.jsx'));
+const Login = lazy(() => import('./pages/auth/Login.jsx'));
+const Register = lazy(() => import('./pages/auth/Register.jsx'));
+const ResetPassword = lazy(() => import('./pages/auth/ResetPassword.jsx'));
+const Checkout = lazy(() => import('./pages/Checkout.jsx'));
+const Contact = lazy(() => import('./pages/Contact.jsx'));
+const OrderConfirmation = lazy(() => import('./pages/OrderConfirmation.jsx'));
+const Policy = lazy(() => import('./pages/Policy.jsx'));
+const TrackOrder = lazy(() => import('./pages/TrackOrder.jsx'));
+const Unsubscribe = lazy(() => import('./pages/Unsubscribe.jsx'));
+const Wishlist = lazy(() => import('./pages/Wishlist.jsx'));
 
 export default function App() {
   return (
+    <Suspense fallback={<div className="container py-5 text-center text-muted" role="status">Loading…</div>}>
     <Routes>
       <Route element={<Layout />}>
         <Route index element={<Home />} />
@@ -60,5 +64,6 @@ export default function App() {
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
+    </Suspense>
   );
 }
