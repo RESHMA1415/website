@@ -150,11 +150,11 @@ export default function ProductReviews({ product }) {
                     className={`rating-row ${stars === star ? 'active' : ''}`}
                     disabled={!count}
                     onClick={() => choose(setStars)(stars === star ? 0 : star)}
-                    aria-label={`Show ${star}-star reviews (${count})`}
                   >
-                    <span style={{ width: 28 }}>{star}★</span>
-                    <span className="rating-bar"><span style={{ width: total ? `${(count / total) * 100}%` : 0 }} /></span>
-                    <span className="text-muted" style={{ width: 24 }}>{count}</span>
+                    <span className="visually-hidden">Show {star}-star reviews ({count})</span>
+                    <span style={{ width: 28 }} aria-hidden="true">{star}★</span>
+                    <span className="rating-bar" aria-hidden="true"><span style={{ width: total ? `${(count / total) * 100}%` : 0 }} /></span>
+                    <span className="text-muted" style={{ width: 24 }} aria-hidden="true">{count}</span>
                   </button>
                 );
               })}

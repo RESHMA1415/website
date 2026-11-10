@@ -10,7 +10,7 @@ const TABS = [
   ['hidden', 'Hidden'],
 ];
 
-const stars = (n) => <span className="text-warning" aria-label={`${n} stars`}>{'★'.repeat(n)}<span className="text-muted">{'★'.repeat(5 - n)}</span></span>;
+const stars = (n) => <span className="text-warning" role="img" aria-label={`${n} stars`}>{'★'.repeat(n)}<span className="text-muted">{'★'.repeat(5 - n)}</span></span>;
 
 function ReviewRow({ review, selected, onSelect, onChanged }) {
   const { notify } = useAuth();

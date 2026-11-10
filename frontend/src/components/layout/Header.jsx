@@ -67,6 +67,7 @@ function SearchBox({ onDone }) {
       <i className="bi bi-search" />
       <input
         type="search"
+        role="combobox"
         className="form-control"
         placeholder="Search for t-shirts, dresses, lipsticks…"
         aria-label="Search products"
@@ -119,19 +120,20 @@ function HeaderIcons() {
   const cartCount = cart.count;
   return (
     <div className="d-flex align-items-center gap-2 gap-md-3">
-      <Link to="/account" className="header-icon d-none d-md-inline-flex" aria-label="My account">
+      <Link to="/account" className="header-icon d-none d-md-inline-flex" aria-label={user ? `${user.name.split(' ')[0].slice(0, 12)}: my account` : 'Account'}>
         <i className="bi bi-person" />
         <small>{user ? user.name.split(' ')[0].slice(0, 12) : 'Account'}</small>
       </Link>
-      <Link to="/wishlist" className="header-icon d-none d-sm-inline-flex" aria-label="Wishlist">
+      <Link to="/wishlist" className="header-icon d-none d-sm-inline-flex" aria-label={wishlistCount > 0 ? `Wishlist, ${wishlistCount} saved` : 'Wishlist'}>
         <i className="bi bi-heart" />
-        {wishlistCount > 0 && <span className="count">{wishlistCount}</span>}
+        {wishlistCount > 0 && <span className="count" aria-hidden="true">{wishlistCount}</span>}
         <small className="d-none d-md-block">Wishlist</small>
       </Link>
-      <Link to="/cart" className="header-icon" aria-label="Shopping cart">
-        <i className="bi bi-bag" />
-        {cartCount > 0 && <span className="count">{cartCount}</span>}
-        <small className="d-none d-md-block">Cart</small>
+      <Link to="/cart" className="header-icon">
+        <i className="bi bi-bag" aria-hidden="true" />
+        {cartCount > 0 && <span className="count" aria-hidden="true">{cartCount}</span>}
+        <small className="d-none d-md-block" aria-hidden="true">Cart</small>
+        <span className="visually-hidden">{cartCount > 0 ? `Cart, ${cartCount} item${cartCount === 1 ? '' : 's'}` : 'Cart'}</span>
       </Link>
     </div>
   );
@@ -253,7 +255,7 @@ export default function Header() {
             >
               <i className="bi bi-list" />
             </button>
-            <Link to="/" className="brand-logo me-lg-4" aria-label="Home">
+            <Link to="/" className="brand-logo me-lg-4">
               <BrandLogo />
             </Link>
             <div className="flex-grow-1 d-none d-lg-flex justify-content-center">
