@@ -46,6 +46,7 @@ tools/project-hub/  Project Hub artifact: hub-data.json (board data), template.h
 .claude/skills/     project skills (project-hub)
 PRD.md      product requirements (source of truth)
 LAUNCH.md   launch guide: owner accounts, hosting, env settings, Razorpay live, backups, PRD §22 status
+DEPLOY-AWS.md  step-by-step install on an AWS Ubuntu server (EC2, Atlas, PM2, Nginx, certbot)
 CLAUDE.md   this file
 ```
 
