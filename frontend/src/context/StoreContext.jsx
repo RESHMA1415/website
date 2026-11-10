@@ -19,6 +19,23 @@ export function StoreProvider({ children }) {
   const [toast, setToast] = useState(null);
   const toastTimer = useRef();
 
+  // Site title, description and tab icon from Business Settings (PRD §14.11 SEO)
+  useEffect(() => {
+    const { seo = {}, store = {} } = settings;
+    if (seo.title) document.title = seo.title;
+    const meta = (selector, attrs) => {
+      let el = document.head.querySelector(selector);
+      if (!el) {
+        el = document.createElement(attrs.tag || 'meta');
+        Object.entries(attrs).forEach(([k, v]) => k !== 'tag' && el.setAttribute(k, v));
+        document.head.appendChild(el);
+      }
+      return el;
+    };
+    if (seo.description) meta('meta[name="description"]', { name: 'description' }).setAttribute('content', seo.description);
+    if (store.faviconUrl) meta('link[rel="icon"]', { tag: 'link', rel: 'icon' }).setAttribute('href', store.faviconUrl);
+  }, [settings]);
+
   useEffect(() => {
     api('/settings').then(setSettings).catch(() => {});
     api('/categories').then(setCategories).catch(() => {});

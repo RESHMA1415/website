@@ -28,8 +28,17 @@ export function AuthProvider({ children }) {
     return () => window.removeEventListener(SESSION_ENDED_EVENT, ended);
   }, []);
 
+  // Returns { twoStep, challenge, to } when an emailed code is needed next
   const login = useCallback(async (email, password) => {
     const result = await api('/admin/auth/login', { method: 'POST', body: { email, password } });
+    if (result.twoStep) return result;
+    setToken(result.token);
+    setNotice('');
+    setAdmin(result.admin);
+    return result;
+  }, []);
+  const finishLogin = useCallback(async (challenge, code) => {
+    const result = await api('/admin/auth/login-code', { method: 'POST', body: { challenge, code } });
     setToken(result.token);
     setNotice('');
     setAdmin(result.admin);
@@ -49,7 +58,7 @@ export function AuthProvider({ children }) {
     toastTimer.current = setTimeout(() => setToast(null), 3500);
   }, []);
 
-  const value = useMemo(() => ({ admin, setAdmin, login, logout, notice, notify }), [admin, login, logout, notice, notify]);
+  const value = useMemo(() => ({ admin, setAdmin, login, finishLogin, logout, notice, notify }), [admin, login, finishLogin, logout, notice, notify]);
 
   return (
     <AuthContext.Provider value={value}>

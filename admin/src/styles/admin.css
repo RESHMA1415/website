@@ -205,3 +205,19 @@ input[type='color'].form-control-color { width: 2.4rem; height: 2rem; padding: 0
 
 .btn-outline-navy { color: var(--shop-navy); border-color: var(--shop-navy); }
 .btn-outline-navy:hover { background: var(--shop-navy); color: #fff; }
+
+/* Charts (Phase 8): validated palette, thin marks, recessive grid */
+.chart-wrap { position: relative; }
+.chart-wrap svg { display: block; touch-action: pan-y; }
+.chart-tip { position: absolute; top: 4px; transform: translateX(-50%); background: #fff; border: 1px solid var(--shop-border); border-radius: 8px; padding: 6px 10px; font-size: 12px; box-shadow: var(--shop-shadow); pointer-events: none; white-space: nowrap; }
+.chart-empty { padding: 2rem 1rem; text-align: center; color: var(--shop-muted); font-size: 0.85rem; background: #fafbfc; border-radius: 10px; }
+.bar-list { list-style: none; margin: 0; padding: 0; }
+.bar-list li { margin-bottom: 0.65rem; }
+.bar-track { height: 10px; background: #f1f2f5; border-radius: 4px; margin-top: 3px; }
+.bar-track > div { height: 100%; border-radius: 0 4px 4px 0; min-width: 4px; }
+.split-bar { display: flex; gap: 2px; height: 14px; border-radius: 4px; overflow: hidden; }
+.split-bar > div { height: 100%; }
+.legend-dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.stat-card .sub { font-size: 0.75rem; color: var(--shop-muted); }
+a.stat-link { color: inherit; display: block; height: 100%; }
+a.stat-link:hover .stat-card { border-color: var(--shop-orange); }

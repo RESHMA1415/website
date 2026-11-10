@@ -2,7 +2,17 @@ import express, { Router } from 'express';
 import multer from 'multer';
 import { MAX_VIDEO_BYTES } from '../integrations/media.js';
 import { requireAdmin } from '../middleware/requireAdmin.js';
-import { changeAdminPassword, loginAdmin, publicAdmin } from '../services/adminAuthService.js';
+import {
+  changeAdminEmail,
+  changeAdminPassword,
+  confirmTwoStep,
+  disableTwoStep,
+  loginAdmin,
+  publicAdmin,
+  resendAdminLoginCode,
+  startTwoStepSetup,
+  verifyAdminLoginCode,
+} from '../services/adminAuthService.js';
 import { deleteCategory, listCategoriesForAdmin, saveCategory } from '../services/categoryService.js';
 import {
   deleteBanner,
@@ -36,7 +46,10 @@ import {
   updateShipping,
 } from '../services/fulfilmentService.js';
 import { deleteMedia, listMedia, uploadMedia } from '../services/mediaService.js';
-import { listPaymentsForAdmin, refundPaymentByAdmin } from '../services/paymentAdminService.js';
+import { exportPaymentsCsv, listPaymentsForAdmin, refundPaymentByAdmin } from '../services/paymentAdminService.js';
+import { dashboard, reportCsv, runReport } from '../services/reportService.js';
+import { exportCustomersCsv, getCustomerForAdmin, listCustomersForAdmin, setCustomerBlocked } from '../services/customerAdminService.js';
+import { getSettingsForAdmin, saveSettingsSection } from '../services/settingsAdminService.js';
 import { getReturnForAdmin, listReturnsForAdmin, returnAction } from '../services/returnService.js';
 import { bulkApprove, listReviewsForAdmin, pendingReviewCount, reviewAction } from '../services/reviewService.js';
 import { exportSubscribersCsv, listMessagesForAdmin, listSubscribersForAdmin, newMessageCount, updateMessage } from '../services/messageService.js';
@@ -58,10 +71,16 @@ const handle = (fn) => asyncHandler(async (req, res) => res.json(await fn(req, r
 
 // ----- Login (the only admin route open without a session) -----
 router.post('/auth/login', handle((req) => loginAdmin(req.body?.email, req.body?.password)));
+router.post('/auth/login-code', handle((req) => verifyAdminLoginCode(req.body?.challenge, req.body?.code)));
+router.post('/auth/login-code/resend', handle((req) => resendAdminLoginCode(req.body?.challenge)));
 
 router.use(requireAdmin);
 
 router.get('/auth/me', handle((req) => publicAdmin(req.admin)));
+router.post('/auth/change-email', handle((req) => changeAdminEmail(req.admin._id, req.body || {})));
+router.post('/auth/two-step/start', handle((req) => startTwoStepSetup(req.admin._id)));
+router.post('/auth/two-step/confirm', handle((req) => confirmTwoStep(req.admin._id, req.body?.code)));
+router.post('/auth/two-step/disable', handle((req) => disableTwoStep(req.admin._id, req.body?.password)));
 router.post(
   '/auth/change-password',
   handle((req) => changeAdminPassword(req.admin._id, req.body?.currentPassword, req.body?.newPassword)),
@@ -179,6 +198,44 @@ router.post(
 
 // ----- Payments & refunds (PRD §14.8) -----
 router.get('/payments', handle((req) => listPaymentsForAdmin(req.query)));
+router.get(
+  '/payments/export',
+  asyncHandler(async (req, res) => {
+    res.set('Content-Type', 'text/csv; charset=utf-8');
+    res.set('Content-Disposition', `attachment; filename="shopme-payments-${new Date().toISOString().slice(0, 10)}.csv"`);
+    res.send(await exportPaymentsCsv(req.query));
+  }),
+);
+
+// ----- Dashboard & reports (PRD §14.1, §14.10) -----
+router.get('/dashboard', handle((req) => dashboard(req.query)));
+router.get(
+  '/reports/:name/export',
+  asyncHandler(async (req, res) => {
+    const { csv, filename } = await reportCsv(req.params.name, req.query);
+    res.set('Content-Type', 'text/csv; charset=utf-8');
+    res.set('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(csv);
+  }),
+);
+router.get('/reports/:name', handle((req) => runReport(req.params.name, req.query)));
+
+// ----- Customers (PRD §14.6) -----
+router.get('/customers', handle((req) => listCustomersForAdmin(req.query)));
+router.get(
+  '/customers/export',
+  asyncHandler(async (req, res) => {
+    res.set('Content-Type', 'text/csv; charset=utf-8');
+    res.set('Content-Disposition', `attachment; filename="shopme-customers-${new Date().toISOString().slice(0, 10)}.csv"`);
+    res.send(await exportCustomersCsv(req.query));
+  }),
+);
+router.get('/customers/:id', handle((req) => getCustomerForAdmin(req.params.id)));
+router.post('/customers/:id/block', handle((req) => setCustomerBlocked(req.params.id, req.body || {})));
+
+// ----- Business Settings (PRD §14.11) -----
+router.get('/settings', handle(() => getSettingsForAdmin()));
+router.put('/settings/:section', handle((req) => saveSettingsSection(req.params.section, req.body || {})));
 router.post('/payments/:id/refund', handle((req) => refundPaymentByAdmin(req.params.id, req.body || {})));
 
 export default router;

@@ -41,6 +41,88 @@ function EmailStatus() {
   );
 }
 
+function LoginSecurity() {
+  const { admin, setAdmin, notify } = useAuth();
+  const [mode, setMode] = useState('');
+  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('');
+  const [code, setCode] = useState('');
+  const [sentTo, setSentTo] = useState('');
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  const reset = () => { setMode(''); setPassword(''); setEmail(''); setCode(''); setSentTo(''); setError(''); };
+  const run = async (fn) => {
+    setBusy(true);
+    setError('');
+    try {
+      await fn();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  const startTwoStep = () => run(async () => { const r = await api('/admin/auth/two-step/start', { method: 'POST' }); setSentTo(r.to); setMode('enable'); });
+  const confirmTwoStep = (e) => { e.preventDefault(); run(async () => { setAdmin(await api('/admin/auth/two-step/confirm', { method: 'POST', body: { code } })); notify('Two-step login is on. Next time you log in, we’ll email you a code.'); reset(); }); };
+  const disableTwoStep = (e) => { e.preventDefault(); run(async () => { setAdmin(await api('/admin/auth/two-step/disable', { method: 'POST', body: { password } })); notify('Two-step login is off.'); reset(); }); };
+  const changeEmail = (e) => { e.preventDefault(); run(async () => { setAdmin(await api('/admin/auth/change-email', { method: 'POST', body: { email, password } })); notify('Login email changed. Use it next time you log in.'); reset(); }); };
+
+  return (
+    <Panel title="Login security">
+      <ErrorNote error={error} />
+      <div className="small mb-3">
+        <div className="fw-semibold">Two-step login {admin?.twoStepEnabled ? <span className="status-pill tone-green ms-1">On</span> : <span className="status-pill tone-muted ms-1">Off</span>}</div>
+        <div className="text-muted">When it’s on, logging in also needs a 6-digit code we email to {admin?.email}.</div>
+      </div>
+      {!mode && (
+        <div className="d-flex flex-wrap gap-2">
+          {admin?.twoStepEnabled
+            ? <button type="button" className="btn btn-sm btn-light" onClick={() => setMode('disable')}>Turn off two-step login</button>
+            : <button type="button" className="btn btn-sm btn-orange" disabled={busy} onClick={startTwoStep}>{busy ? 'Sending…' : 'Turn on two-step login'}</button>}
+          <button type="button" className="btn btn-sm btn-light" onClick={() => setMode('email')}>Change login email</button>
+        </div>
+      )}
+      {mode === 'enable' && (
+        <form onSubmit={confirmTwoStep} className="d-flex flex-wrap gap-2 align-items-end">
+          <div>
+            <label className="form-label" htmlFor="tfa-code">Code we emailed to {sentTo}</label>
+            <input id="tfa-code" className="form-control" inputMode="numeric" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} />
+          </div>
+          <button type="submit" className="btn btn-orange" disabled={busy || code.length !== 6}>Turn on</button>
+          <button type="button" className="btn btn-light" onClick={reset}>Cancel</button>
+        </form>
+      )}
+      {mode === 'disable' && (
+        <form onSubmit={disableTwoStep} className="d-flex flex-wrap gap-2 align-items-end">
+          <div>
+            <label className="form-label" htmlFor="tfa-pass">Your password</label>
+            <input id="tfa-pass" type="password" className="form-control" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          </div>
+          <button type="submit" className="btn btn-danger" disabled={busy || !password}>Turn off</button>
+          <button type="button" className="btn btn-light" onClick={reset}>Cancel</button>
+        </form>
+      )}
+      {mode === 'email' && (
+        <form onSubmit={changeEmail} className="row g-2" style={{ maxWidth: 460 }}>
+          <div className="col-12">
+            <label className="form-label" htmlFor="ce-email">New login email</label>
+            <input id="ce-email" type="email" className="form-control" value={email} onChange={(e) => setEmail(e.target.value)} />
+          </div>
+          <div className="col-12">
+            <label className="form-label" htmlFor="ce-pass">Your password</label>
+            <input id="ce-pass" type="password" className="form-control" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
+            {admin?.twoStepEnabled && <div className="form-text">Two-step login turns off when you change the email. Turn it on again afterwards.</div>}
+          </div>
+          <div className="col-12 d-flex gap-2">
+            <button type="submit" className="btn btn-orange" disabled={busy || !email || !password}>Change email</button>
+            <button type="button" className="btn btn-light" onClick={reset}>Cancel</button>
+          </div>
+        </form>
+      )}
+    </Panel>
+  );
+}
+
 export default function Account() {
   const { admin, setAdmin, notify } = useAuth();
   const [current, setCurrent] = useState('');
@@ -85,6 +167,7 @@ export default function Account() {
             </dl>
           </Panel>
           <div className="mt-3"><EmailStatus /></div>
+          <div className="mt-3"><LoginSecurity /></div>
         </div>
         <div className="col-lg-7">
           <Panel title="Change password">

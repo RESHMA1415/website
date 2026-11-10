@@ -4,7 +4,7 @@ import { useAuth } from '../auth.jsx';
 import { Modal, Pagination, useDebounced } from './ui.jsx';
 
 export const ACCEPT_IMAGES = 'image/jpeg,image/png,image/webp';
-export const ACCEPT_ALL = `${ACCEPT_IMAGES},video/mp4`;
+export const ACCEPT_ALL = `${ACCEPT_IMAGES},video/mp4,video/quicktime`;
 
 // Uploads files to the Media Library and reports anything rejected
 export function useUploader() {
@@ -137,7 +137,7 @@ export function MediaPicker({ kind = 'image', multiple = false, max = 20, onSele
       }
     >
       <div className="mb-3">
-        <DropZone accept={kind === 'video' ? 'video/mp4' : ACCEPT_IMAGES} onFiles={onFiles} uploading={uploading} compact />
+        <DropZone accept={kind === 'video' ? 'video/mp4,video/quicktime' : ACCEPT_IMAGES} onFiles={onFiles} uploading={uploading} compact />
       </div>
       <input
         type="search"

@@ -1,109 +1,127 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { formatINR, useApi } from '../api.js';
-import { DataTable, PageTitle, Panel, PhaseNotice, StatCard } from '../components/ui.jsx';
+import { formatDateTime, formatINR, useApi } from '../api.js';
+import { BarList, DateRange, SalesLine, SplitBar, useRange, useRangeQuery } from '../components/charts.jsx';
+import { DataTable, ErrorNote, PageTitle, Panel, StatCard } from '../components/ui.jsx';
+import { ORDER_STATUS, Pill } from '../orderLabels.jsx';
 
-const RANGES = ['Today', 'Last 7 days', 'This Month', 'Custom'];
+// Order statuses in the order a parcel moves (for the status chart)
+const STATUS_ORDER = ['confirmed', 'processing', 'shipped', 'out_for_delivery', 'delivered', 'return_requested', 'return_approved', 'returned', 'refunded', 'exchanged', 'delivery_failed', 'cancelled'];
 
+function Tile({ to, ...props }) {
+  return to ? <Link to={to} className="stat-link"><StatCard {...props} /></Link> : <StatCard {...props} />;
+}
+
+// Dashboard (PRD §14.1)
 export default function Dashboard() {
-  const [range, setRange] = useState('Today');
-  const { data: counts } = useApi('/admin/inventory/counts');
-  const { data: out } = useApi('/admin/inventory?stock=out&limit=8');
-  const { data: low } = useApi('/admin/inventory?stock=low&limit=8');
-  const alerts = [...(out?.items || []), ...(low?.items || [])].slice(0, 8);
+  const [range, setRange] = useRange('today');
+  const query = useRangeQuery(range);
+  const { data: d, error, loading } = useApi(`/admin/dashboard?${query}`);
+  const { data: low } = useApi('/admin/inventory?stock=low&limit=6');
+  const { data: out } = useApi('/admin/inventory?stock=out&limit=6');
   const { data: waiting } = useApi('/admin/reviews?tab=pending&limit=5');
   const { data: inbox } = useApi('/admin/messages?tab=new&limit=5');
+  const alerts = [...(out?.items || []), ...(low?.items || [])].slice(0, 8);
+  const s = d?.summary;
 
   return (
     <>
-      <PageTitle
-        title="Dashboard"
-        subtitle="Your store at a glance"
-        actions={
-          <div className="btn-group btn-group-sm">
-            {RANGES.map((r) => (
-              <button key={r} type="button" className={`btn ${range === r ? 'btn-navy' : 'btn-outline-secondary'}`} onClick={() => setRange(r)}>
-                {r}
-              </button>
-            ))}
-          </div>
-        }
-      />
-      <PhaseNotice phase={8}>
-        Sales, orders and customer numbers fill in automatically once orders start (Phases 4–8). Stock alerts below already use your real stock and each product’s low-stock level.
-      </PhaseNotice>
+      <PageTitle title="Dashboard" subtitle="Your store at a glance" actions={<DateRange value={range} onChange={setRange} />} />
+      <ErrorNote error={error} />
+      <div className="row g-3 mb-4" aria-busy={loading}>
+        <div className="col-6 col-xl-3"><Tile to="/reports" icon="bi-currency-rupee" label="Total Sales" value={formatINR(s?.netSales)} tone="green" /></div>
+        <div className="col-6 col-xl-3"><Tile to="/orders?tab=all" icon="bi-receipt" label="Orders" value={String(s?.orders ?? '–')} /></div>
+        <div className="col-6 col-xl-3"><Tile icon="bi-calculator" label="Average Order Value" value={formatINR(s?.averageOrderValue)} /></div>
+        <div className="col-6 col-xl-3"><Tile to="/customers" icon="bi-person-plus" label="New Customers" value={String(d?.newCustomers ?? '–')} tone="orange" /></div>
+        <div className="col-6 col-xl-3"><Tile to="/orders" icon="bi-box-seam" label="Waiting to be Packed" value={String(d?.toPack ?? '–')} tone="orange" /></div>
+        <div className="col-6 col-xl-3"><Tile to="/orders" icon="bi-truck" label="Shipped, Not Delivered" value={String(d?.inTransit ?? '–')} /></div>
+        <div className="col-6 col-xl-3"><Tile to="/returns" icon="bi-arrow-repeat" label="Pending Returns" value={String(d?.pendingReturns ?? '–')} tone="red" /></div>
+        <div className="col-6 col-xl-3"><Tile to="/reviews" icon="bi-star" label="Reviews to Approve" value={String(d?.pendingReviews ?? '–')} tone="orange" /></div>
+        <div className="col-6 col-xl-3"><Tile to="/inventory" icon="bi-exclamation-triangle" label="Low Stock / Sold Out" value={d ? `${d.lowStock} / ${d.outOfStock}` : '–'} tone="red" /></div>
+        <div className="col-6 col-xl-3"><Tile to="/payments" icon="bi-cash-coin" label="COD Collected (delivered)" value={formatINR(s?.codCollected)} /></div>
+        <div className="col-6 col-xl-3"><Tile to="/messages" icon="bi-envelope" label="New Contact Messages" value={String(d?.newMessages ?? '–')} /></div>
+        <div className="col-6 col-xl-3"><Tile icon="bi-arrow-counterclockwise" label="Refunds in this period" value={formatINR(s?.refunds)} /></div>
+      </div>
+      <p className="small text-muted mt-n2 mb-4">
+        Sales = orders confirmed in this period, without cancelled orders, minus refunds. “Waiting to be packed” and the other to-do numbers count all open orders.
+      </p>
 
       <div className="row g-3 mb-4">
-        <div className="col-6 col-xl-3"><StatCard icon="bi-currency-rupee" label="Total Sales" value={formatINR(0)} tone="green" /></div>
-        <div className="col-6 col-xl-3"><StatCard icon="bi-receipt" label="Orders" value="0" /></div>
-        <div className="col-6 col-xl-3"><StatCard icon="bi-calculator" label="Average Order Value" value={formatINR(0)} /></div>
-        <div className="col-6 col-xl-3"><StatCard icon="bi-person-plus" label="New Customers" value="0" tone="orange" /></div>
-        <div className="col-6 col-xl-3"><StatCard icon="bi-box-seam" label="Waiting to be Packed" value="0" tone="orange" /></div>
-        <div className="col-6 col-xl-3"><StatCard icon="bi-truck" label="Shipped, Not Delivered" value="0" /></div>
-        <div className="col-6 col-xl-3"><StatCard icon="bi-arrow-repeat" label="Pending Returns" value="0" tone="red" /></div>
-        <div className="col-6 col-xl-3"><Link to="/reviews" className="text-reset d-block h-100"><StatCard icon="bi-star" label="Reviews to Approve" value={String(waiting?.counts?.pending ?? 0)} tone="orange" /></Link></div>
+        <div className="col-lg-8">
+          <Panel title="Net Sales by Day">
+            <SalesLine points={d?.salesByDay || []} />
+          </Panel>
+        </div>
+        <div className="col-lg-4">
+          <div className="d-flex flex-column gap-3 h-100">
+            <Panel title="Online vs Cash on Delivery">
+              <SplitBar parts={(d?.paymentSplit || []).map((p) => ({ label: p.method, value: p.sales, sub: `${p.orders} order${p.orders === 1 ? '' : 's'}` }))} />
+            </Panel>
+            <Panel title="Sales by Category">
+              <BarList rows={(d?.salesByCategory || []).map((c) => ({ label: c.category, value: c.revenue }))} empty="No sales in this period yet." />
+            </Panel>
+          </div>
+        </div>
+        <div className="col-lg-4">
+          <Panel title="Orders by Status (all time)">
+            <BarList
+              rows={STATUS_ORDER.filter((st) => d?.ordersByStatus?.[st]).map((st) => ({ label: ORDER_STATUS[st]?.[0] || st, value: d.ordersByStatus[st] }))}
+              format={(n) => String(n)}
+              empty="No orders yet."
+            />
+          </Panel>
+        </div>
+        <div className="col-lg-4">
+          <Panel title="Best Sellers (units)">
+            <BarList rows={(d?.topByUnits || []).map((p) => ({ label: p.name, value: p.units, sub: formatINR(p.revenue) }))} format={(n) => `${n} sold`} empty="No sales in this period yet." />
+          </Panel>
+        </div>
+        <div className="col-lg-4">
+          <Panel title="Best Sellers (revenue)">
+            <BarList rows={(d?.topByRevenue || []).map((p) => ({ label: p.name, value: p.revenue, sub: `${p.units} sold` }))} empty="No sales in this period yet." />
+          </Panel>
+        </div>
       </div>
 
       <div className="row g-3 mb-4">
         <div className="col-lg-8">
-          <Panel title="Sales Over Time">
-            <div className="chart-placeholder">Daily sales chart appears here once you have orders</div>
+          <Panel title="Latest Orders" actions={<Link to="/orders?tab=all" className="small">All orders</Link>} bodyClass="">
+            <DataTable
+              columns={['Order', 'Date', 'Customer', 'Items', 'Total', 'Status']}
+              rows={d?.latestOrders || []}
+              empty="No orders yet."
+              renderRow={(o) => (
+                <tr key={o.orderNumber}>
+                  <td><Link to={`/orders/${o.orderNumber}`} className="fw-semibold text-nowrap">{o.orderNumber}</Link></td>
+                  <td className="small text-nowrap">{formatDateTime(o.createdAt)}</td>
+                  <td className="small">{o.customer}</td>
+                  <td>{o.items}</td>
+                  <td className="small">{formatINR(o.total)} <span className="text-muted">{o.paymentMethod === 'cod' ? 'COD' : 'Online'}</span></td>
+                  <td><Pill map={ORDER_STATUS} value={o.status} /></td>
+                </tr>
+              )}
+            />
           </Panel>
         </div>
         <div className="col-lg-4">
-          <Panel title="Online vs Cash on Delivery">
-            <div className="chart-placeholder">Payment split chart</div>
-          </Panel>
-        </div>
-        <div className="col-lg-6">
-          <Panel title="Orders by Status">
-            <div className="chart-placeholder">Confirmed · Packed · Shipped · Delivered · Cancelled</div>
-          </Panel>
-        </div>
-        <div className="col-lg-6">
-          <Panel title="Sales by Category">
-            <div className="chart-placeholder">Men · Women Clothing · Fashion · Beauty · Accessories</div>
+          <Panel title="Low-Stock Alerts" actions={<Link to="/inventory" className="small">Inventory</Link>} bodyClass="">
+            <DataTable
+              columns={['Product', 'Left', '']}
+              rows={alerts}
+              empty="All good: nothing is low."
+              renderRow={(r) => (
+                <tr key={r.variantId}>
+                  <td className="small">{r.productName}<div className="text-muted">{r.optionLabel}</div></td>
+                  <td className={`fw-semibold ${r.stock === 0 ? 'text-danger' : ''}`}>{r.stock}</td>
+                  <td><Link to={`/inventory?q=${encodeURIComponent(r.sku)}`} className="btn btn-sm btn-light text-nowrap">Update stock</Link></td>
+                </tr>
+              )}
+            />
           </Panel>
         </div>
       </div>
 
       <div className="row g-3">
         <div className="col-lg-6">
-          <Panel
-            title={`Stock Alerts (${counts?.low ?? 0} low, ${counts?.out ?? 0} out)`}
-            actions={<Link to="/inventory" className="small">Manage inventory</Link>}
-            bodyClass=""
-          >
-            <DataTable
-              columns={['Product', 'Option', 'Stock', '']}
-              rows={alerts}
-              empty="All products are well stocked."
-              renderRow={(v) => (
-                <tr key={v.variantId}>
-                  <td className="small">{v.productName}</td>
-                  <td className="small text-muted">{v.optionLabel}</td>
-                  <td>
-                    <span className={`status-pill ${v.stock === 0 ? 'status-hidden' : 'status-low'}`}>
-                      {v.stock === 0 ? 'Out of stock' : `${v.stock} left`}
-                    </span>
-                  </td>
-                  <td className="text-end"><Link to="/inventory" className="btn btn-sm btn-light">Update stock</Link></td>
-                </tr>
-              )}
-            />
-          </Panel>
-        </div>
-        <div className="col-lg-6">
-          <Panel title="Latest Orders" actions={<Link to="/orders" className="small">View all</Link>} bodyClass="">
-            <DataTable columns={['Order', 'Customer', 'Total', 'Status']} empty="No orders yet." />
-          </Panel>
-        </div>
-        <div className="col-lg-4">
-          <Panel title="Top Selling Products" bodyClass="">
-            <DataTable columns={['Product', 'Units', 'Revenue']} empty="Appears after your first sales." />
-          </Panel>
-        </div>
-        <div className="col-lg-4">
           <Panel title="Reviews Waiting for Approval" actions={<Link to="/reviews" className="small">Open</Link>} bodyClass="">
             <DataTable
               columns={['Product', 'Rating']}
@@ -118,7 +136,7 @@ export default function Dashboard() {
             />
           </Panel>
         </div>
-        <div className="col-lg-4">
+        <div className="col-lg-6">
           <Panel title="Latest Contact Messages" actions={<Link to="/messages" className="small">Open</Link>} bodyClass="">
             <DataTable
               columns={['From', 'Subject']}

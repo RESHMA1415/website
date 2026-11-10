@@ -2,13 +2,12 @@ import crypto from 'node:crypto';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { env } from '../config/env.js';
-import { LEGAL_VERSION } from '../content/legal/index.js';
 import { SHOW_EMAIL_LINKS_ON_SCREEN, sendEmail } from '../integrations/email.js';
 import { User } from '../models/index.js';
 import { HttpError } from '../utils/asyncHandler.js';
 import { MOBILE_PATTERN, normaliseMobile } from '../utils/india.js';
 import { cleanText, requireText } from '../utils/text.js';
-import { getSettings } from './settingsService.js';
+import { getSettings, currentLegalVersion } from './settingsService.js';
 
 // Customer accounts (PRD §4, §13.9, §17.2). Customer tokens use JWT_SECRET,
 // which is different from the admin secret, so they can never open admin routes.
@@ -100,7 +99,7 @@ export async function registerCustomer(body, { verifyMobile } = {}) {
       mobileVerifiedAt: verifyMobile ? new Date() : undefined,
       passwordHash: await bcrypt.hash(body.password, 12),
       lastLoginAt: new Date(),
-      consent: { termsAndPrivacyAcceptedAt: new Date(), policyVersion: LEGAL_VERSION },
+      consent: { termsAndPrivacyAcceptedAt: new Date(), policyVersion: await currentLegalVersion() },
     });
   } catch (err) {
     if (err.code === 11000) throw new HttpError(409, 'An account with these details already exists. Please log in instead.');

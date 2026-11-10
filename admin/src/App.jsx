@@ -3,6 +3,7 @@ import { RequireAdmin } from './auth.jsx';
 import AdminLayout from './components/AdminLayout.jsx';
 import Account from './pages/Account.jsx';
 import Categories from './pages/Categories.jsx';
+import CustomerDetail from './pages/CustomerDetail.jsx';
 import Customers from './pages/Customers.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Inventory from './pages/Inventory.jsx';
@@ -56,6 +57,7 @@ export default function App() {
         <Route path="payments" element={<Payments />} />
         <Route path="reports" element={<Reports />} />
         <Route path="customers" element={<Customers />} />
+        <Route path="customers/:id" element={<CustomerDetail />} />
         <Route path="reviews" element={<Reviews />} />
         <Route path="messages" element={<Messages />} />
         <Route path="settings" element={<Settings />} />

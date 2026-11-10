@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { api, downloadFile, formatDateTime, formatINR, useApi } from '../api.js';
 import { useAuth } from '../auth.jsx';
 import CategorySelect from '../components/CategorySelect.jsx';
@@ -161,7 +161,8 @@ function ImportModal({ onClose, onDone }) {
 
 export default function Inventory() {
   const { notify } = useAuth();
-  const [q, setQ] = useState('');
+  const [urlParams] = useSearchParams();
+  const [q, setQ] = useState(() => urlParams.get('q') || '');
   const search = useDebounced(q);
   const [stock, setStock] = useState('');
   const [category, setCategory] = useState('');

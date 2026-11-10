@@ -159,6 +159,13 @@ function WomenMenu({ women }) {
   );
 }
 
+// The owner's logo from Business Settings, or the SHOPME wordmark
+function BrandLogo() {
+  const { settings } = useStore();
+  const { logoUrl, name } = settings.store || {};
+  return logoUrl ? <img src={logoUrl} alt={name || 'Home'} className="brand-logo-img" /> : <>SHOP<span>ME</span></>;
+}
+
 function MobileMenu({ categories, onClose }) {
   const [open, setOpen] = useState(null);
   const { user, logout } = useShopper();
@@ -169,7 +176,7 @@ function MobileMenu({ categories, onClose }) {
       <nav className="mobile-menu" aria-label="Mobile menu">
         <div className="d-flex justify-content-between align-items-center mb-3">
           <span className="brand-logo">
-            SHOP<span>ME</span>
+            <BrandLogo />
           </span>
           <button type="button" className="btn-close" aria-label="Close menu" onClick={onClose} />
         </div>
@@ -246,8 +253,8 @@ export default function Header() {
             >
               <i className="bi bi-list" />
             </button>
-            <Link to="/" className="brand-logo me-lg-4">
-              SHOP<span>ME</span>
+            <Link to="/" className="brand-logo me-lg-4" aria-label="Home">
+              <BrandLogo />
             </Link>
             <div className="flex-grow-1 d-none d-lg-flex justify-content-center">
               <SearchBox />

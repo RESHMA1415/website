@@ -33,7 +33,7 @@ export const EMAIL_CONNECTED = (() => {
 export const SHOW_EMAIL_LINKS_ON_SCREEN = !isProduction && !EMAIL_CONNECTED;
 
 // Messages people need even if the owner switches emails off (security and legal)
-const ESSENTIAL = new Set(['password_reset', 'account_deleted', 'email_test']);
+const ESSENTIAL = new Set(['password_reset', 'account_deleted', 'email_test', 'admin_login_code']);
 export const MAX_ATTEMPTS = 3;
 const RETRY_MINUTES = [5, 30]; // wait before the 2nd and 3rd try
 
@@ -115,8 +115,9 @@ export async function sendEmail({ to, subject, text, event, action, order }) {
   let log;
   try {
     const { store, notifications } = await storeAndSwitch();
-    if (notifications.emailEnabled === false && !ESSENTIAL.has(event)) {
-      await NotificationLog.create({ event, channel: 'email', recipient: to, order, status: 'skipped', error: 'Emails are switched off in Business Settings' });
+    const switchedOff = notifications.emailEnabled === false ? 'Emails are switched off in Business Settings' : notifications.events?.[event] === false ? 'This email is switched off in Business Settings' : '';
+    if (switchedOff && !ESSENTIAL.has(event)) {
+      await NotificationLog.create({ event, channel: 'email', recipient: to, order, status: 'skipped', error: switchedOff });
       return { delivered: false, skipped: true };
     }
     const html = renderEmail({ subject, text, action, store });

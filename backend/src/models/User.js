@@ -40,6 +40,9 @@ const userSchema = new mongoose.Schema(
       policyVersion: String,
     },
     isBlocked: { type: Boolean, default: false },
+    // Why the owner blocked them (only the admin sees it)
+    blockedReason: String,
+    blockedAt: Date,
     failedLoginCount: { type: Number, default: 0 },
     lockedUntil: Date,
     passwordResetTokenHash: { type: String, select: false },

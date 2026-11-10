@@ -1,9 +1,12 @@
 import { useState } from 'react';
+import { api } from '../api.js';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth.jsx';
 
 export default function Login() {
-  const { admin, login, notice } = useAuth();
+  const { admin, login, finishLogin, notice } = useAuth();
+  const [step, setStep] = useState(null); // { challenge, to } after the password, when two-step login is on
+  const [code, setCode] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
   const [email, setEmail] = useState('');
@@ -20,7 +23,16 @@ export default function Login() {
     setBusy(true);
     setError('');
     try {
-      await login(email, password);
+      if (step) {
+        await finishLogin(step.challenge, code);
+        navigate(goTo, { replace: true });
+        return;
+      }
+      const result = await login(email, password);
+      if (result?.twoStep) {
+        setStep({ challenge: result.challenge, to: result.to });
+        return;
+      }
       navigate(goTo, { replace: true });
     } catch (err) {
       setError(err.message);
@@ -39,6 +51,21 @@ export default function Login() {
           <div className="small text-muted">Admin Panel</div>
         </div>
         {notice && !error && <div className="alert alert-info small py-2">{notice}</div>}
+        {step ? (
+          <form onSubmit={submit} noValidate>
+            <p className="small">We emailed a 6-digit code to <strong>{step.to}</strong>. It works for 10 minutes.</p>
+            <div className="mb-3">
+              <label className="form-label" htmlFor="a-code">Login code</label>
+              <input id="a-code" className="form-control text-center fs-4" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))} autoFocus />
+            </div>
+            {error && <div className="alert alert-danger small py-2" role="alert">{error}</div>}
+            <button type="submit" className="btn btn-orange w-100" disabled={busy || code.length !== 6}>{busy ? 'Checking…' : 'Log In'}</button>
+            <div className="d-flex justify-content-between mt-3 small">
+              <button type="button" className="btn btn-link btn-sm p-0" onClick={async () => { try { await api('/admin/auth/login-code/resend', { method: 'POST', body: { challenge: step.challenge } }); setError(''); } catch (err) { setError(err.message); } }}>Send a new code</button>
+              <button type="button" className="btn btn-link btn-sm p-0" onClick={() => { setStep(null); setCode(''); setError(''); }}>Start again</button>
+            </div>
+          </form>
+        ) : (
         <form onSubmit={submit} noValidate>
           <div className="mb-3">
             <label className="form-label" htmlFor="a-email">Email</label>
@@ -66,6 +93,7 @@ export default function Login() {
             {busy ? 'Logging in…' : 'Log In'}
           </button>
         </form>
+        )}
         <p className="small text-muted text-center mt-3 mb-0">
           For your security, login is locked for 15 minutes after 5 wrong attempts, and you are logged out after 2 hours without activity.
         </p>

@@ -1,6 +1,5 @@
 import crypto from 'node:crypto';
 import { env } from '../config/env.js';
-import { LEGAL_VERSION } from '../content/legal/index.js';
 import { sendEmail } from '../integrations/email.js';
 import { ContactMessage, Counter, NewsletterSubscriber } from '../models/index.js';
 import { HttpError } from '../utils/asyncHandler.js';
@@ -8,7 +7,7 @@ import { normaliseMobile } from '../utils/india.js';
 import { cleanText, escapeRegex, pageParams, requireObjectId } from '../utils/text.js';
 import { cleanEmail, cleanMobile } from './customerAuthService.js';
 import { listInventory } from './inventoryService.js';
-import { getSettings } from './settingsService.js';
+import { currentLegalVersion, getSettings } from './settingsService.js';
 
 // Contact Us inbox (PRD §13.13, §14.12), newsletter sign-ups (PRD §13.1) and the
 // daily low-stock alert (PRD §12.2). Emails never block the action.
@@ -47,7 +46,7 @@ export async function submitContact(body = {}, { ip, userId } = {}) {
 
   const saved = await ContactMessage.create({
     name, email, mobile, orderNumber, subject: body.subject, message, user: userId,
-    consent: { acceptedAt: new Date(), policyVersion: LEGAL_VERSION },
+    consent: { acceptedAt: new Date(), policyVersion: await currentLegalVersion() },
   });
   const settings = await getSettings();
   fire(() =>
@@ -133,7 +132,7 @@ export async function subscribeNewsletter(body = {}, { ip } = {}) {
   const filter = email ? { email } : { mobile };
   const existing = await NewsletterSubscriber.findOne(filter);
   if (existing?.status === 'subscribed') return { subscribed: true, already: true };
-  const consent = { acceptedAt: new Date(), policyVersion: LEGAL_VERSION };
+  const consent = { acceptedAt: new Date(), policyVersion: await currentLegalVersion() };
   let sub;
   try {
     sub = existing

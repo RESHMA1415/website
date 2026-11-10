@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { api, formatDateTime, formatINR, useApi } from '../api.js';
 import { useAuth } from '../auth.jsx';
 import { DataTable, ErrorNote, Modal, PageTitle, Pagination, SearchBar, useDebounced } from '../components/ui.jsx';
@@ -116,7 +116,8 @@ function BulkShipModal({ orders, onClose, onDone }) {
 export default function Orders() {
   const { notify } = useAuth();
   const navigate = useNavigate();
-  const [tab, setTab] = useState('new');
+  const [urlParams] = useSearchParams();
+  const [tab, setTab] = useState(() => (TABS.some(([k]) => k === urlParams.get('tab')) ? urlParams.get('tab') : 'new'));
   const [q, setQ] = useState('');
   const [filters, setFilters] = useState({ paymentMethod: '', paymentStatus: '', from: '', to: '' });
   const [page, setPage] = useState(1);

@@ -1,3 +1,4 @@
+import { LEGAL_VERSION } from '../content/legal/index.js';
 import { Setting } from '../models/index.js';
 import { defaultSettings } from '../config/defaultSettings.js';
 import { razorpayConfigured, razorpayMode } from '../integrations/razorpay.js';
@@ -40,6 +41,14 @@ export async function getPublicSettings() {
 export async function getPage(name) {
   const doc = await Setting.findOne({ key: 'business' }, { [`pages.${name}`]: 1 }).lean();
   return doc?.pages?.[name] || '';
+}
+
+// The policy version customers agree to: the policy files' date, or the date the
+// owner last edited a policy in Business Settings, whichever is later
+export async function currentLegalVersion() {
+  const doc = await Setting.findOne({ key: 'business' }, { 'values.legalVersion': 1 }).lean();
+  const edited = doc?.values?.legalVersion;
+  return edited && edited > LEGAL_VERSION ? edited : LEGAL_VERSION;
 }
 
 // Low-stock alert level for options that don't have their own (Business Settings)

@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { api, formatDateTime, formatINR, useApi } from '../api.js';
+import { api, downloadFile, formatDateTime, formatINR, useApi } from '../api.js';
 import { useAuth } from '../auth.jsx';
-import { DataTable, ErrorNote, Modal, PageTitle, Pagination, PhaseNotice, SearchBar, StatCard, useDebounced } from '../components/ui.jsx';
+import { DateRange, useRange } from '../components/charts.jsx';
+import { DataTable, ErrorNote, Modal, PageTitle, Pagination, SearchBar, StatCard, useDebounced } from '../components/ui.jsx';
 import { METHOD, PAYMENT_STATUS, Pill } from '../orderLabels.jsx';
 
 const REFUNDABLE = ['paid', 'partially_refunded', 'refund_initiated', 'cod_collected'];
@@ -59,7 +60,9 @@ export default function Payments() {
   const [page, setPage] = useState(1);
   const [refunding, setRefunding] = useState(null);
   const search = useDebounced(q);
-  const { data, loading, error, reload } = useApi(`/admin/payments?${new URLSearchParams({ q: search, status, provider, page })}`);
+  const [range, setRange] = useRange('30d');
+  const filters = new URLSearchParams({ q: search, status, provider, from: range.from, to: range.to });
+  const { data, loading, error, reload } = useApi(`/admin/payments?${filters}&page=${page}`);
   const t = data?.totals || {};
 
   return (
@@ -67,7 +70,7 @@ export default function Payments() {
       <PageTitle
         title="Payments"
         subtitle="Online payments, Cash on Delivery and refunds"
-        actions={<button type="button" className="btn btn-light" disabled title="Arrives with Reports in Phase 8"><i className="bi bi-download me-1" />Export</button>}
+        actions={<button type="button" className="btn btn-light" onClick={() => downloadFile(`/admin/payments/export?${filters}`, 'shopme-payments.csv')}><i className="bi bi-download me-1" />Download for Excel</button>}
       />
       {t.needsRefund > 0 && (
         <div className="alert alert-danger small">
@@ -81,7 +84,7 @@ export default function Payments() {
         <div className="col-6 col-lg-3"><StatCard icon="bi-hourglass-split" label="COD Pending" value={formatINR(t.codPending)} tone="orange" /></div>
         <div className="col-6 col-lg-3"><StatCard icon="bi-arrow-counterclockwise" label="Refunds Issued" value={formatINR(t.refunds)} tone="red" /></div>
       </div>
-      <PhaseNotice phase={8}>Date-range totals and CSV export arrive with Sales Reports.</PhaseNotice>
+      <div className="mb-3"><DateRange value={range} onChange={(r) => { setRange(r); setPage(1); }} /></div>
       <div className="panel">
         <SearchBar placeholder="Search order number, customer or Razorpay ID" value={q} onChange={(v) => { setQ(v); setPage(1); }}>
           <select className="form-select form-select-sm" style={{ width: 'auto' }} aria-label="Status" value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }}>
