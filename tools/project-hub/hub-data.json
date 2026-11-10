@@ -441,23 +441,26 @@
     {
       "phase": 9,
       "area": "Launch",
-      "status": "notstarted",
+      "status": "test",
       "title": "Full testing, speed and security checks",
-      "detail": "Everything on the PRD §22 launch checklist."
+      "detail": "All automatic tests pass (about 480 checks). Security checks, faster mobile loading (about 2.4–3 s on slow 4G), accessibility check passed.",
+      "waitingOn": "Your own checks from the launch checklist (LAUNCH.md): add your 20 products, place test orders, compare dashboard numbers."
     },
     {
       "phase": 9,
       "area": "Launch",
-      "status": "notstarted",
+      "status": "test",
       "title": "Online hosting and database",
-      "detail": "MongoDB Atlas, hosting, daily backups."
+      "detail": "Ready: one-server hosting (shop + admin at /admin), live-database first start, nightly encrypted backups kept 30 days (Admin → My Account → Database backups).",
+      "waitingOn": "Your hosting choice and a MongoDB Atlas account."
     },
     {
       "phase": 9,
       "area": "Launch",
-      "status": "notstarted",
+      "status": "test",
       "title": "Photos moved to Cloudinary",
-      "detail": "Product and banner photos served online."
+      "detail": "Built and tested: photos, videos and backup copies go to Cloudinary as soon as its key is added.",
+      "waitingOn": "A Cloudinary account (free tier) and its API key."
     },
     {
       "phase": 9,
@@ -472,7 +475,8 @@
       "area": "Payments",
       "status": "notstarted",
       "title": "Switch Razorpay to live",
-      "detail": "Real payments after Razorpay approves your account."
+      "detail": "Real payments after Razorpay approves your account.",
+      "waitingOn": "Razorpay business verification (KYC) approved and live keys. Steps in LAUNCH.md."
     },
     {
       "phase": 9,
@@ -718,6 +722,41 @@
       "status": "done",
       "title": "Ratings in the product list",
       "detail": "Admin → Products now shows each product’s star rating and review count (PRD §14.2)."
+    },
+    {
+      "phase": 9,
+      "area": "Server",
+      "status": "done",
+      "title": "Security hardening",
+      "detail": "Blocked tricky inputs, strict browser security rules, production refuses unsafe settings, 0 known vulnerable packages."
+    },
+    {
+      "phase": 9,
+      "area": "Store",
+      "status": "done",
+      "title": "Faster loading on mobile",
+      "detail": "Pages load in parts, compressed responses, right-sized photos."
+    },
+    {
+      "phase": 9,
+      "area": "Store",
+      "status": "done",
+      "title": "Google and link previews",
+      "detail": "Sitemap, robots file, product info for Google, title/picture/price previews on WhatsApp and Facebook."
+    },
+    {
+      "phase": 9,
+      "area": "Design",
+      "status": "done",
+      "title": "Easier to read (accessibility)",
+      "detail": "Orange buttons with navy text, deeper orange for prices and links, screen-reader labels. Passes the WCAG 2.1 AA check."
+    },
+    {
+      "phase": 9,
+      "area": "Launch",
+      "status": "done",
+      "title": "Launch guide",
+      "detail": "LAUNCH.md: accounts to create, hosting steps, Razorpay live switch, backups and restore, launch checklist status."
     }
   ],
   "screens": [
@@ -1174,6 +1213,31 @@
       "id": "25",
       "text": "Razorpay keys stay in the private server file, not on the Settings screen (safer than PRD §14.11)",
       "state": "confirm"
+    },
+    {
+      "id": "—",
+      "state": "done",
+      "text": "Accessibility colours: navy text on orange buttons; deeper orange for prices and links"
+    },
+    {
+      "id": "—",
+      "state": "done",
+      "text": "Backups: SHOPME’s own daily backup, stored in Cloudinary, kept 30 days"
+    },
+    {
+      "id": "—",
+      "state": "needed",
+      "text": "Hosting choice: one server (recommended) or separate parts — see LAUNCH.md"
+    },
+    {
+      "id": "—",
+      "state": "needed",
+      "text": "MongoDB Atlas and Cloudinary accounts (free tiers)"
+    },
+    {
+      "id": "—",
+      "state": "needed",
+      "text": "Razorpay business verification for live payments"
     }
   ]
 }
