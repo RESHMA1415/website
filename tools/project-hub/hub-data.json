@@ -163,9 +163,9 @@
       "phase": 2,
       "area": "Your task",
       "status": "test",
-      "title": "Add your first 20 products",
-      "detail": "The store still shows 8 sample products.",
-      "waitingOn": "Your turn: add real products in the admin panel."
+      "title": "Add your launch products",
+      "detail": "8 real products added by you through the admin panel and showing on the store (10 Nov 2026). 6 sample products are still showing.",
+      "waitingOn": "Your turn: add the rest (about 12 more for the 20 at launch), then hide or delete the 6 \"(Sample)\" products."
     },
     {
       "phase": 3,
