@@ -1,5 +1,5 @@
 {
-  "statusDate": "2026-11-10",
+  "statusDate": "2026-11-11",
   "artifactUrl": "https://claude.ai/artifact/J8KvrshBbuSUQTPeudf5vY",
   "phases": [
     {
@@ -603,7 +603,7 @@
       "status": "test",
       "title": "SMS OTP login and registration",
       "detail": "Customers log in with a 6-digit SMS code (password still available) and verify their mobile by SMS when signing up. Codes last 5 minutes, 5 wrong tries, resend after 30 seconds. Your SMS key and template are saved; the gateway accepts them. Until NetworkZ enables sending, the code is shown on screen for testing.",
-      "waitingOn": "On hold (your decision). NetworkZ must enable the transactional route on account nswebsitetrg (error 412); the code shows on screen until then."
+      "waitingOn": "NetworkZ: the route now works, but the phone company rejects the messages (453 Inv-template). Ask NetworkZ to check that template 1707174177501770137 on DLT matches exactly and is linked to header NETSYS and your entity ID."
     },
     {
       "phase": "x",
