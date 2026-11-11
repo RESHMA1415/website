@@ -68,6 +68,9 @@ export async function sendSms({ mobile, message, event = 'otp' }) {
     entityId: c.entityId,
     templateId: c.templateId,
     removeDuplicateNumbers: '1',
+    // The gateway compares the text with the DLT template first and refuses a mismatch (409)
+    // instead of charging for a message the phone company would reject (453 Inv-template)
+    templateMatching: '1',
   });
   let log;
   try {
