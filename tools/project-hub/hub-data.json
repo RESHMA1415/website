@@ -1,5 +1,5 @@
 {
-  "statusDate": "2026-11-11",
+  "statusDate": "2026-11-12",
   "artifactUrl": "https://claude.ai/artifact/J8KvrshBbuSUQTPeudf5vY",
   "phases": [
     {
@@ -770,6 +770,14 @@
       "status": "done",
       "title": "AWS server install guide",
       "detail": "DEPLOY-AWS.md: create the EC2 server, domain records, Atlas database, Node/PM2/Nginx, settings file, HTTPS, moving your products, updating later, troubleshooting."
+    },
+    {
+      "phase": "x",
+      "area": "Store",
+      "status": "test",
+      "title": "Google reviews on the homepage",
+      "detail": "\"What Our Customers Say\" shows your Google rating, review count and the latest Google reviews (Google shares up to 5), with See all / Write a review buttons. Business Settings → Google Reviews: Place ID, on/off and a live check. Tested with a stand-in for Google on computer and phone.",
+      "waitingOn": "Your Google Cloud API key (Places API) and your Google Place ID."
     }
   ],
   "screens": [
@@ -1255,6 +1263,11 @@
     {
       "id": "—",
       "text": "Make the GitHub repository private (it is public now)",
+      "state": "needed"
+    },
+    {
+      "id": "—",
+      "text": "Google Cloud API key (Places API, New) for Google reviews on the homepage",
       "state": "needed"
     }
   ]
