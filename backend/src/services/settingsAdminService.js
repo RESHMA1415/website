@@ -1,4 +1,5 @@
 import { EMAIL_CONNECTED } from '../integrations/email.js';
+import { googlePlacesConfigured, validPlaceId } from '../integrations/googlePlaces.js';
 import { publicKeyId, razorpayConfigured, razorpayMode } from '../integrations/razorpay.js';
 import { Setting } from '../models/index.js';
 import { HttpError } from '../utils/asyncHandler.js';
@@ -81,6 +82,7 @@ export async function getSettingsForAdmin() {
     orders: s.orders,
     notifications: { ...s.notifications, events: s.notifications.events || {} },
     social: s.social,
+    googleReviews: s.googleReviews,
     seo: s.seo,
     pages: Object.fromEntries(PAGES.map((p) => [p, s.pages?.[p] || ''])),
     legalVersion: await currentLegalVersion(),
@@ -88,11 +90,12 @@ export async function getSettingsForAdmin() {
     status: {
       razorpay: { connected: razorpayConfigured(), mode: razorpayConfigured() ? razorpayMode() : null, keyId: keyId ? `${keyId.slice(0, 9)}••••${keyId.slice(-4)}` : '' },
       email: { connected: EMAIL_CONNECTED },
+      google: { keyConnected: googlePlacesConfigured() },
     },
   };
 }
 
-/** Saves one section: store, delivery, cod, orders, notifications, social, seo or pages. */
+/** Saves one section: store, delivery, cod, orders, notifications, social, googleReviews, seo or pages. */
 export async function saveSettingsSection(section, body = {}) {
   const set = {};
   switch (section) {
@@ -157,6 +160,13 @@ export async function saveSettingsSection(section, body = {}) {
     case 'social':
       for (const key of ['instagram', 'facebook', 'youtube', 'x', 'pinterest']) set[`values.social.${key}`] = https(body[key], key === 'x' ? 'X (Twitter)' : key[0].toUpperCase() + key.slice(1));
       break;
+    case 'googleReviews': {
+      const placeId = cleanText(body.placeId, 300).replace(/\s/g, '');
+      if (placeId && !validPlaceId(placeId)) throw new HttpError(400, 'Google Place ID: paste the ID from Google’s Place ID Finder (it usually starts with ChIJ).');
+      set['values.googleReviews.placeId'] = placeId;
+      set['values.googleReviews.enabled'] = Boolean(body.enabled);
+      break;
+    }
     case 'seo':
       Object.assign(set, {
         'values.seo.title': text(body.title, 'Site title', { max: 70, required: true }),

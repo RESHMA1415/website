@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api/client.js';
 import ConsentCheckbox from '../components/ConsentCheckbox.jsx';
+import GoogleReviews from '../components/GoogleReviews.jsx';
 import { sizedSrcSet, smallerUrl } from '../components/ProductImage.jsx';
 import ProductGrid from '../components/ProductGrid.jsx';
 import { useStore } from '../context/StoreContext.jsx';
@@ -209,16 +210,7 @@ export default function Home() {
 
       <ProductRow title="Featured Picks" subtitle="Our customers’ favourites" query="featured=true" link="/shop?sort=best_selling" />
 
-      <section className="section pt-0">
-        <div className="container">
-          <h2 className="section-title">What Our Customers Say</h2>
-          <p className="section-subtitle">Real reviews from verified buyers</p>
-          <div className="card-soft p-4 text-center text-muted">
-            <i className="bi bi-chat-heart fs-1 text-orange" />
-            <p className="mb-0 mt-2">Customer reviews will appear here once your first buyers share their experience.</p>
-          </div>
-        </div>
-      </section>
+      <GoogleReviews />
 
       <Newsletter />
     </>

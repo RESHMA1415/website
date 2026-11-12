@@ -146,6 +146,11 @@ Follow PRD §21 phases. Don't build advanced features ahead of their phase unles
 - Changing the mobile number in My Account does not re-verify by OTP yet.
 - A reusable global skill `networkz-sms-otp` (in `~/.claude/skills/`) documents this integration for other projects.
 
+**Google reviews on the homepage (owner request, 12 Nov 2026; not in the PRD):**
+- "What Our Customers Say" (`components/GoogleReviews.jsx`) shows the Google Business Profile rating, review count and the ≤5 reviews Google shares, with "See all reviews on Google" / "Write a review" links and "Reviews from Google". Placeholder until set up.
+- `integrations/googlePlaces.js`: Places API (New) Place Details with a field mask, key `GOOGLE_PLACES_API_KEY` in `.env` only (`GOOGLE_PLACES_API_BASE` is for tests). `services/googleReviewsService.js`: in-memory cache only (nothing from Google stored in the DB), refreshed every 12 h, retry 15 min after a failure, last good copy kept; reviews without text are skipped; `GET /api/google-reviews` never fails (returns `{ enabled: false }`).
+- Settings `googleReviews { enabled, placeId }`: admin Business Settings → Google Reviews (Place ID, on/off, live status via `GET /api/admin/google-reviews/status?check=1`). CSP allows `*.googleusercontent.com` images (reviewer photos).
+
 **Phase 9 notes:**
 - Security: `middleware/sanitize.js` strips `$`/`__proto__` keys; helmet CSP lists Razorpay, Google Maps/Fonts, Cloudinary; production refuses to start without MONGODB_URI, with non-https URLs or secrets under 32 chars; `TRUST_PROXY` behind a proxy.
 - One-server hosting: `STORE_DIST`/`ADMIN_DIST`; the server serves the admin at /admin and the store at / with page-specific title/description/og tags (`seoService.renderStorePage`), plus /sitemap.xml and /robots.txt. `npm run build:server` builds the admin with `--base=/admin/`.

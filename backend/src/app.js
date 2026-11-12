@@ -37,7 +37,7 @@ export function createApp() {
           scriptSrc: ["'self'", 'https://checkout.razorpay.com'],
           styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://checkout.razorpay.com'],
           fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com'],
-          imgSrc: ["'self'", 'data:', 'blob:', 'https://res.cloudinary.com', 'https://*.razorpay.com', 'https://*.googleapis.com', 'https://*.gstatic.com', 'https://*.google.com'],
+          imgSrc: ["'self'", 'data:', 'blob:', 'https://res.cloudinary.com', 'https://*.razorpay.com', 'https://*.googleapis.com', 'https://*.gstatic.com', 'https://*.google.com', 'https://*.googleusercontent.com'],
           mediaSrc: ["'self'", 'blob:', 'https://res.cloudinary.com'],
           connectSrc: ["'self'", 'https://*.razorpay.com', 'https://api.cloudinary.com'],
           frameSrc: ["'self'", 'https://*.razorpay.com', 'https://www.google.com', 'https://maps.google.com'],

@@ -55,6 +55,7 @@ import { bulkApprove, listReviewsForAdmin, pendingReviewCount, reviewAction } fr
 import { exportSubscribersCsv, listMessagesForAdmin, listSubscribersForAdmin, newMessageCount, updateMessage } from '../services/messageService.js';
 import { sendEmail, verifyEmailConnection } from '../integrations/email.js';
 import { backupNow, backupStatus } from '../services/backupService.js';
+import { googleReviewsStatus } from '../services/googleReviewsService.js';
 import {
   bulkUpdateProducts,
   createProduct,
@@ -241,6 +242,7 @@ router.post('/customers/:id/block', handle((req) => setCustomerBlocked(req.param
 // ----- Business Settings (PRD §14.11) -----
 router.get('/settings', handle(() => getSettingsForAdmin()));
 router.put('/settings/:section', handle((req) => saveSettingsSection(req.params.section, req.body || {})));
+router.get('/google-reviews/status', handle((req) => googleReviewsStatus({ check: req.query.check === '1' })));
 router.post('/payments/:id/refund', handle((req) => refundPaymentByAdmin(req.params.id, req.body || {})));
 
 export default router;

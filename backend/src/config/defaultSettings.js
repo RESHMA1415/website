@@ -53,6 +53,11 @@ export const defaultSettings = {
     x: '',
     pinterest: '',
   },
+  // Google reviews on the homepage: the Place ID of the store's Google Business Profile
+  googleReviews: {
+    enabled: true,
+    placeId: '',
+  },
   seo: {
     title: 'SHOPME | Men, Women Fashion, Beauty & Accessories',
     description:

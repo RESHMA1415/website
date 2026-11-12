@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { lookupPincode } from '../integrations/pincode.js';
+import { publicGoogleReviews } from '../services/googleReviewsService.js';
 import { getPage, getPublicSettings } from '../services/settingsService.js';
 import { asyncHandler, HttpError } from '../utils/asyncHandler.js';
 
@@ -13,6 +14,15 @@ router.get(
   '/settings',
   asyncHandler(async (req, res) => {
     res.json(await getPublicSettings());
+  }),
+);
+
+// Google reviews for the homepage (refreshed twice a day; empty when not set up)
+router.get(
+  '/google-reviews',
+  asyncHandler(async (req, res) => {
+    res.set('Cache-Control', 'public, max-age=600');
+    res.json(await publicGoogleReviews());
   }),
 );
 

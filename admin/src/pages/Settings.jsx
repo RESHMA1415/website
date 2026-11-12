@@ -117,6 +117,73 @@ function PageEditor({ pages, legalVersion, onSaved }) {
   );
 }
 
+// Google reviews on the homepage: Place ID + on/off, with a live check against Google
+function GoogleReviewsSection({ initial, keyConnected, onSaved }) {
+  const [status, setStatus] = useState(null);
+  const [checking, setChecking] = useState(false);
+  const check = async (force) => {
+    setChecking(true);
+    try {
+      setStatus(await api(`/admin/google-reviews/status${force ? '?check=1' : ''}`));
+    } catch (err) {
+      setStatus({ error: err.message });
+    } finally {
+      setChecking(false);
+    }
+  };
+  useEffect(() => { check(false); }, [initial?.placeId, initial?.enabled]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return (
+    <Section
+      title="Google Reviews"
+      section="googleReviews"
+      initial={initial}
+      onSaved={onSaved}
+      note={<p className="small text-muted">Shows your Google rating and up to 5 Google reviews (Google chooses which) in “What Our Customers Say” on the homepage, refreshed twice a day.</p>}
+    >
+      {(f, set) => (
+        <>
+          <div className="form-check form-switch mb-3">
+            <input className="form-check-input" type="checkbox" id="s-gr-on" checked={Boolean(f.enabled)} onChange={set('enabled')} />
+            <label className="form-check-label" htmlFor="s-gr-on">Show Google reviews on the homepage</label>
+          </div>
+          <div className="mb-3">
+            <label className="form-label" htmlFor="s-gr-place">Google Place ID</label>
+            <input id="s-gr-place" className="form-control" value={f.placeId || ''} onChange={set('placeId')} placeholder="e.g. ChIJN1t_tDeuEmsRUsoyG83frY4" />
+            <div className="form-text">
+              Find it with Google’s{' '}
+              <a href="https://developers.google.com/maps/documentation/places/web-service/place-id#find-id" target="_blank" rel="noopener noreferrer">Place ID Finder</a>
+              : search your shop’s name as it appears on Google Maps and copy the “Place ID”.
+            </div>
+          </div>
+          <div className="small" aria-live="polite">
+            {!keyConnected ? (
+              <div className="alert alert-warning py-2 mb-0">Google API key not added yet. The developer adds it to the server settings (GOOGLE_PLACES_API_KEY); until then the homepage shows the placeholder.</div>
+            ) : !status ? (
+              <span className="text-muted">Checking…</span>
+            ) : status.error ? (
+              <div className="alert alert-danger py-2 mb-0">{status.error}</div>
+            ) : status.count ? (
+              <div className="text-success fw-semibold">
+                <i className="bi bi-check-circle-fill me-1" />Connected{status.name ? ` to “${status.name}”` : ''}: {Number(status.rating).toFixed(1)} ★ from {status.count} reviews ({status.shown} shown)
+              </div>
+            ) : status.placeIdSet ? (
+              <span className="text-muted">Connected, but this place has no Google reviews yet.</span>
+            ) : (
+              <span className="text-muted">Add your Place ID and save.</span>
+            )}
+            {keyConnected && status?.placeIdSet && (
+              <button type="button" className="btn btn-link btn-sm p-0 mt-2 d-block" onClick={() => check(true)} disabled={checking}>
+                {checking ? 'Checking with Google…' : 'Check now with Google'}
+              </button>
+            )}
+          </div>
+        </>
+      )}
+    </Section>
+  );
+}
+
 // Business Settings (PRD §14.11)
 export default function Settings() {
   const { data, error, loading } = useApi('/admin/settings');
@@ -250,6 +317,9 @@ export default function Settings() {
               </div>
             )}
           </Section>
+        </div>
+        <div className="col-xl-6">
+          <GoogleReviewsSection initial={v.googleReviews || { enabled: true, placeId: '' }} keyConnected={Boolean(v.status.google?.keyConnected)} onSaved={saved} />
         </div>
         <div className="col-xl-6">
           <Section title="Search Engines & Sharing (SEO)" section="seo" initial={v.seo} onSaved={saved}>
