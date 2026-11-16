@@ -162,10 +162,9 @@
     {
       "phase": 2,
       "area": "Your task",
-      "status": "test",
+      "status": "done",
       "title": "Add your launch products",
-      "detail": "14 products on the store (16 Nov 2026): your 8, plus the 6 former samples, kept as real products by your choice (\"(Sample)\" removed from names and descriptions).",
-      "waitingOn": "Your turn: check the prices, stock and photos of the 6 former samples (they were made-up values), and add more products if you want 20 at launch."
+      "detail": "14 products on the store (demo catalogue, 16 Nov 2026): your 8 plus the 6 former samples, kept by your choice with \"(Sample)\" removed, demo prices kept and stock topped up. Watch web address fixed to /product/rose-gold-ladies-watch."
     },
     {
       "phase": 3,
