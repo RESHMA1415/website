@@ -1,5 +1,5 @@
 {
-  "statusDate": "2026-11-12",
+  "statusDate": "2026-11-16",
   "artifactUrl": "https://claude.ai/artifact/J8KvrshBbuSUQTPeudf5vY",
   "phases": [
     {
@@ -368,10 +368,9 @@
     {
       "phase": 7,
       "area": "Messages",
-      "status": "test",
+      "status": "done",
       "title": "Connect an email service",
-      "detail": "Built and tested: branded emails for every order, return, refund, review and account event, with automatic retries. Sent from your Gmail.",
-      "waitingOn": "Your Gmail App Password in backend/.env (steps in the Phase 7 report), then press “Send me a test email” in admin → My Account."
+      "detail": "Real emails on (16 Nov 2026): sent through Gmail nspreshmapr@gmail.com as “SHOPME”, customer replies go to shopmesupport2@gmail.com. Owner test email received."
     },
     {
       "phase": 7,
@@ -697,8 +696,8 @@
       "area": "Your task",
       "status": "test",
       "title": "Receive all messages for a test order",
-      "detail": "After adding the Gmail App Password: place a test order and follow it to delivery; check the emails arrive.",
-      "waitingOn": "Your Gmail App Password first."
+      "detail": "Email is now on: place a test order and follow it to delivery; check each email arrives.",
+      "waitingOn": "Your test order (email is connected now)."
     },
     {
       "phase": 8,
@@ -1227,8 +1226,8 @@
     },
     {
       "id": "—",
-      "text": "Gmail App Password for shopmesupport2@gmail.com (to switch on real emails)",
-      "state": "needed"
+      "text": "Gmail App Password (made on nspreshmapr@gmail.com, because shopmesupport2 could not make one); real emails switched on",
+      "state": "done"
     },
     {
       "id": "25",
