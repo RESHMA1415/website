@@ -164,8 +164,8 @@
       "area": "Your task",
       "status": "test",
       "title": "Add your launch products",
-      "detail": "8 real products added by you through the admin panel and showing on the store (10 Nov 2026). 6 sample products are still showing.",
-      "waitingOn": "Your turn: add the rest (about 12 more for the 20 at launch), then hide or delete the 6 \"(Sample)\" products."
+      "detail": "14 products on the store (16 Nov 2026): your 8, plus the 6 former samples, kept as real products by your choice (\"(Sample)\" removed from names and descriptions).",
+      "waitingOn": "Your turn: check the prices, stock and photos of the 6 former samples (they were made-up values), and add more products if you want 20 at launch."
     },
     {
       "phase": 3,
@@ -614,10 +614,9 @@
     {
       "phase": "x",
       "area": "Your task",
-      "status": "test",
+      "status": "done",
       "title": "Tidy the catalogue",
-      "detail": "Rename the watch’s web address and hide the 6 sample products. (FAQ page is now written.)",
-      "waitingOn": "Your turn (see the test report)."
+      "detail": "Sample products kept as real products (owner choice, 16 Nov 2026); sample labels removed. FAQ page written."
     },
     {
       "phase": 5,
@@ -777,6 +776,13 @@
       "title": "Google reviews on the homepage",
       "detail": "\"What Our Customers Say\" shows your Google rating, review count and the latest Google reviews (Google shares up to 5), with See all / Write a review buttons. Business Settings → Google Reviews: Place ID, on/off and a live check. Tested with a stand-in for Google on computer and phone.",
       "waitingOn": "Your Google Cloud API key (Places API) and your Google Place ID."
+    },
+    {
+      "phase": "x",
+      "area": "Your task",
+      "status": "done",
+      "title": "Change the admin login",
+      "detail": "You changed the admin email and password yourself (16 Nov 2026)."
     }
   ],
   "screens": [
