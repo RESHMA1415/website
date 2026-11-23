@@ -5,6 +5,13 @@ import { Otp, User } from '../models/index.js';
 import { HttpError } from '../utils/asyncHandler.js';
 import { cleanText } from '../utils/text.js';
 import { cleanMobile, publicUser, registerCustomer, signCustomerToken } from './customerAuthService.js';
+import { getSettings } from './settingsService.js';
+
+// Owner's switch (admin → Business Settings → SMS Login). Off: password-only login and sign-up.
+export async function smsOtpEnabled() {
+  const { smsLogin } = await getSettings();
+  return Boolean(smsLogin?.enabled);
+}
 
 // 6-digit SMS OTP for login and registration.
 export const OTP_RULES = {
@@ -48,6 +55,7 @@ function cleanPurpose(purpose) {
  */
 export async function requestOtp({ mobile: rawMobile, purpose: rawPurpose }, { ip } = {}) {
   const purpose = cleanPurpose(rawPurpose);
+  if (!(await smsOtpEnabled())) throw new HttpError(503, 'Login by SMS code is switched off. Please use your password.');
   const mobile = cleanMobile(rawMobile);
 
   const user = await User.findOne({ mobile }, { isBlocked: 1 }).lean();
@@ -123,6 +131,7 @@ export async function verifyOtp({ mobile: rawMobile, purpose: rawPurpose, code: 
 
 /** Login with mobile + OTP → the same customer login (JWT) as password login. */
 export async function loginWithOtp({ mobile, code, remember }) {
+  if (!(await smsOtpEnabled())) throw new HttpError(503, 'Login by SMS code is switched off. Please use your password.');
   const verified = await verifyOtp({ mobile, purpose: 'login', code });
   const now = new Date();
   const user = await User.findOneAndUpdate(
@@ -134,8 +143,9 @@ export async function loginWithOtp({ mobile, code, remember }) {
   return { token: signCustomerToken(user, Boolean(remember)), user: publicUser(user) };
 }
 
-/** Registration with the mobile number proven by OTP. */
+/** Registration: with the mobile number proven by OTP, or password-only while SMS codes are switched off. */
 export async function registerWithOtp(body) {
+  if (!(await smsOtpEnabled())) return registerCustomer(body);
   return registerCustomer(body, {
     verifyMobile: (mobile) => verifyOtp({ mobile, purpose: 'register', code: body.otp }),
   });

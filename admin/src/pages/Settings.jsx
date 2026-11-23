@@ -322,6 +322,25 @@ export default function Settings() {
           <GoogleReviewsSection initial={v.googleReviews || { enabled: true, placeId: '' }} keyConnected={Boolean(v.status.google?.keyConnected)} onSaved={saved} />
         </div>
         <div className="col-xl-6">
+          <Section title="SMS Login (OTP)" section="smsLogin" initial={v.smsLogin || { enabled: false }} onSaved={saved}>
+            {(f, set) => (
+              <>
+                <div className="form-check form-switch mb-3">
+                  <input className="form-check-input" type="checkbox" id="s-smsotp" checked={Boolean(f.enabled)} onChange={set('enabled')} />
+                  <label className="form-check-label" htmlFor="s-smsotp">Use SMS codes for customer login and sign-up</label>
+                </div>
+                <p className="small text-muted mb-2">
+                  {f.enabled
+                    ? 'On: new customers confirm their mobile number with an SMS code, and customers can log in with a code or their password.'
+                    : 'Off: customers sign up and log in with their email or mobile number and a password. No SMS is sent.'}
+                </p>
+                {!v.status.sms?.connected && <div className="alert alert-warning small py-2 mb-0">The SMS service isn’t set up on the server, so codes can’t be sent. Keep this off.</div>}
+                {v.status.sms?.connected && f.enabled && <div className="alert alert-info small py-2 mb-0">Only switch this on once a test code has really arrived on a phone; otherwise new customers can’t sign up.</div>}
+              </>
+            )}
+          </Section>
+        </div>
+        <div className="col-xl-6">
           <Section title="Search Engines & Sharing (SEO)" section="seo" initial={v.seo} onSaved={saved}>
             {(f, set) => (
               <>

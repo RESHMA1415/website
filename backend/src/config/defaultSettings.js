@@ -53,6 +53,11 @@ export const defaultSettings = {
     x: '',
     pinterest: '',
   },
+  // SMS codes for login and sign-up. Off until the SMS provider delivers them (owner, 23 Nov 2026):
+  // while off, customers register and log in with a password only.
+  smsLogin: {
+    enabled: false,
+  },
   // Google reviews on the homepage: the Place ID of the store's Google Business Profile
   googleReviews: {
     enabled: true,

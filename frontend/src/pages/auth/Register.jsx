@@ -9,7 +9,9 @@ import AuthCard from './AuthCard.jsx';
 import { PASSWORD_HINT, PASSWORD_RULE, safeNext } from './authHelpers.js';
 
 export default function Register() {
-  const { notify } = useStore();
+  const { notify, settings } = useStore();
+  // SMS codes can be switched off in admin (Business Settings → SMS Login); then no mobile check
+  const smsOtp = Boolean(settings.login?.smsOtp);
   const { user, ready, startSession } = useShopper();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -23,15 +25,18 @@ export default function Register() {
 
   if (ready && user && !busy) return <Navigate to={next} replace />;
 
+  const passwordProblem = () => {
+    if (!PASSWORD_RULE.test(form.password)) return `Password must be ${PASSWORD_HINT.toLowerCase()}`;
+    if (form.password !== form.confirmPassword) return 'Passwords do not match.';
+    return '';
+  };
+
   // Step 1: check the details, then send a code to confirm the mobile number
   const sendCode = async (event) => {
     event?.preventDefault();
-    if (!PASSWORD_RULE.test(form.password)) {
-      setError(`Password must be ${PASSWORD_HINT.toLowerCase()}`);
-      return;
-    }
-    if (form.password !== form.confirmPassword) {
-      setError('Passwords do not match.');
+    const problem = passwordProblem();
+    if (problem) {
+      setError(problem);
       return;
     }
     setBusy(true);
@@ -49,14 +54,19 @@ export default function Register() {
   // Step 2: create the account with the code
   const submit = async (event) => {
     event.preventDefault();
-    if (!sent) {
+    if (smsOtp && !sent) {
       sendCode();
+      return;
+    }
+    const problem = smsOtp ? '' : passwordProblem();
+    if (problem) {
+      setError(problem);
       return;
     }
     setBusy(true);
     setError('');
     try {
-      const session = await api('/auth/register', { method: 'POST', body: { ...form, otp: code, remember: true } });
+      const session = await api('/auth/register', { method: 'POST', body: { ...form, ...(smsOtp ? { otp: code } : {}), remember: true } });
       startSession(session, true);
       notify(`Welcome to SHOPME, ${session.user.name.split(' ')[0]}!`);
       navigate(next, { replace: true });
@@ -108,7 +118,9 @@ export default function Register() {
           </div>
         )}
         {error && <div className="alert alert-danger small py-2" role="alert">{error}</div>}
-        {sent ? (
+        {!smsOtp ? (
+          <button type="submit" className="btn btn-orange w-100" disabled={busy}>{busy ? 'Creating your account…' : 'Create Account'}</button>
+        ) : sent ? (
           <button type="submit" className="btn btn-orange w-100" disabled={busy || code.length !== 6}>{busy ? 'Creating your account…' : 'Verify & Create Account'}</button>
         ) : (
           <button type="submit" className="btn btn-orange w-100" disabled={busy}>{busy ? 'Sending code…' : 'Continue: verify mobile'}</button>

@@ -144,6 +144,7 @@ Follow PRD §21 phases. Don't build advanced features ahead of their phase unles
 - Store: Login opens on OTP ("Use password instead"; `?method=password` opens the password form). Register: "Continue: verify mobile" → code → "Verify & Create Account". `components/OtpStep.jsx` has the resend countdown.
 - Not fully configured: development returns `devOtp` and shows it in a yellow "Testing mode" box; production refuses OTP (503) so customers use their password. In production set Express `trust proxy` so the per-IP limit sees real addresses.
 - Changing the mobile number in My Account does not re-verify by OTP yet.
+- **Owner switch (23 Nov 2026):** Settings `smsLogin.enabled` (default **false**; admin Business Settings → SMS Login (OTP); public `settings.login.smsOtp`). Off: `/auth/otp/*` answer 503, `POST /auth/register` needs no `otp` (no `mobileVerifiedAt`), Login shows only the password form and Register is one step ("Create Account"). Switched off because DLT kept rejecting the template (453); switch on only after a real code arrives.
 - A reusable global skill `networkz-sms-otp` (in `~/.claude/skills/`) documents this integration for other projects.
 
 **Google reviews on the homepage (owner request, 12 Nov 2026; not in the PRD):**

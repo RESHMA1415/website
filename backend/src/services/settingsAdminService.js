@@ -1,6 +1,7 @@
 import { EMAIL_CONNECTED } from '../integrations/email.js';
 import { googlePlacesConfigured, validPlaceId } from '../integrations/googlePlaces.js';
 import { publicKeyId, razorpayConfigured, razorpayMode } from '../integrations/razorpay.js';
+import { smsConfigured } from '../integrations/sms.js';
 import { Setting } from '../models/index.js';
 import { HttpError } from '../utils/asyncHandler.js';
 import { cleanMediaUrl, cleanText } from '../utils/text.js';
@@ -83,6 +84,7 @@ export async function getSettingsForAdmin() {
     notifications: { ...s.notifications, events: s.notifications.events || {} },
     social: s.social,
     googleReviews: s.googleReviews,
+    smsLogin: s.smsLogin,
     seo: s.seo,
     pages: Object.fromEntries(PAGES.map((p) => [p, s.pages?.[p] || ''])),
     legalVersion: await currentLegalVersion(),
@@ -91,11 +93,12 @@ export async function getSettingsForAdmin() {
       razorpay: { connected: razorpayConfigured(), mode: razorpayConfigured() ? razorpayMode() : null, keyId: keyId ? `${keyId.slice(0, 9)}••••${keyId.slice(-4)}` : '' },
       email: { connected: EMAIL_CONNECTED },
       google: { keyConnected: googlePlacesConfigured() },
+      sms: { connected: smsConfigured() },
     },
   };
 }
 
-/** Saves one section: store, delivery, cod, orders, notifications, social, googleReviews, seo or pages. */
+/** Saves one section: store, delivery, cod, orders, notifications, social, googleReviews, smsLogin, seo or pages. */
 export async function saveSettingsSection(section, body = {}) {
   const set = {};
   switch (section) {
@@ -167,6 +170,9 @@ export async function saveSettingsSection(section, body = {}) {
       set['values.googleReviews.enabled'] = Boolean(body.enabled);
       break;
     }
+    case 'smsLogin':
+      set['values.smsLogin.enabled'] = body.enabled === true;
+      break;
     case 'seo':
       Object.assign(set, {
         'values.seo.title': text(body.title, 'Site title', { max: 70, required: true }),

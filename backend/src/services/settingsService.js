@@ -25,7 +25,7 @@ export async function getSettings() {
 
 // Only what the customer website is allowed to see
 export async function getPublicSettings() {
-  const { store, delivery, cod, orders, social, seo } = await getSettings();
+  const { store, delivery, cod, orders, social, seo, smsLogin } = await getSettings();
   const online = razorpayConfigured();
   return {
     store,
@@ -33,6 +33,7 @@ export async function getPublicSettings() {
     cod: { enabled: cod.enabled, charge: cod.charge, maxOrderValue: cod.maxOrderValue },
     orders: { maxQtyPerItem: orders.maxQtyPerItem, returnWindowDays: orders.returnWindowDays },
     payments: { onlineAvailable: online, mode: online ? razorpayMode() : null },
+    login: { smsOtp: Boolean(smsLogin?.enabled) },
     social,
     seo,
   };

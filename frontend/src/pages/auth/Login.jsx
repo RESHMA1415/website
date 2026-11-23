@@ -9,12 +9,15 @@ import { safeNext } from './authHelpers.js';
 
 // Login with an SMS code (default) or with email/mobile + password
 export default function Login() {
-  const { notify } = useStore();
+  const { notify, settings } = useStore();
   const { user, ready, startSession } = useShopper();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const next = safeNext(searchParams);
-  const [method, setMethod] = useState(searchParams.get('method') === 'password' ? 'password' : 'otp');
+  // SMS codes can be switched off in admin (Business Settings → SMS Login); then password only
+  const smsOtp = Boolean(settings.login?.smsOtp);
+  const [chosen, setMethod] = useState(searchParams.get('method') === 'password' ? 'password' : 'otp');
+  const method = smsOtp ? chosen : 'password';
   const [form, setForm] = useState({ identifier: '', password: '', remember: false });
   const [mobile, setMobile] = useState('');
   const [code, setCode] = useState('');
@@ -130,9 +133,11 @@ export default function Login() {
             {error && <div className="alert alert-danger small py-2" role="alert">{error}</div>}
             <button type="submit" className="btn btn-orange w-100" disabled={busy}>{busy ? 'Logging in…' : 'Log In'}</button>
           </form>
-          <div className="text-center small mt-3">
-            <button type="button" className="btn btn-link btn-sm p-0" onClick={() => switchTo('otp')}>Login with OTP instead</button>
-          </div>
+          {smsOtp && (
+            <div className="text-center small mt-3">
+              <button type="button" className="btn btn-link btn-sm p-0" onClick={() => switchTo('otp')}>Login with OTP instead</button>
+            </div>
+          )}
         </>
       )}
     </AuthCard>
