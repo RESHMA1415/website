@@ -1,5 +1,5 @@
 {
-  "statusDate": "2026-11-16",
+  "statusDate": "2026-11-23",
   "artifactUrl": "https://claude.ai/artifact/J8KvrshBbuSUQTPeudf5vY",
   "phases": [
     {
@@ -601,7 +601,14 @@
       "status": "test",
       "title": "SMS OTP login and registration",
       "detail": "Customers log in with a 6-digit SMS code (password still available) and verify their mobile by SMS when signing up. Codes last 5 minutes, 5 wrong tries, resend after 30 seconds. Your SMS key and template are saved; the gateway accepts them. Until NetworkZ enables sending, the code is shown on screen for testing.",
-      "waitingOn": "NetworkZ: the route now works, but the phone company rejects the messages (453 Inv-template). Ask NetworkZ to check that template 1707174177501770137 on DLT matches exactly and is linked to header NETSYS and your entity ID."
+      "waitingOn": "NetworkZ / support@refined.com.in to fix the DLT template (error 453; emailed 17 Nov 2026). Then switch SMS Login on in admin."
+    },
+    {
+      "phase": "x",
+      "area": "Admin",
+      "status": "done",
+      "title": "SMS Login on/off switch",
+      "detail": "Admin → Business Settings → SMS Login (OTP). Off (now): customers sign up and log in with a password, no SMS sent. On: mobile confirmed by SMS code at sign-up, login by code or password."
     },
     {
       "phase": "x",
