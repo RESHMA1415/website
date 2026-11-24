@@ -10,9 +10,28 @@ import { errorHandler, notFound } from './middleware/errorHandler.js';
 import { sanitizeRequest } from './middleware/sanitize.js';
 import apiRoutes from './routes/index.js';
 import { razorpayWebhook } from './routes/orderRoutes.js';
+import fs from 'node:fs';
 import path from 'node:path';
 import { renderStorePage, robotsTxt, sitemapXml } from './services/seoService.js';
 import { asyncHandler } from './utils/asyncHandler.js';
+
+// The admin panel is served at /admin, so it must be built with `npm run build:server`
+// (Vite --base=/admin/). A plain `npm run build` makes its page ask for /assets/…, which
+// belong to the store: the browser gets 404s and the admin shows a blank page (24 Nov 2026).
+// Only a warning, never a refusal to start: the shop must stay up.
+function warnIfAdminBuiltForWrongAddress(adminDist) {
+  try {
+    const html = fs.readFileSync(path.join(adminDist, 'index.html'), 'utf8');
+    if (/(src|href)="\/assets\//.test(html)) {
+      console.error(
+        '[admin] WARNING: the admin panel was built for the wrong address and will show a blank page. ' +
+          'Rebuild it with: npm run build:server --prefix admin',
+      );
+    }
+  } catch {
+    console.error(`[admin] WARNING: no admin panel build found in ${adminDist}. Run: npm run build:server`);
+  }
+}
 
 export function createApp() {
   const app = express();
@@ -70,6 +89,7 @@ export function createApp() {
 
   // Single-server hosting: built admin panel at /admin, built store at /
   if (env.adminDist) {
+    warnIfAdminBuiltForWrongAddress(env.adminDist);
     app.use('/admin', express.static(env.adminDist, { index: false, maxAge: '7d' }));
     app.get(/^\/admin(\/.*)?$/, (req, res) => res.set('Cache-Control', 'no-cache').sendFile(path.join(env.adminDist, 'index.html')));
   }

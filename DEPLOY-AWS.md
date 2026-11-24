@@ -329,6 +329,7 @@ npm run setup
 npm run build:server
 pm2 restart shopme
 ```
+Always use `npm run build:server` here, never plain `npm run build`: the plain build makes the admin panel look for its files in the wrong place and it shows a blank page.
 
 ---
 
@@ -341,6 +342,7 @@ pm2 restart shopme
 | **Database connection error** | In Atlas, Network Access must list your server address, and the password in `MONGODB_URI` must be right. |
 | Build stops with **"Killed"** | Not enough memory: check the swap from 5.2 is on (`free -h` shows Swap 2.0G). |
 | **certbot** fails | The domain doesn't point at the server yet (Part 2). Wait and try again. |
+| **Admin panel is a blank white page**; the browser console shows 404 for `/assets/index-….js` and a CSS "MIME type" error | The admin was built with the plain `npm run build`. Back up and rebuild it (no restart needed): `cp -a admin/dist ~/admin-dist-backup-$(date +%F)` then `npm run build:server --prefix admin`. Check with `grep -o '/admin/assets/[^"]*' admin/dist/index.html`. The log also warns "[admin] WARNING: the admin panel was built for the wrong address". |
 | Upload of a video fails | Check `client_max_body_size 60m;` is in the Nginx file and run `sudo systemctl reload nginx`. |
 
 Useful commands: `pm2 status` (is it running?), `pm2 restart shopme`, `pm2 logs shopme`, `sudo systemctl status nginx`.
